@@ -1,4 +1,5 @@
-import React from 'react'
+import React from 'react';
+import { Link } from 'react-router-dom';
 
 function FooterTop() {
   return (
@@ -12,12 +13,12 @@ function FooterTop() {
                                 <p className="bb-footer-detail max-w-[400px] mb-[30px] p-[0] font-Poppins text-[14px] leading-[27px] font-normal text-[#686e7d] inline-block relative max-[1399px]:text-[15px] max-[1199px]:text-[14px]">BSS Cart is the biggest market of grocery products. Get
                                     your daily needs from our store.</p>
                                 <div className="bb-app-store m-[-7px] flex flex-wrap">
-                                    <a href="" className="app-img">
+                                    <Link to="/" className="app-img">
                                         <img src="/img/app/android.png" className="adroid max-w-[140px] m-[7px] rounded-[5px] max-[1399px]:max-w-[120px]" alt="apple"/>
-                                    </a>
-                                    <a href="" className="app-img">
+                                    </Link>
+                                    <Link to="/" className="app-img">
                                         <img src="/img/app/apple.png" className="apple max-w-[140px] m-[7px] rounded-[5px] max-[1399px]:max-w-[120px]" alt="apple"/>
-                                    </a>
+                                    </Link>
                                 </div>
                             </div>
                         </div>
@@ -27,22 +28,10 @@ function FooterTop() {
                                 <div className="bb-footer-links bb-footer-dropdown  max-[991px]:mb-[35px]">
                                     <ul className="align-items-center">
                                         <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
-                                            <a href="shop-left-sidebar-col-3.html" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-[#686e7d] hover:text-[#6c7fd8] mb-[0] inline-block break-all tracking-[0] font-normal">Dairy & Milk</a>
+                                            <Link to="/product/category/groceries" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-[#686e7d] hover:text-[#6c7fd8] mb-[0] inline-block break-all tracking-[0] font-normal">Groceries</Link>
                                         </li>
                                         <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
-                                            <a href="shop-banner-left-sidebar-col-3.html" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-[#686e7d] hover:text-[#6c7fd8] mb-[0] inline-block break-all tracking-[0] font-normal">Snack & Spice</a>
-                                        </li>
-                                        <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
-                                            <a href="shop-full-width-col-5.html" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-[#686e7d] hover:text-[#6c7fd8] mb-[0] inline-block break-all tracking-[0] font-normal">Fast Food</a>
-                                        </li>
-                                        <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
-                                            <a href="shop-list-left-sidebar.html" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-[#686e7d] hover:text-[#6c7fd8] mb-[0] inline-block break-all tracking-[0] font-normal">Juice & Drinks</a>
-                                        </li>
-                                        <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
-                                            <a href="shop-list-full-col-2.html" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-[#686e7d] hover:text-[#6c7fd8] mb-[0] inline-block break-all tracking-[0] font-normal">Bakery</a>
-                                        </li>
-                                        <li className="bb-footer-link leading-[1.5] flex items-center">
-                                            <a href="shop-banner-right-sidebar-col-4.html" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-[#686e7d] hover:text-[#6c7fd8] mb-[0] inline-block break-all tracking-[0] font-normal">Seafood</a>
+                                            <Link to="/product/category/womens-jewellery" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-[#686e7d] hover:text-[#6c7fd8] mb-[0] inline-block break-all tracking-[0] font-normal">Jewellery</Link>
                                         </li>
                                     </ul>
                                 </div>
@@ -54,22 +43,16 @@ function FooterTop() {
                                 <div className="bb-footer-links bb-footer-dropdown  max-[991px]:mb-[35px]">
                                     <ul className="align-items-center">
                                         <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
-                                            <a href="about-us.html" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-[#686e7d] hover:text-[#6c7fd8] mb-[0] inline-block break-all tracking-[0] font-normal">About us</a>
+                                            <Link to="/" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-[#686e7d] hover:text-[#6c7fd8] mb-[0] inline-block break-all tracking-[0] font-normal">About us</Link>
                                         </li>
                                         <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
-                                            <a href="track-order.html" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-[#686e7d] hover:text-[#6c7fd8] mb-[0] inline-block break-all tracking-[0] font-normal">Delivery</a>
+                                            <Link to="/" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-[#686e7d] hover:text-[#6c7fd8] mb-[0] inline-block break-all tracking-[0] font-normal">Contact Us</Link>
                                         </li>
                                         <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
-                                            <a href="faq.html" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-[#686e7d] hover:text-[#6c7fd8] mb-[0] inline-block break-all tracking-[0] font-normal">Legal Notice</a>
+                                            <Link to="/" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-[#686e7d] hover:text-[#6c7fd8] mb-[0] inline-block break-all tracking-[0] font-normal">FAQ</Link>
                                         </li>
                                         <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
-                                            <a href="terms.html" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-[#686e7d] hover:text-[#6c7fd8] mb-[0] inline-block break-all tracking-[0] font-normal">Terms & conditions</a>
-                                        </li>
-                                        <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
-                                            <a href="checkout.html" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-[#686e7d] hover:text-[#6c7fd8] mb-[0] inline-block break-all tracking-[0] font-normal">Secure payment</a>
-                                        </li>
-                                        <li className="bb-footer-link leading-[1.5] flex items-center">
-                                            <a href="contact-us.html" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-[#686e7d] hover:text-[#6c7fd8] mb-[0] inline-block break-all tracking-[0] font-normal">Contact us</a>
+                                            <Link to="/" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-[#686e7d] hover:text-[#6c7fd8] mb-[0] inline-block break-all tracking-[0] font-normal">Delivery</Link>
                                         </li>
                                     </ul>
                                 </div>
@@ -81,22 +64,16 @@ function FooterTop() {
                                 <div className="bb-footer-links bb-footer-dropdown  max-[991px]:mb-[35px]">
                                     <ul className="align-items-center">
                                         <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
-                                            <a href="login.html" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-[#686e7d] hover:text-[#6c7fd8] mb-[0] inline-block break-all tracking-[0] font-normal">Sign In</a>
+                                            <Link to="/" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-[#686e7d] hover:text-[#6c7fd8] mb-[0] inline-block break-all tracking-[0] font-normal">Sign In</Link>
                                         </li>
                                         <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
-                                            <a href="cart.html" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-[#686e7d] hover:text-[#6c7fd8] mb-[0] inline-block break-all tracking-[0] font-normal">View Cart</a>
+                                            <Link to="/" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-[#686e7d] hover:text-[#6c7fd8] mb-[0] inline-block break-all tracking-[0] font-normal">View Cart</Link>
                                         </li>
                                         <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
-                                            <a href="faq.html" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-[#686e7d] hover:text-[#6c7fd8] mb-[0] inline-block break-all tracking-[0] font-normal">Return Policy</a>
+                                            <Link to="/" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-[#686e7d] hover:text-[#6c7fd8] mb-[0] inline-block break-all tracking-[0] font-normal">Return Policy</Link>
                                         </li>
                                         <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
-                                            <a href="shop-left-sidebar-col-3.html" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-[#686e7d] hover:text-[#6c7fd8] mb-[0] inline-block break-all tracking-[0] font-normal">Become a Vendor</a>
-                                        </li>
-                                        <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
-                                            <a href="product-left-sidebar.html" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-[#686e7d] hover:text-[#6c7fd8] mb-[0] inline-block break-all tracking-[0] font-normal">Affiliate Program</a>
-                                        </li>
-                                        <li className="bb-footer-link leading-[1.5] flex items-center">
-                                            <a href="checkout.html" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-[#686e7d] hover:text-[#6c7fd8] mb-[0] inline-block break-all tracking-[0] font-normal">Payments</a>
+                                            <Link to="/" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-[#686e7d] hover:text-[#6c7fd8] mb-[0] inline-block break-all tracking-[0] font-normal">Become a Vendor</Link>
                                         </li>
                                     </ul>
                                 </div>
@@ -112,19 +89,19 @@ function FooterTop() {
                                                 <span className="mt-[5px] w-[25px] basis-[auto] grow-[0] shrink-[0]">
                                                     <i className="ri-map-pin-line leading-[0] text-[18px] text-[#6c7fd8]"></i>
                                                 </span>
-                                                <p className="m-[0] font-Poppins text-[14px] text-[#686e7d] font-normal leading-[28px] tracking-[0.03rem]">971 Lajamni, Motavarachha, Surat, Gujarat, Bharat 394101.</p>
+                                                <p className="m-[0] font-Poppins text-[14px] text-[#686e7d] font-normal leading-[28px] tracking-[0.03rem]">No: 20, 100 Feet Road, Ellaipillaichavady, Puducherry, 605005, India</p>
                                             </li>
                                             <li className="bb-footer-link bb-foo-call flex items-start max-[991px]:mb-[15px] mb-[16px]">
                                                 <span className="w-[25px] basis-[auto] grow-[0] shrink-[0]">
                                                     <i className="ri-whatsapp-line leading-[0] text-[18px] text-[#6c7fd8]"></i>
                                                 </span>
-                                                <a href="tel:+009876543210" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-[#686e7d] inline-block relative break-all tracking-[0] font-normal max-[1399px]:text-[15px] max-[1199px]:text-[14px]">+00 9876543210</a>
+                                                <Link to="tel:+009876543210" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-[#686e7d] inline-block relative break-all tracking-[0] font-normal max-[1399px]:text-[15px] max-[1199px]:text-[14px]">+91 9600729596</Link>
                                             </li>
                                             <li className="bb-footer-link bb-foo-mail flex">
                                                 <span className="w-[25px] basis-[auto] grow-[0] shrink-[0]">
                                                     <i className="ri-mail-line leading-[0] text-[18px] text-[#6c7fd8]"></i>
                                                 </span>
-                                                <a href="mailto:example@email.com" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-[#686e7d] inline-block relative break-all tracking-[0] font-normal max-[1399px]:text-[15px] max-[1199px]:text-[14px]">example@email.com</a>
+                                                <Link to="mailto:example@email.com" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-[#686e7d] inline-block relative break-all tracking-[0] font-normal max-[1399px]:text-[15px] max-[1199px]:text-[14px]">info@bbscart.com</Link>
                                             </li>
                                         </ul>
                                     </div>
@@ -135,16 +112,16 @@ function FooterTop() {
                                     <div className="bb-footer-links bb-footer-dropdown  max-[991px]:mb-[35px]">
                                         <ul className="align-items-center flex flex-wrap items-center">
                                             <li className="bb-footer-link leading-[1.5] flex items-center pr-[5px]">
-                                                <a href="" className="transition-all duration-[0.3s] ease-in-out w-[30px] h-[30px] rounded-[5px] bg-[#3d4750] hover:bg-[#6c7fd8] capitalize flex items-center justify-center text-[15px] leading-[20px] text-[#686e7d] relative break-all font-normal"><i className="ri-facebook-fill text-[16px] text-[#fff]"></i></a>
+                                                <Link to="/" className="transition-all duration-[0.3s] ease-in-out w-[30px] h-[30px] rounded-[5px] bg-[#3d4750] hover:bg-[#6c7fd8] capitalize flex items-center justify-center text-[15px] leading-[20px] text-[#686e7d] relative break-all font-normal"><i className="ri-facebook-fill text-[16px] text-[#fff]"></i></Link>
                                             </li>
                                             <li className="bb-footer-link leading-[1.5] flex items-center pr-[5px]">
-                                                <a href="" className="transition-all duration-[0.3s] ease-in-out w-[30px] h-[30px] rounded-[5px] bg-[#3d4750] hover:bg-[#6c7fd8] capitalize flex items-center justify-center text-[15px] leading-[20px] text-[#686e7d] relative break-all font-normal"><i className="ri-twitter-fill text-[16px] text-[#fff]"></i></a>
+                                                <Link to="/" className="transition-all duration-[0.3s] ease-in-out w-[30px] h-[30px] rounded-[5px] bg-[#3d4750] hover:bg-[#6c7fd8] capitalize flex items-center justify-center text-[15px] leading-[20px] text-[#686e7d] relative break-all font-normal"><i className="ri-twitter-fill text-[16px] text-[#fff]"></i></Link>
                                             </li>
                                             <li className="bb-footer-link leading-[1.5] flex items-center pr-[5px]">
-                                                <a href="" className="transition-all duration-[0.3s] ease-in-out w-[30px] h-[30px] rounded-[5px] bg-[#3d4750] hover:bg-[#6c7fd8] capitalize flex items-center justify-center text-[15px] leading-[20px] text-[#686e7d] relative break-all font-normal"><i className="ri-linkedin-fill text-[16px] text-[#fff]"></i></a>
+                                                <Link to="/" className="transition-all duration-[0.3s] ease-in-out w-[30px] h-[30px] rounded-[5px] bg-[#3d4750] hover:bg-[#6c7fd8] capitalize flex items-center justify-center text-[15px] leading-[20px] text-[#686e7d] relative break-all font-normal"><i className="ri-linkedin-fill text-[16px] text-[#fff]"></i></Link>
                                             </li>
                                             <li className="bb-footer-link leading-[1.5] flex items-center pr-[5px]">
-                                                <a href="" className="transition-all duration-[0.3s] ease-in-out w-[30px] h-[30px] rounded-[5px] bg-[#3d4750] hover:bg-[#6c7fd8] capitalize flex items-center justify-center text-[15px] leading-[20px] text-[#686e7d] relative break-all font-normal"><i className="ri-instagram-line text-[16px] text-[#fff]"></i></a>
+                                                <Link to="/" className="transition-all duration-[0.3s] ease-in-out w-[30px] h-[30px] rounded-[5px] bg-[#3d4750] hover:bg-[#6c7fd8] capitalize flex items-center justify-center text-[15px] leading-[20px] text-[#686e7d] relative break-all font-normal"><i className="ri-instagram-line text-[16px] text-[#fff]"></i></Link>
                                             </li>
                                         </ul>
                                     </div>
@@ -161,7 +138,7 @@ function FooterTop() {
                         <div className="footer-copy w-full mb-[15px]">
                             <div className="footer-bottom-copy text-center">
                                 <div className="bb-copy text-[#686e7d] text-[13px] tracking-[1px] text-center font-normal leading-[2]">Copyright © <span className="text-[#686e7d] text-[13px] tracking-[1px] text-center font-normal" id="copyright_year"></span>
-                                    <a className="site-name transition-all duration-[0.3s] ease-in-out font-medium text-[#6c7fd8] hover:text-[#3d4750] font-Poppins text-[15px] leading-[28px] tracking-[0.03rem]" href="index.html">BSS Cart</a> all rights reserved.
+                                    <Link className="site-name transition-all duration-[0.3s] ease-in-out font-medium text-[#6c7fd8] hover:text-[#3d4750] font-Poppins text-[15px] leading-[28px] tracking-[0.03rem]" to="/">BSS Cart</Link> all rights reserved.
                                 </div>
                             </div>
                         </div>

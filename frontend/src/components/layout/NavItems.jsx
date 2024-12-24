@@ -19,26 +19,26 @@ const menuItems = [
         dropdown: [
         {
             label: "Fruits & Vegetables",
-            url: "/groceries/fruits-vegetables",
+            url: "/",
             subDropdown: [
-            { label: "Fresh Fruits", url: "/groceries/fruits-vegetables/fruits" },
-            { label: "Fresh Vegetables", url: "/groceries/fruits-vegetables/vegetables" },
+            { label: "Fresh Fruits", url: "/" },
+            { label: "Fresh Vegetables", url: "/" },
             ],
         },
         {
             label: "Beverages",
-            url: "/groceries/beverages",
+            url: "/",
             subDropdown: [
-            { label: "Juices", url: "/groceries/beverages/juices" },
-            { label: "Soft Drinks", url: "/groceries/beverages/soft-drinks" },
+            { label: "Juices", url: "/" },
+            { label: "Soft Drinks", url: "/" },
             ],
         },
         {
             label: "Snacks",
-            url: "/groceries/snacks",
+            url: "/",
             subDropdown: [
-            { label: "Chips", url: "/groceries/snacks/chips" },
-            { label: "Cookies", url: "/groceries/snacks/cookies" },
+            { label: "Chips", url: "/" },
+            { label: "Cookies", url: "/" },
             ],
         },
         ],
@@ -49,38 +49,38 @@ const menuItems = [
         dropdown: [
         {
             label: "Gold",
-            url: "/jewelry/gold",
+            url: "/",
             subDropdown: [
-            { label: "Necklaces", url: "/jewelry/gold/necklaces" },
-            { label: "Earrings", url: "/jewelry/gold/earrings" },
+            { label: "Necklaces", url: "/" },
+            { label: "Earrings", url: "/" },
             ],
         },
         {
             label: "Silver",
-            url: "/jewelry/silver",
+            url: "/",
             subDropdown: [
-            { label: "Bracelets", url: "/jewelry/silver/bracelets" },
-            { label: "Rings", url: "/jewelry/silver/rings" },
+            { label: "Bracelets", url: "/" },
+            { label: "Rings", url: "/" },
             ],
         },
         {
             label: "Diamonds",
-            url: "/jewelry/diamonds",
+            url: "/",
             subDropdown: [
-            { label: "Rings", url: "/jewelry/diamonds/rings" },
-            { label: "Pendants", url: "/jewelry/diamonds/pendants" },
+            { label: "Rings", url: "/" },
+            { label: "Pendants", url: "/" },
             ],
         },
         ],
     },
     {
         label: "Offers",
-        url: "/offers",
+        url: "/",
         dropdown: [],
     },
     {
         label: "Contact Us",
-        url: "/contact",
+        url: "/",
         dropdown: [],
     },
 ];
