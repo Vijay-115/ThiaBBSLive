@@ -9,7 +9,7 @@ function FooterTop() {
                     <div className="flex flex-wrap w-full max-[991px]:mb-[-30px]" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="200">
                         <div className="min-[992px]:w-[25%] max-[991px]:w-full w-full px-[12px] bb-footer-toggle bb-footer-cat">
                             <div className="bb-footer-widget bb-footer-company flex flex-col max-[991px]:mb-[24px]">
-                                <img src="/img/logo/thaiworldLogo.png" className="bb-footer-logo max-w-[144px] mb-[10px] max-[767px]:max-w-[100px]" alt="footer logo" />
+                                <Link to="/"><img src="/img/logo/bbscartLogo.png" className="bb-footer-logo max-w-[144px] mb-[10px] max-[767px]:max-w-[100px]" alt="footer logo" /></Link>
                                 <p className="bb-footer-detail max-w-[400px] mb-[30px] p-[0] font-Poppins text-[14px] leading-[27px] font-normal text-[#686e7d] inline-block relative max-[1399px]:text-[15px] max-[1199px]:text-[14px]">BSS Cart is the biggest market of grocery products. Get
                                     your daily needs from our store.</p>
                                 <div className="bb-app-store m-[-7px] flex flex-wrap">
@@ -67,7 +67,7 @@ function FooterTop() {
                                             <Link to="/" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-[#686e7d] hover:text-[#6c7fd8] mb-[0] inline-block break-all tracking-[0] font-normal">Sign In</Link>
                                         </li>
                                         <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
-                                            <Link to="/" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-[#686e7d] hover:text-[#6c7fd8] mb-[0] inline-block break-all tracking-[0] font-normal">View Cart</Link>
+                                            <Link to="/cart" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-[#686e7d] hover:text-[#6c7fd8] mb-[0] inline-block break-all tracking-[0] font-normal">View Cart</Link>
                                         </li>
                                         <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
                                             <Link to="/" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-[#686e7d] hover:text-[#6c7fd8] mb-[0] inline-block break-all tracking-[0] font-normal">Return Policy</Link>
