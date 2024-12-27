@@ -3,11 +3,13 @@ import { useDispatch, useSelector } from "react-redux"; // Import Redux hooks
 import { Link } from "react-router-dom"; // Import Link for navigation
 import { addToCart, updateQuantity } from "../../slice/cartSlice";
 import { toast } from 'react-toastify';
+import { addToWishlist, removeFromWishlist } from "../../slice/wishlistSlice";
 
 function ProductlistItem({ type, product }) {
   const [quantities, setQuantities] = useState({}); // State to manage product quantities
   const dispatch = useDispatch(); // Redux dispatch function
   const cartItems = useSelector((state) => state.cart.items); // Get cart items from Redux state
+  const wishlistItems = useSelector((state) => state.wishlist.items); // Get wishlist items from Redux state
 
   // Handle increment
   const handleIncrement = () => {
@@ -61,6 +63,20 @@ function ProductlistItem({ type, product }) {
     toast.success(`${product.title} added to cart!`);
   };
 
+  // Handle adding to cart
+  const handleToggleWishlist = (id) => {
+    const existingCartItem = Object.values(wishlistItems).find(
+        (item) => item.product.id === id
+    );
+    if (existingCartItem) {
+        dispatch(removeFromWishlist({ productId: id })); // Pass productId as part of an object
+        toast.error(`Removed from Wishlist!`);
+    } else {
+        dispatch(addToWishlist({ product }));
+        toast.success(`${product.title} added to Wishlist!`);
+    }
+  };
+
   return (
     <div
       key={product.id}
@@ -72,8 +88,12 @@ function ProductlistItem({ type, product }) {
           alt={product.title}
           className="w-[200px] h-[200px] object-cover mx-auto w-full rounded-sm"
         />
-        <div className="wishlist-sec w-[30px] h-[30px] group absolute top-0 right-0 rounded-full flex items-center justify-center border-[1.5px] border-red-600 bg-white hover:bg-red-600">
-          <i className="ri-heart-line text-red-600 group-hover:text-white"></i>
+        <div onClick={()=> handleToggleWishlist(product.id)} className={`wishlist-sec w-[30px] h-[30px] group absolute top-0 right-0 rounded-full flex items-center justify-center border-[1.5px] border-red-600 ${Object.values(wishlistItems).find(
+      (item) => item.product.id === product.id
+    ) ? 'bg-red-600 hover:bg-white' : 'bg-white hover:bg-red-600'}`}>
+          <i className={`ri-heart-line  ${Object.values(wishlistItems).find(
+      (item) => item.product.id === product.id
+    ) ? 'text-white group-hover:text-red-600' : 'text-red-600 group-hover:text-white'}`}></i>
         </div>
       </div>
       <Link to={`/product/${product.id}`} className="no-underline text-black">
@@ -92,7 +112,17 @@ function ProductlistItem({ type, product }) {
       </Link>
       <div className="product-price text-sm font-bold">Rs {product.price}</div>
       <div className="product-rating text-xs font-medium">
-        ⭐ {product.rating?.rate || "N/A"}
+      {
+        Array.from({ length: 5 }).map((_, index) => (
+          <i
+            key={index}
+            className={`ri-star-fill float-left text-[15px] mr-[3px] ${
+              index < product.rating ? 'text-[#e7d52e]' : 'text-[#777]'
+            }`}
+          ></i>
+        ))
+      }
+       / {product.rating || "N/A"}
       </div>
       <div className="product-cart flex flex-row">
         <div className="product-cart-qtysec flex flex-row w-[75%] md:w-[50%]">

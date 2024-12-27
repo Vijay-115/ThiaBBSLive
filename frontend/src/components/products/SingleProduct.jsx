@@ -3,38 +3,47 @@ import SingleProductGallery from './SingleProductGallery';
 import { useParams } from 'react-router-dom';
 import Button from '../layout/Button';
 import ProductList from './ProductList';
+import { addToCart, updateQuantity } from '../../slice/cartSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
 
 function SingleProduct() {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [activeTab, setActiveTab] = useState("detail");
   const [weight, setWeight] = useState("250g");
-  const [quantities, setQuantities] = useState({}); // To manage quantities for each product
+  const [quantities, setQuantities] = useState(1); // To manage quantities for each product
+  const dispatch = useDispatch(); // Redux dispatch function
+  // Handle increment
+      const handleIncrement = (prodId) => {
+          const currentQuantity = quantities || 1;
+          const newQuantity = currentQuantity + 1;
+          setQuantities(newQuantity);
+      };
   
-    // Function to handle increment
-    const handleIncrement = (id) => {
-      setQuantities((prevQuantities) => ({
-        ...prevQuantities,
-        [id]: (prevQuantities[id] || 1) + 1,
-      }));
-    };
+      // Handle decrement
+      const handleDecrement = (prodId) => {
+          const currentQuantity = quantities || 1;
+          const newQuantity = Math.max(currentQuantity - 1, 1);
+          setQuantities(newQuantity);
+      };
   
-    // Function to handle decrement
-    const handleDecrement = (id) => {
-      setQuantities((prevQuantities) => ({
-        ...prevQuantities,
-        [id]: Math.max((prevQuantities[id] || 1) - 1, 1),
-      }));
-    };
-  
-    // Function to handle manual input
-    const handleInputChange = (id, value) => {
+    // Handle input change
+    const handleInputChange = (value, prodId) => {
       if (/^\d*$/.test(value)) {
-        setQuantities((prevQuantities) => ({
-          ...prevQuantities,
-          [id]: value === "" ? 1 : parseInt(value, 10),
-        }));
+        const newQuantity = value === "" ? 1 : parseInt(value, 10);
+        setQuantities(newQuantity);
       }
+    };
+  
+    // Handle adding to cart
+    const handleAddToCart = () => {
+      const initialQuantity = quantities || 1;
+  
+      dispatch(addToCart({ product, quantity: initialQuantity }));
+      setQuantities(1);
+      // Display toast notification
+      toast.success(`${product.title} added to cart!`);
     };
 
   // Fetch product from API
@@ -136,7 +145,7 @@ function SingleProduct() {
                     product.reviews.map((review,index)=>(                      
                       <div key={index} className="reviews-bb-box flex mb-[24px] max-[575px]:flex-col">
                           <div className="inner-image mr-[12px] max-[575px]:mr-[0] max-[575px]:mb-[12px]">
-                              <img src="/img/reviews/1.jpg" alt="img-1" className="w-[50px] h-[50px] max-w-[50px] rounded-[10px]"/>
+                              <img src={`/img/review/${index % 2 !== 0 ? '1' : '2'}.jpg`} alt="img-1" className="w-[50px] h-[50px] max-w-[50px] rounded-[10px]"/>
                           </div>
                           <div className="inner-contact">
                               <h4 className="font-quicksand leading-[1.2] tracking-[0.03rem] mb-[5px] text-[16px] font-bold text-[#3d4750]">{review.reviewerName}</h4>
@@ -146,7 +155,7 @@ function SingleProduct() {
                                   <i
                                     key={index}
                                     className={`ri-star-fill float-left text-[15px] mr-[3px] ${
-                                      index < review.rating ? 'text-[#fea99a]' : 'text-[#777]'
+                                      index < review.rating ? 'text-[#e7d52e]' : 'text-[#777]'
                                     }`}
                                   ></i>
                                 ))
@@ -163,10 +172,10 @@ function SingleProduct() {
                   <div className="bb-review-rating flex mb-[12px]">
                       <span className="pr-[10px] font-Poppins text-[15px] font-semibold leading-[26px] tracking-[0.02rem] text-[#3d4750]">Your ratting :</span>
                       <div className="bb-pro-rating">
-                          <i className="ri-star-fill float-left text-[15px] mr-[3px] text-[#fea99a]"></i>
-                          <i className="ri-star-fill float-left text-[15px] mr-[3px] text-[#fea99a]"></i>
-                          <i className="ri-star-fill float-left text-[15px] mr-[3px] text-[#fea99a]"></i>
-                          <i className="ri-star-fill float-left text-[15px] mr-[3px] text-[#fea99a]"></i>
+                          <i className="ri-star-fill float-left text-[15px] mr-[3px] text-[#e7d52e]"></i>
+                          <i className="ri-star-fill float-left text-[15px] mr-[3px] text-[#e7d52e]"></i>
+                          <i className="ri-star-fill float-left text-[15px] mr-[3px] text-[#e7d52e]"></i>
+                          <i className="ri-star-fill float-left text-[15px] mr-[3px] text-[#e7d52e]"></i>
                           <i className="ri-star-line float-left text-[15px] mr-[3px] text-[#777]"></i>
                       </div>
                   </div>
@@ -207,16 +216,25 @@ function SingleProduct() {
                 {/* Right Section: Product Details */}
                 <div className="min-[992px]:w-[58.33%] w-full px-[12px] mb-[24px]">
                   <div className="bb-single-pro-contact">
-                    <div className="bb-sub-title mb-[20px]">
+                    <div className="bb-sub-title mb-[10px]">
                       <h4 className="font-quicksand text-[22px] tracking-[0.03rem] font-bold leading-[1.2] text-[#3d4750]">
                         {product.title}
                       </h4>
                     </div>
-                    <div className="bb-single-rating mb-[12px]">
-                      <span className="bb-pro-rating mr-[10px]">
-                        <i className="ri-star-fill float-left text-[15px] mr-[3px] text-[#fea99a]"></i>
-                        {product.rating}
-                      </span>
+                    <div className="bb-single-rating mb-[8px]">
+                      <div className='flex'>                     
+                      {
+                        Array.from({ length: 5 }).map((_, index) => (
+                          <i
+                            key={index}
+                            className={`ri-star-fill float-left text-[15px] mr-[3px] ${
+                              index < product.rating ? 'text-[#e7d52e]' : 'text-[#777]'
+                            }`}
+                          ></i>
+                        ))
+                      }
+                      <span className="bb-pro-rating mr-[10px]"> / {product.rating}</span> 
+                      </div>
                     </div>
                     <p className="font-Poppins text-[15px] font-light leading-[28px] tracking-[0.03rem]">
                       {product.description}
@@ -312,8 +330,8 @@ function SingleProduct() {
                         <input
                           className="w-1/3 appearance-none p-0 text-center"
                           type="text"
-                          value={quantities[product.id] || 1}
-                          onChange={(e) => handleInputChange(product.id, e.target.value)}
+                          value={quantities || 1}
+                          onChange={(e) => handleInputChange(e.target.value,product.id)}
                         />
                         <button
                           className="w-1/3"
@@ -323,7 +341,7 @@ function SingleProduct() {
                         </button>
                       </div>
                       <div className="cart-btn w-[25%] md:w-[50%]">
-                        <button className="hidden md:block text-xs w-[90%] float-right py-2 px-1 text-center bg-blue-600 text-white rounded-md hover:bg-blue-800 transition-colors">
+                        <button onClick={handleAddToCart} className="hidden md:block text-xs w-[90%] float-right py-2 px-1 text-center bg-blue-600 text-white rounded-md hover:bg-blue-800 transition-colors">
                           Add to Cart
                         </button>
                         <div className="w-[30px] sm:w-[50px] md:hidden mx-auto flex justify-center bg-blue-400 p-2 px-4 rounded-md">

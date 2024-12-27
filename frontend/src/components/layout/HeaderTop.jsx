@@ -6,6 +6,8 @@ import { Link } from "react-router-dom";
 function HeaderTop (props) {
 const cartItems = useSelector((state) => state.cart.items);
 const cartCount = Object.values(cartItems).length;
+const wishItems = useSelector((state) => state.wishlist.items);
+const wishCount = Object.values(wishItems).length;
 const [cartPopup,setCartPopup] = useState(false);  
   return (
         <>
@@ -73,7 +75,7 @@ const [cartPopup,setCartPopup] = useState(false);
                                                     </svg>
                                                 </div>
                                                 <div className="bb-btn-desc flex flex-col ml-[10px] max-[1199px]:hidden">
-                                                    <span className="bb-btn-title font-Poppins transition-all duration-[0.3s] ease-in-out text-[12px] leading-[1] text-[#3d4750] mb-[4px] tracking-[0.6px] capitalize font-medium whitespace-nowrap"><b className="bb-wishlist-count">3</b> items</span>
+                                                    <span className="bb-btn-title font-Poppins transition-all duration-[0.3s] ease-in-out text-[12px] leading-[1] text-[#3d4750] mb-[4px] tracking-[0.6px] capitalize font-medium whitespace-nowrap"><b className="bb-wishlist-count">{wishCount}</b> items</span>
                                                     <span className="bb-btn-stitle font-Poppins transition-all duration-[0.3s] ease-in-out text-[14px] leading-[16px] font-semibold text-[#3d4750]  tracking-[0.03rem] whitespace-nowrap">Wishlist</span>
                                                 </div>
                                             </a>
