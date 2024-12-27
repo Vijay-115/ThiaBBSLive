@@ -1,33 +1,64 @@
 import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux"; // Import Redux hooks
 import { Link } from "react-router-dom"; // Import Link for navigation
+import { addToCart, updateQuantity } from "../../slice/cartSlice";
+import { toast } from 'react-toastify';
 
 function ProductlistItem({ type, product }) {
-  const [quantities, setQuantities] = useState({}); // To manage quantities for each product
+  const [quantities, setQuantities] = useState({}); // State to manage product quantities
+  const dispatch = useDispatch(); // Redux dispatch function
+  const cartItems = useSelector((state) => state.cart.items); // Get cart items from Redux state
 
-  // Function to handle increment
-  const handleIncrement = (id) => {
-    setQuantities((prevQuantities) => ({
-      ...prevQuantities,
-      [id]: (prevQuantities[id] || 1) + 1,
+  // Handle increment
+  const handleIncrement = () => {
+    const newQuantity = (quantities[product.id] || 1) + 1;
+
+    setQuantities((prev) => ({
+      ...prev,
+      [product.id]: newQuantity,
     }));
+
+    dispatch(updateQuantity({ productId: product.id, quantity: newQuantity }));
   };
 
-  // Function to handle decrement
-  const handleDecrement = (id) => {
-    setQuantities((prevQuantities) => ({
-      ...prevQuantities,
-      [id]: Math.max((prevQuantities[id] || 1) - 1, 1),
+  // Handle decrement
+  const handleDecrement = () => {
+    const newQuantity = Math.max((quantities[product.id] || 1) - 1, 1);
+
+    setQuantities((prev) => ({
+      ...prev,
+      [product.id]: newQuantity,
     }));
+
+    dispatch(updateQuantity({ productId: product.id, quantity: newQuantity }));
   };
 
-  // Function to handle manual input
-  const handleInputChange = (id, value) => {
+  // Handle input change
+  const handleInputChange = (value) => {
     if (/^\d*$/.test(value)) {
-      setQuantities((prevQuantities) => ({
-        ...prevQuantities,
-        [id]: value === "" ? 1 : parseInt(value, 10),
+      const newQuantity = value === "" ? 1 : parseInt(value, 10);
+
+      setQuantities((prev) => ({
+        ...prev,
+        [product.id]: newQuantity,
       }));
+
+      dispatch(updateQuantity({ productId: product.id, quantity: newQuantity }));
     }
+  };
+
+  // Handle adding to cart
+  const handleAddToCart = () => {
+    const initialQuantity = quantities[product.id] || 1;
+
+    dispatch(addToCart({ product, quantity: initialQuantity }));
+
+    setQuantities((prev) => ({
+      ...prev,
+      [product.id]: initialQuantity,
+    }));
+    // Display toast notification
+    toast.success(`${product.title} added to cart!`);
   };
 
   return (
@@ -51,8 +82,8 @@ function ProductlistItem({ type, product }) {
             overflow: "hidden",
             textOverflow: "ellipsis",
             display: "-webkit-box",
-            WebkitLineClamp: 1, // Limits to 1 line
-            WebkitBoxOrient: "vertical", // Required for -webkit-line-clamp to work
+            WebkitLineClamp: 1,
+            WebkitBoxOrient: "vertical",
           }}
           className="product-title font-quicksand text-sm leading-4 font-semibold mt-1 hover:text-blue-500"
         >
@@ -65,27 +96,24 @@ function ProductlistItem({ type, product }) {
       </div>
       <div className="product-cart flex flex-row">
         <div className="product-cart-qtysec flex flex-row w-[75%] md:w-[50%]">
-          <button
-            className="w-1/3"
-            onClick={() => handleIncrement(product.id)}
-          >
+          <button className="w-1/3" onClick={handleIncrement}>
             +
           </button>
           <input
             className="w-1/3 appearance-none p-0 text-center"
             type="text"
             value={quantities[product.id] || 1}
-            onChange={(e) => handleInputChange(product.id, e.target.value)}
+            onChange={(e) => handleInputChange(e.target.value)}
           />
-          <button
-            className="w-1/3"
-            onClick={() => handleDecrement(product.id)}
-          >
+          <button className="w-1/3" onClick={handleDecrement}>
             -
           </button>
         </div>
         <div className="cart-btn w-[25%] md:w-[50%]">
-          <button className="hidden md:block text-xs w-[90%] float-right py-2 px-1 text-center bg-blue-600 text-white rounded-md hover:bg-blue-800 transition-colors">
+          <button
+            className="hidden md:block text-xs w-[90%] float-right py-2 px-1 text-center bg-blue-600 text-white rounded-md hover:bg-blue-800 transition-colors"
+            onClick={handleAddToCart}
+          >
             Add to Cart
           </button>
           <div className="w-[30px] sm:w-[50px] md:hidden mx-auto flex justify-center bg-blue-400 p-2 px-4 rounded-md">
