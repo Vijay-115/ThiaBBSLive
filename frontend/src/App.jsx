@@ -15,6 +15,14 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
 
+// authentication 
+import Login from './components/auth/Login';
+import Register from './components/auth/Register';
+import Forgot from './components/auth/ForgotPassword';
+import ResetPassword from "./components/auth/ResetPassword"
+
+import { Toaster } from 'react-hot-toast';
+
 function App() {  
     const [menuOpen, setMenuOpen] = useState(false);
 
@@ -40,10 +48,15 @@ function App() {
                 <Route path="/product/:id" element={<SingleProductPage />} />
                 <Route path="/product/category/:category" element={<ProductsCategoryPage />} />
                 <Route path="/cart" element={<CartPage />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/forgot-password" element={<Forgot />} />
+                <Route path="/reset-password/:token" element={<ResetPassword />} />
                 {/* Add additional routes as needed */}
             </Routes>
             <ToastContainer />
             <FooterTop />
+            <Toaster position="top-right" />
         </Router>
     );
 }
