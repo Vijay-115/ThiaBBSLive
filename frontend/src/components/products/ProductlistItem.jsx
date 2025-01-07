@@ -2,10 +2,10 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux"; // Import Redux hooks
 import { Link } from "react-router-dom"; // Import Link for navigation
 import { addToCart, updateQuantity } from "../../slice/cartSlice";
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 import { addToWishlist, removeFromWishlist } from "../../slice/wishlistSlice";
 
-function ProductlistItem({ type, product }) {
+function ProductlistItem({ type, product, filter }) {
   const [quantities, setQuantities] = useState({}); // State to manage product quantities
   const dispatch = useDispatch(); // Redux dispatch function
   const cartItems = useSelector((state) => state.cart.items); // Get cart items from Redux state
@@ -69,8 +69,8 @@ function ProductlistItem({ type, product }) {
         (item) => item.product.id === id
     );
     if (existingCartItem) {
-        dispatch(removeFromWishlist({ productId: id })); // Pass productId as part of an object
-        toast.error(`Removed from Wishlist!`);
+        dispatch(removeFromWishlist( id )); // Pass productId as part of an object
+        toast.error(`${product.title} Removed from Wishlist!`);
     } else {
         dispatch(addToWishlist({ product }));
         toast.success(`${product.title} added to Wishlist!`);
@@ -105,13 +105,13 @@ function ProductlistItem({ type, product }) {
             WebkitLineClamp: 1,
             WebkitBoxOrient: "vertical",
           }}
-          className="product-title font-quicksand text-sm leading-4 font-semibold mt-1 hover:text-blue-500"
+          className="product-title font-quicksand text-sm leading-4 font-semibold mt-1 text-secondary hover:text-primary"
         >
           {product.title}
         </h5>
       </Link>
-      <div className="product-price text-sm font-bold">Rs {product.price}</div>
-      <div className="product-rating text-xs font-medium">
+      <div className="product-price text-secondary text-sm font-bold">Rs {product.price}</div>
+      <div className="product-rating text-secondary text-xs font-medium mb-1">
       {
         Array.from({ length: 5 }).map((_, index) => (
           <i
@@ -140,15 +140,26 @@ function ProductlistItem({ type, product }) {
           </button>
         </div>
         <div className="cart-btn w-[25%] md:w-[50%]">
-          <button
-            className="hidden md:block text-xs w-[90%] float-right py-2 px-1 text-center bg-blue-600 text-white rounded-md hover:bg-blue-800 transition-colors"
-            onClick={handleAddToCart}
-          >
-            Add to Cart
-          </button>
-          <div className="w-[30px] sm:w-[50px] md:hidden mx-auto flex justify-center bg-blue-400 p-2 px-4 rounded-md">
-            <i className="text-white text-center ri-shopping-cart-2-line"></i>
-          </div>
+          {filter ? (
+            // Mobile cart button
+            <div className="w-[30px] sm:w-[50px] ml-auto flex justify-end bg-primary p-2 px-4 rounded-md">
+              <i onClick={handleAddToCart} className="text-white text-center ri-shopping-cart-2-line"></i>
+            </div>
+          ) : (
+            <>
+              {/* Desktop "Add to Cart" button */}
+              <button
+                className="hidden md:block text-xs w-[90%] float-right py-2 px-1 text-center rounded-md border border-solid border-primary text-white bg-primary hover:bg-transparent hover:text-secondary transition-colors"
+                onClick={handleAddToCart}
+              >
+                Add to Cart
+              </button>
+              {/* Mobile cart button */}
+              <div className="w-[30px] sm:w-[50px] md:hidden mx-auto flex justify-center bg-primary p-2 px-4 rounded-md">
+                <i onClick={handleAddToCart} className="text-white text-center ri-shopping-cart-2-line"></i>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

@@ -11,8 +11,8 @@ function Services() {
                             <img src="/img/services/1.png" alt="services-1" className="w-[50px]"/>
                         </div>
                         <div className="services-contact">
-                            <h4 className="font-quicksand mb-[8px] text-[18px] font-bold text-[#3d4750] leading-[1.2] tracking-[0.03rem]">Free Shipping</h4>
-                            <p className="font-Poppins font-light text-[14px] leading-[20px] text-[#686e7d] tracking-[0.03rem]">Free shipping on all Us order or above $200</p>
+                            <h4 className="font-quicksand mb-[8px] text-[18px] font-bold text-secondary leading-[1.2] tracking-[0.03rem]">Free Shipping</h4>
+                            <p className="font-Poppins font-light text-[14px] leading-[20px] text-secondary tracking-[0.03rem]">Free shipping on all Us order or above $200</p>
                         </div>
                     </div>
                 </div>
@@ -22,8 +22,8 @@ function Services() {
                             <img src="/img/services/2.png" alt="services-2" className="w-[50px]"/>
                         </div>
                         <div className="services-contact">
-                            <h4 className="font-quicksand mb-[8px] text-[18px] font-bold text-[#3d4750] leading-[1.2] tracking-[0.03rem]">24x7 Support</h4>
-                            <p className="font-Poppins font-light text-[14px] leading-[20px] text-[#686e7d] tracking-[0.03rem]">Contact us 24 hours a day, 7 days a week</p>
+                            <h4 className="font-quicksand mb-[8px] text-[18px] font-bold text-secondary leading-[1.2] tracking-[0.03rem]">24x7 Support</h4>
+                            <p className="font-Poppins font-light text-[14px] leading-[20px] text-secondary tracking-[0.03rem]">Contact us 24 hours a day, 7 days a week</p>
                         </div>
                     </div>
                 </div>
@@ -33,8 +33,8 @@ function Services() {
                             <img src="/img/services/3.png" alt="services-3" className="w-[50px]"/>
                         </div>
                         <div className="services-contact">
-                            <h4 className="font-quicksand mb-[8px] text-[18px] font-bold text-[#3d4750] leading-[1.2] tracking-[0.03rem]">30 Days Return</h4>
-                            <p className="font-Poppins font-light text-[14px] leading-[20px] text-[#686e7d] tracking-[0.03rem]">Simply return it within 30 days for an exchange</p>
+                            <h4 className="font-quicksand mb-[8px] text-[18px] font-bold text-secondary leading-[1.2] tracking-[0.03rem]">30 Days Return</h4>
+                            <p className="font-Poppins font-light text-[14px] leading-[20px] text-secondary tracking-[0.03rem]">Simply return it within 30 days for an exchange</p>
                         </div>
                     </div>
                 </div>
@@ -44,8 +44,8 @@ function Services() {
                             <img src="/img/services/4.png" alt="services-4" className="w-[50px]"/>
                         </div>
                         <div className="services-contact">
-                            <h4 className="font-quicksand mb-[8px] text-[18px] font-bold text-[#3d4750] leading-[1.2] tracking-[0.03rem]">Payment Secure</h4>
-                            <p className="font-Poppins font-light text-[14px] leading-[20px] text-[#686e7d] tracking-[0.03rem]">Contact us 24 hours a day, 7 days a week</p>
+                            <h4 className="font-quicksand mb-[8px] text-[18px] font-bold text-secondary leading-[1.2] tracking-[0.03rem]">Payment Secure</h4>
+                            <p className="font-Poppins font-light text-[14px] leading-[20px] text-secondary tracking-[0.03rem]">Contact us 24 hours a day, 7 days a week</p>
                         </div>
                     </div>
                 </div>

@@ -19,7 +19,7 @@ const wishlistSlice = createSlice({
     },    
     removeFromWishlist: (state, action) => {
         console.log("Action Payload:", action.payload); // Debugging
-        const productId = String(action.payload.productId); // Access productId from the payload
+        const productId = String(action.payload); // Access productId from the payload
         console.log('productId - ', JSON.stringify(productId));
 
         if (state.items[productId]) {

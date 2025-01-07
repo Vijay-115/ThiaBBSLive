@@ -30,7 +30,7 @@ const CustomNextArrow = (props) => {
   );
 };
 
-function ProductList({ heading,type,category }) {
+function ProductList({ heading,type,category,filter  }) {
   const [products, setProducts] = useState([]);
   const [quantities, setQuantities] = useState({});
 
@@ -99,7 +99,7 @@ function ProductList({ heading,type,category }) {
                 ))}
                 </Slider>
             ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 w-881:grid-cols-4 w-1125:grid-cols-5 gap-2 sm:gap-5 px-4">
+                <div className={`grid grid-cols-2 ${filter ? 'md:grid-cols-3 lg:grid-cols-4' : 'sm:grid-cols-3 w-881:grid-cols-4 w-1125:grid-cols-5'} gap-2 sm:gap-5 px-4`}>
                 {products.map((product) => (
                 <ProductlistItem key={product.id} product={product} />
                 ))}

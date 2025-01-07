@@ -22,6 +22,8 @@ import Forgot from './components/auth/ForgotPassword';
 import ResetPassword from "./components/auth/ResetPassword"
 
 import { Toaster } from 'react-hot-toast';
+import CheckoutPage from './components/pages/CheckoutPage';
+import WishlistPage from './components/pages/WishlistPage';
 
 function App() {  
     const [menuOpen, setMenuOpen] = useState(false);
@@ -52,6 +54,8 @@ function App() {
                 <Route path="/register" element={<Register />} />
                 <Route path="/forgot-password" element={<Forgot />} />
                 <Route path="/reset-password/:token" element={<ResetPassword />} />
+                <Route path="/checkout" element={<CheckoutPage />} />
+                <Route path="/wishlist" element={<WishlistPage />} />
                 {/* Add additional routes as needed */}
             </Routes>
             <ToastContainer />

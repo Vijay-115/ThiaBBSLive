@@ -97,7 +97,7 @@ const menuItems = [
                 menu.dropdown.length === 0 
                     ? <div key={index} className='nav-items'>
                         <Link to={menu.url} className="no-underline">
-                            <span className='hover:text-blue-500 transition ease-in-out delay-100' >{menu.label}</span>
+                            <span className='text-secondary hover:text-primary transition ease-in-out delay-100' >{menu.label}</span>
                         </Link>
                       </div> 
                     : <div key={index} className='nav-items dropdown group relative'>
@@ -108,12 +108,12 @@ const menuItems = [
                             setSubHeading('');
                             }
                         } 
-                        className='hover:text-blue-500 transition ease-in-out delay-100' >
+                        className='text-secondary hover:text-primary transition ease-in-out delay-100' >
                         {menu.label}
                         <i className={`ri-arrow-drop-${heading !== menu.label ? 'down' : 'up'}-line`}></i>
                         </span>
                         </Link>
-                        <div className='hidden md:block bg-blue-500 border-t rounded-2xl opacity-0 invisible h-0 group-hover:h-[20px] group-hover:opacity-[1] group-hover:visible absolute top-[25px] z-[4] w-full transition ease-in-out delay-150'></div>                        
+                        <div className='hidden md:block bg-primary border-t rounded-2xl opacity-0 invisible h-0 group-hover:h-[20px] group-hover:opacity-[1] group-hover:visible absolute top-[25px] z-[4] w-full transition ease-in-out delay-150'></div>                        
                         <div className={`hidded md:grid dropdown-item bg-white rounded-2xl shadow-md md:p-5 absolute top-[35px] left-[-30px] z-10 opacity-0 invisible h-0 md:group-hover:h-auto md:group-hover:opacity-[1] md:group-hover:visible transition ease-in-out delay-100`} 
                         style={{ minWidth: `${25 * menu.dropdown.length}vH`, gridTemplateColumns: 'repeat('+menu.dropdown.length+',auto)' }}>
                             {

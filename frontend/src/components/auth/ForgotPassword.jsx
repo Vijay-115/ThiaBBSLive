@@ -63,7 +63,7 @@ const Forgot = () => {
                                 <h3 className="dark:text-gray-300">
                                     Don't have an account?
                                     <Link
-                                        className="group text-blue-400 transition-all duration-100 ease-in-out"
+                                        className="group text-primary transition-all duration-100 ease-in-out"
                                         to="/register"
                                     >
                                         <span
@@ -147,7 +147,7 @@ const Forgot = () => {
                                 <p className="cursor-default">
                                     By signing in, you agree to our 
                                     <Link
-                                        className="group text-blue-400 transition-all duration-100 ease-in-out"
+                                        className="group text-primary transition-all duration-100 ease-in-out"
                                         to="/terms"
                                     >
                                         <span
@@ -158,7 +158,7 @@ const Forgot = () => {
                                     </Link>
                                     and 
                                     <Link
-                                        className="group text-blue-400 transition-all duration-100 ease-in-out"
+                                        className="group text-primary transition-all duration-100 ease-in-out"
                                         to="/privacy-policy"
                                     >
                                         <span
