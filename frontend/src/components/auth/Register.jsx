@@ -140,7 +140,7 @@ const Register = () => {
                                 <h3 className="dark:text-gray-300">
                                     Already have an account?
                                     <Link
-                                        className="group text-blue-400 transition-all duration-100 ease-in-out"
+                                        className="group text-primary transition-all duration-100 ease-in-out"
                                         to="/login"
                                     >
                                         <span
@@ -224,7 +224,7 @@ const Register = () => {
                                 <p className="cursor-default">
                                     By signing in, you agree to our
                                     <a
-                                        className="group text-blue-400 transition-all duration-100 ease-in-out"
+                                        className="group text-primary transition-all duration-100 ease-in-out"
                                         href="#"
                                     >
                                         <span
@@ -235,7 +235,7 @@ const Register = () => {
                                     </a>
                                     and
                                     <a
-                                        className="group text-blue-400 transition-all duration-100 ease-in-out"
+                                        className="group text-primary transition-all duration-100 ease-in-out"
                                         href="#"
                                     >
                                         <span

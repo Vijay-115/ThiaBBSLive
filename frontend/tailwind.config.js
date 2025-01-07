@@ -8,8 +8,27 @@ export default {
     extend: {
       colors: {
         logoPrimary: '#dc2043',
+        primary: '#dc2043',
+        secondary: '#002f4b',
+        tertiary: '#0da89c',
         logoSecondary: '#0da89c',
       },
+      borderColor: theme => ({
+        ...theme('colors'),
+        logoPrimary: theme('colors.logoPrimary'),
+        primary: theme('colors.primary'),
+        secondary: theme('colors.secondary'),
+        tertiary: theme('colors.tertiary'),
+        logoSecondary: theme('colors.logoSecondary'),
+      }),
+      textColor: theme => ({
+        ...theme('colors'),
+        logoPrimary: theme('colors.logoPrimary'),
+        primary: theme('colors.primary'),
+        secondary: theme('colors.secondary'),
+        tertiary: theme('colors.tertiary'),
+        logoSecondary: theme('colors.logoSecondary'),
+      }),
     },
     screens: {
       'xs': '480px',
