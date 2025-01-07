@@ -35,7 +35,7 @@ const HeroSection = () => {
                 <p className="offer-text font-quicksand font-bold text-sm lg:text-lg">{slide.offer}</p>
                 <h1 className="hero-title font-quicksand font-bold text-xl lg:text-2xl xl:text-3xl">
                   {slide.title.split("&")[0]}{" "}
-                  <span className="highlighted-text text-blue-400">
+                  <span className="highlighted-text text-primary">
                     {slide.title.split("&")[1]}
                   </span>
                 </h1>

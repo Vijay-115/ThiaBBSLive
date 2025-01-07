@@ -13,8 +13,8 @@ function BannerOne() {
                                 <img src="/img/banner-one/one.png" alt="one" className="max-w-max w-[280px] h-[280px] max-[1399px]:w-[230px] max-[1399px]:h-[230px] max-[1199px]:w-[140px] max-[1199px]:h-[140px] max-[991px]:w-[280px] max-[991px]:h-[280px] max-[767px]:h-[200px] max-[767px]:w-[200px] max-[575px]:w-full max-[575px]:h-[auto] max-[480px]:w-[calc(100%-150px)]"/>
                             </div>
                             <div className="inner-contact max-w-[250px] px-[12px] flex flex-col items-start justify-center max-[480px]:p-[0] max-[480px]:max-w-[100%] max-[480px]:text-center max-[480px]:items-center">
-                                <h5 className="font-quicksand mb-[15px] text-[#3d4750] font-bold tracking-[0.03rem] text-[#3d4750] leading-[1.2] max-[480px]:mb-[2px] text-lg md:text-xl lg:text-2xl">Gold Coins & Jewellery</h5>
-                                <p className="font-Poppins font-medium tracking-[0.03rem] text-[#686e7d] mb-[15px] max-[480px]:mb-[8px] text-sm md:text-md leading-2">The flavour of something special</p>
+                                <h5 className="font-quicksand mb-[15px] text-secondary font-bold tracking-[0.03rem] text-secondary leading-[1.2] max-[480px]:mb-[2px] text-lg md:text-xl lg:text-2xl">Gold Coins & Jewellery</h5>
+                                <p className="font-Poppins font-medium tracking-[0.03rem] text-secondary mb-[15px] max-[480px]:mb-[8px] text-sm md:text-md leading-2">The flavour of something special</p>
                                 <Button link='/product/category/groceries' name='Shop Now'/>
                             </div>
                         </div>
@@ -27,8 +27,8 @@ function BannerOne() {
                                 <img src="/img/banner-one/two.png" alt="two" className="max-w-max w-[280px] h-[280px] max-[1399px]:w-[230px] max-[1399px]:h-[230px] max-[1199px]:w-[140px] max-[1199px]:h-[140px] max-[991px]:w-[280px] max-[991px]:h-[280px] max-[767px]:h-[200px] max-[767px]:w-[200px] max-[575px]:w-full max-[575px]:h-[auto] max-[480px]:w-[calc(100%-150px)]"/>
                             </div>
                             <div className="inner-contact max-w-[250px] px-[12px] flex flex-col items-start justify-center max-[480px]:p-[0] max-[480px]:max-w-[100%] max-[480px]:text-center max-[480px]:items-center">
-                                <h5 className="font-quicksand mb-[15px] text-[#3d4750] font-bold tracking-[0.03rem] text-[#3d4750] leading-[1.2] max-[480px]:mb-[2px] text-lg md:text-xl lg:text-2xl">Fresh Fruits & Vegetables</h5>
-                                <p className="font-Poppins font-medium tracking-[0.03rem] text-[#686e7d] mb-[15px] max-[480px]:mb-[8px] text-sm md:text-md leading-2">A healthy meal for every one</p>
+                                <h5 className="font-quicksand mb-[15px] text-secondary font-bold tracking-[0.03rem] text-secondary leading-[1.2] max-[480px]:mb-[2px] text-lg md:text-xl lg:text-2xl">Fresh Fruits & Vegetables</h5>
+                                <p className="font-Poppins font-medium tracking-[0.03rem] text-secondary mb-[15px] max-[480px]:mb-[8px] text-sm md:text-md leading-2">A healthy meal for every one</p>
                                 <Button link="/product/category/womens-jewellery" name='Shop Now'/>
                             </div>
                         </div>

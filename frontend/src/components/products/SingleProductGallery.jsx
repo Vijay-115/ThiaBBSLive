@@ -80,7 +80,7 @@ function SingleProductGallery({ images }) {
             <div
               key={index}
               className={`px-2 ${
-                currentImage === index ? "border rounded-md border-blue-400" : ""
+                currentImage === index ? "border rounded-md border-primary" : ""
               }`}
               onClick={() => handleThumbnailClick(index)}
             >

@@ -40,7 +40,7 @@ function CartPopup({ cartPopup, setCartPopup }) {
                     <div className="bb-inner-cart relative z-[9] flex flex-col h-full justify-between">
                         <div className="bb-top-contact">
                             <div className="bb-cart-title w-full mb-[20px] flex flex-wrap justify-between">
-                                <h4 className="font-quicksand text-[18px] font-extrabold text-[#3d4750] tracking-[0.03rem] leading-[1.2]">My cart</h4>
+                                <h4 className="font-quicksand text-[18px] font-extrabold text-secondary tracking-[0.03rem] leading-[1.2]">My cart</h4>
                                 <button onClick={() => setCartPopup(false)} className="bb-cart-close transition-all duration-[0.3s] ease-in-out w-[16px] h-[20px] absolute top-[-10px] right-[0] bg-[#e04e4eb3] rounded-[10px] cursor-pointer flex items-center" title="Close Cart"><i className="ri-close-line text-white"></i></button>
                             </div>
                         </div>
@@ -49,12 +49,12 @@ function CartPopup({ cartPopup, setCartPopup }) {
                             {cartItems && Object.keys(cartItems).length > 0 ? (
                                 Object.values(cartItems).map(({ product, quantity }) => (
                                 <li key={product.id} className="cart-sidebar-list mb-[24px] p-[10px] flex bg-[#f8f8fb] rounded-[20px] border-[1px] border-solid border-[#eee] relative max-[575px]:p-[10px]">
-                                    <button onClick={() => handleRemovecart(product.id)} className="cart-remove-item transition-all duration-[0.3s] ease-in-out bg-[#3d4750] w-[20px] h-[20px] text-[#fff] absolute top-[-3px] right-[-3px] rounded-[50%] flex items-center justify-center opacity-[0.5] text-[15px]"><i className="ri-close-line"></i></button>
+                                    <button onClick={() => handleRemovecart(product.id)} className="cart-remove-item transition-all duration-[0.3s] ease-in-out bg-secondary w-[20px] h-[20px] text-[#fff] absolute top-[-3px] right-[-3px] rounded-[50%] flex items-center justify-center opacity-[0.5] text-[15px]"><i className="ri-close-line"></i></button>
                                     <img src={product.thumbnail} alt="product-img-1" className="w-[85px] rounded-[10px] border-[1px] border-solid border-[#eee] max-[575px]:w-[50px]"/>
                                     <div className="bb-cart-contact pl-[15px] relative grow-[1] shrink-[0] basis-[70%] overflow-hidden">
-                                        <Link to={`/product/${product.id}`} className="bb-cart-sub-title w-full mb-[8px] font-Poppins tracking-[0.03rem] text-[#3d4750] whitespace-nowrap overflow-hidden text-ellipsis block text-[14px] leading-[18px] font-medium">{product.title}</Link>
-                                        <span className="cart-price mb-[8px] text-[16px] leading-[18px] block font-Poppins text-[#686e7d] font-light tracking-[0.03rem]">
-                                            <span className="new-price px-[3px] text-[14px] leading-[14px] text-[#686e7d] font-bold">₹{product.price}</span>
+                                        <Link to={`/product/${product.id}`} className="bb-cart-sub-title w-full mb-[8px] font-Poppins tracking-[0.03rem] text-secondary whitespace-nowrap overflow-hidden text-ellipsis block text-[14px] leading-[18px] font-medium">{product.title}</Link>
+                                        <span className="cart-price mb-[8px] text-[16px] leading-[18px] block font-Poppins text-secondary font-light tracking-[0.03rem]">
+                                            <span className="new-price px-[3px] text-[14px] leading-[14px] text-secondary font-bold">₹{product.price}</span>
                                         </span>
                                         <div className="qty-plus-minus w-[85px] h-[45px] py-[0px] border-[1px] border-solid border-[#eee] overflow-hidden relative flex items-center justify-between bg-[#fff] rounded-[10px] px-3">
                                             <div className="dec bb-qtybtn cursor-pointer" onClick={() => handleDecrement(product.id)}>-</div>
@@ -66,7 +66,7 @@ function CartPopup({ cartPopup, setCartPopup }) {
                                 ))
                             ): (
                                 <div className="w-full text-center">
-                                    <h3 className="font-Poppins mt-5 text-[16px] text-[#686e7d]">Your cart is empty.</h3>
+                                    <h3 className="font-Poppins mt-5 text-[16px] text-secondary">Your cart is empty.</h3>
                                 </div>
                             )}
                             </ul>
@@ -92,8 +92,8 @@ function CartPopup({ cartPopup, setCartPopup }) {
                                     </table>
                                 </div>
                                 <div className="cart-btn flex justify-between mb-[20px]">
-                                    <button onClick={() => { setCartPopup(false); navigate('/cart'); }} className="bb-btn-1 transition-all duration-[0.3s] ease-in-out font-Poppins leading-[28px] tracking-[0.03rem] py-[5px] px-[15px] text-[14px] font-normal text-[#3d4750] bg-transparent rounded-[10px] border-[1px] border-solid border-[#3d4750] hover:bg-[#6c7fd8] hover:border-[#6c7fd8] hover:text-[#fff]">View Cart</button>
-                                    <Link to="/cart" className="bb-btn-2 transition-all duration-[0.3s] ease-in-out font-Poppins leading-[28px] tracking-[0.03rem] py-[5px] px-[15px] text-[14px] font-normal text-[#fff] bg-[#6c7fd8] rounded-[10px] border-[1px] border-solid border-[#6c7fd8] hover:bg-transparent hover:border-[#3d4750] hover:text-[#3d4750]">Checkout</Link>
+                                    <button onClick={() => { setCartPopup(false); navigate('/cart'); }} className="bb-btn-1 transition-all duration-[0.3s] ease-in-out font-Poppins leading-[28px] tracking-[0.03rem] py-[5px] px-[15px] text-[14px] font-normal text-white rounded-[10px] border-[1px] border-solid border-primary bg-primary hover:bg-transparent hover:text-secondary">View Cart</button>
+                                    <Link to="/checkout" className="bb-btn-2 transition-all duration-[0.3s] ease-in-out font-Poppins leading-[28px] tracking-[0.03rem] py-[5px] px-[15px] text-[14px] font-normal text-[#fff] rounded-[10px] border-[1px] border-solid border-primary bg-primary hover:bg-transparent hover:text-secondary">Checkout</Link>
                                 </div>
                             </div>
                         }

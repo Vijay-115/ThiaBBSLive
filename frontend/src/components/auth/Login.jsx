@@ -107,7 +107,7 @@ const Login = () => {
                                     {errors.lpassword && <div className="text-red-800">{errors.lpassword}</div>}
                                 </div>
                                 <Link
-                                    className="group text-blue-400 transition-all duration-100 ease-in-out"
+                                    className="group text-primary transition-all duration-100 ease-in-out"
                                     to="/forgot-password"
                                 >
                                     <span
@@ -127,7 +127,7 @@ const Login = () => {
                                 <h3 className="dark:text-gray-300">
                                     Don't have an account?
                                     <Link
-                                        className="group text-blue-400 transition-all duration-100 ease-in-out"
+                                        className="group text-primary transition-all duration-100 ease-in-out"
                                         to="/register"
                                     >
                                         <span
@@ -211,7 +211,7 @@ const Login = () => {
                                 <p className="cursor-default">
                                     By signing in, you agree to our
                                     <Link
-                                        className="group text-blue-400 transition-all duration-100 ease-in-out"
+                                        className="group text-primary transition-all duration-100 ease-in-out"
                                         to="/terms"
                                     >
                                         <span
@@ -222,7 +222,7 @@ const Login = () => {
                                     </Link>
                                     and
                                     <Link
-                                        className="group text-blue-400 transition-all duration-100 ease-in-out"
+                                        className="group text-primary transition-all duration-100 ease-in-out"
                                         to="/privacy-policy"
                                     >
                                         <span
