@@ -11,9 +11,6 @@ import FooterTop from './components/layout/FooterTop';
 import SingleProductPage from './components/pages/SingleProductPage';
 import ProductsCategoryPage from './components/pages/ProductsCategoryPage';
 import CartPage from './components/pages/CartPage';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { ToastContainer } from 'react-toastify';
 
 // authentication 
 import Login from './components/auth/Login';
@@ -58,7 +55,6 @@ function App() {
                 <Route path="/wishlist" element={<WishlistPage />} />
                 {/* Add additional routes as needed */}
             </Routes>
-            <ToastContainer />
             <FooterTop />
             <Toaster position="top-right" />
         </Router>
