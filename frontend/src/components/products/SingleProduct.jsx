@@ -5,7 +5,7 @@ import Button from '../layout/Button';
 import ProductList from './ProductList';
 import { addToCart, updateQuantity } from '../../slice/cartSlice';
 import { useDispatch, useSelector } from 'react-redux';
-import { toast } from 'react-toastify';
+import { toast } from 'react-hot-toast';
 
 function SingleProduct() {
   const { id } = useParams();
