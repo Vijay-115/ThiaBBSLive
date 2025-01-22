@@ -36,9 +36,9 @@ const SectionCategory = () => {
   };
 
   return (
-    <section className="category-carousel pb-6 md:pb-12">
+    <section className="category-carousel pb-6 md:pb-12 max-w-[85%] md:max-w-full mx-auto">
       <h2 className="font-quicksand text-center text-lg md:text-xl lg:text-2xl font-bold md:mb-4">Explore Categories</h2>
-      <div className="container mx-auto">
+      <div className="">
         <Slider {...settings}>
           {categories.map((category) => (
             <div key={category.id} className="p-4">
@@ -47,7 +47,7 @@ const SectionCategory = () => {
                 style={{ backgroundColor: category.bgColor }}
               >
                 <div className="category-image mb-4">
-                  <img src={category.icon} alt={category.name} className="w-16 h-16" />
+                  <img src={category.icon} alt={category.name} className="max-w-16 max-h-16 w-full h-full" />
                 </div>
                 <h5 className="text-md md:text-lg font-semibold mb-2">{category.name}</h5>
                 <p className="text-sm text-gray-600">{category.items} items</p>

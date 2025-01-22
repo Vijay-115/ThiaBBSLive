@@ -3,9 +3,9 @@ import React from 'react'
 function Services() {
   return (
     <>
-        <div className="flex flex-wrap justify-between relative items-center mx-auto min-[1400px]:max-w-[1320px] min-[1200px]:max-w-[1140px] min-[992px]:max-w-[960px] min-[768px]:max-w-[720px] min-[576px]:max-w-[540px]">
-            <div className="flex flex-wrap w-full mb-[-24px]">
-                <div className="min-[992px]:w-[25%] min-[768px]:w-[50%] w-full px-[12px] mb-[24px]" data-aos="flip-up" data-aos-duration="1000" data-aos-delay="200">
+        <div className="flex flex-wrap justify-between relative items-center">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 w-full mb-[-24px]">
+                <div className="w-full " data-aos="flip-up" data-aos-duration="1000" data-aos-delay="200">
                     <div className="bb-services-box p-[30px] border-[1px] border-solid border-[#eee] rounded-[20px] text-center">
                         <div className="services-img mb-[20px] flex justify-center">
                             <img src="/img/services/1.png" alt="services-1" className="w-[50px]"/>
@@ -16,7 +16,7 @@ function Services() {
                         </div>
                     </div>
                 </div>
-                <div className="min-[992px]:w-[25%] min-[768px]:w-[50%] w-full px-[12px] mb-[24px]" data-aos="flip-up" data-aos-duration="1000" data-aos-delay="400">
+                <div className="w-full " data-aos="flip-up" data-aos-duration="1000" data-aos-delay="400">
                     <div className="bb-services-box p-[30px] border-[1px] border-solid border-[#eee] rounded-[20px] text-center">
                         <div className="services-img mb-[20px] flex justify-center">
                             <img src="/img/services/2.png" alt="services-2" className="w-[50px]"/>
@@ -27,7 +27,7 @@ function Services() {
                         </div>
                     </div>
                 </div>
-                <div className="min-[992px]:w-[25%] min-[768px]:w-[50%] w-full px-[12px] mb-[24px]" data-aos="flip-up" data-aos-duration="1000" data-aos-delay="600">
+                <div className="w-full " data-aos="flip-up" data-aos-duration="1000" data-aos-delay="600">
                     <div className="bb-services-box p-[30px] border-[1px] border-solid border-[#eee] rounded-[20px] text-center">
                         <div className="services-img mb-[20px] flex justify-center">
                             <img src="/img/services/3.png" alt="services-3" className="w-[50px]"/>
@@ -38,7 +38,7 @@ function Services() {
                         </div>
                     </div>
                 </div>
-                <div className="min-[992px]:w-[25%] min-[768px]:w-[50%] w-full px-[12px] mb-[24px]" data-aos="flip-up" data-aos-duration="1000" data-aos-delay="800">
+                <div className="w-full " data-aos="flip-up" data-aos-duration="1000" data-aos-delay="800">
                     <div className="bb-services-box p-[30px] border-[1px] border-solid border-[#eee] rounded-[20px] text-center">
                         <div className="services-img mb-[20px] flex justify-center">
                             <img src="/img/services/4.png" alt="services-4" className="w-[50px]"/>

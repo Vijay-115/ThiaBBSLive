@@ -16,12 +16,14 @@ function HomePage() {
     <>
         
             {/* Page Content */}
-            <HeroSection/>
-            <SectionCategory/>
-            <ProductList heading="Grocery Items" type="Slider" category='groceries'/>
-            <ProductList heading="Jewellery Items" type="Grid" category='womens-jewellery'/>
-            <BannerOne/>
-            <Services/>
+            <div className="homepahe bbscontainer">                
+              <HeroSection/>
+              <SectionCategory/>
+              <ProductList heading="Grocery Items" type="Slider" category='groceries'/>
+              <ProductList heading="Jewellery Items" type="Grid" category='womens-jewellery'/>
+              <BannerOne/>
+              <Services/>
+            </div>
             {/* Page Content */}
         
     </>

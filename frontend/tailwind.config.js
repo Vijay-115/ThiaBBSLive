@@ -29,6 +29,16 @@ export default {
         tertiary: theme('colors.tertiary'),
         logoSecondary: theme('colors.logoSecondary'),
       }),
+      container: {
+        center: true,
+        padding: {
+          DEFAULT: '1rem',
+          sm: '2rem',
+          lg: '4rem',
+          xl: '5rem',
+          '2xl': '6rem',
+        },
+      },
     },
     screens: {
       'xs': '480px',
@@ -41,5 +51,17 @@ export default {
       '2xl': '1536px',
     },
   },
-  plugins: [],
-}
+  plugins: [
+    function ({ addComponents, theme }) {
+      addComponents({
+        '.bbscontainer': {
+          maxWidth: theme('theme.bbscontainer.width.DEFAULT', '1400px'),
+          marginLeft: 'auto',
+          marginRight: 'auto',
+          paddingLeft: theme('theme.container.padding.DEFAULT'),
+          paddingRight: theme('theme.container.padding.DEFAULT'),
+        },
+      });
+    },
+  ],
+};
