@@ -11,8 +11,8 @@ const wishCount = Object.values(wishItems).length;
 const [cartPopup,setCartPopup] = useState(false);  
   return (
         <>
-            <div className="top-header py-[10px] max-[991px]:py-[5px]">
-                <div className="flex flex-wrap justify-between relative items-center mx-auto min-[1400px]:max-w-[1320px] min-[1200px]:max-w-[1140px] min-[992px]:max-w-[960px] min-[768px]:max-w-[720px] min-[576px]:max-w-[540px]">
+            <div className="top-header py-[10px] max-[991px]:py-[5px] bbscontainer">
+                <div className="flex flex-wrap justify-between relative items-center">
                     <div className="flex flex-wrap w-full">
                         <div className="w-full px-[12px]">
                             <div className="inner-top-header flex justify-between items-center max-[767px]:flex-col">

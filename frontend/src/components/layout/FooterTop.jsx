@@ -4,8 +4,8 @@ import { Link } from 'react-router-dom';
 function FooterTop() {
   return (
     <>
-        <div className="footer-top py-[50px] max-[1199px]:py-[35px]">
-                <div className="flex flex-wrap justify-between relative items-center mx-auto min-[1400px]:max-w-[1320px] min-[1200px]:max-w-[1140px] min-[992px]:max-w-[960px] min-[768px]:max-w-[720px] min-[576px]:max-w-[540px]">
+        <div className="footer-top bbscontainer py-[50px] max-[1199px]:py-[35px]">
+                <div className="flex flex-wrap justify-between relative items-center">
                     <div className="flex flex-wrap w-full max-[991px]:mb-[-30px]" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="200">
                         <div className="min-[992px]:w-[25%] max-[991px]:w-full w-full px-[12px] bb-footer-toggle bb-footer-cat">
                             <div className="bb-footer-widget bb-footer-company flex flex-col max-[991px]:mb-[24px]">

@@ -33,7 +33,7 @@ function WishlistPage() {
       
     return (
         <section className="section-wishlist py-[50px] max-[1199px]:py-[35px]">
-            <div className="flex flex-wrap justify-between relative items-center mx-auto min-[1400px]:max-w-[1320px] min-[1200px]:max-w-[1140px] min-[992px]:max-w-[960px] min-[768px]:max-w-[720px] min-[576px]:max-w-[540px]">
+            <div className="flex flex-wrap justify-between relative items-center">
                 {wishlistItems && Object.keys(wishlistItems).length > 0 ? (
                     <div className="flex flex-wrap w-full mb-[-24px]">
                         <div className="w-full px-[12px] mb-[24px]">
