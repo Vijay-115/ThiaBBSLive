@@ -88,7 +88,7 @@ const menuItems = [
 
   return (
     <>
-        <div className={`nav-items-sec md:justify-center absolute ${menuOpen ? 'left-0' : 'left-[-100%]'} top-0 bottom-0 md:left-0 pt-20  md:pt-0 pl-10 md:pl-0 m-auto md:relative md flex flex-col md:flex-row md:flex-wrap md:gap-10 gap-y-3 bg-slate-100 w-[300px] md:w-full h-full z-30 ease-in-out duration-300 overflow-hidden`}>
+        <div className={`nav-items-sec md:justify-center absolute ${menuOpen ? 'left-0' : 'left-[-100%]'} top-0 bottom-0 md:left-0 pt-20  md:pt-0 pl-10 md:pl-0 m-auto md:relative md flex flex-col md:flex-row md:flex-wrap md:gap-10 gap-y-3 bg-slate-100 w-[300px] md:w-full h-full z-30 ease-in-out duration-300`}>
             <button className='absolute top-5 right-5' onClick={() => closeMenu()}>
                 <i className="text-2xl text-red-600 md:hidden ri-close-circle-line"></i>
             </button>
@@ -115,7 +115,7 @@ const menuItems = [
                         </Link>
                         <div className='hidden md:block bg-primary border-t rounded-2xl opacity-0 invisible h-0 group-hover:h-[20px] group-hover:opacity-[1] group-hover:visible absolute top-[25px] z-[4] w-full transition ease-in-out delay-150'></div>                        
                         <div className={`hidded md:grid dropdown-item bg-white rounded-2xl shadow-md md:p-5 absolute top-[35px] left-[-30px] z-10 opacity-0 invisible h-0 md:group-hover:h-auto md:group-hover:opacity-[1] md:group-hover:visible transition ease-in-out delay-100`} 
-                        style={{ minWidth: `${25 * menu.dropdown.length}vH`, gridTemplateColumns: 'repeat('+menu.dropdown.length+',auto)' }}>
+                        style={{ minWidth: `${15 * menu.dropdown.length}vh`, gridTemplateColumns: 'repeat('+menu.dropdown.length+',auto)' }}>
                             {
                                 menu.dropdown.map((submenu,index) => 
                                     submenu.subDropdown.length === 0 
