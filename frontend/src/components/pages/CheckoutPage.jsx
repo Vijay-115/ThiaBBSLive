@@ -33,8 +33,8 @@ function CheckoutPage() {
       
     return (
         <>
-            <section className="section-checkout py-[50px] max-[1199px]:py-[35px]">
-                <div className="flex flex-wrap justify-between relative items-center mx-auto min-[1400px]:max-w-[1320px] min-[1200px]:max-w-[1140px] min-[992px]:max-w-[960px] min-[768px]:max-w-[720px] min-[576px]:max-w-[540px]">
+            <section className="section-checkout bbscontainer pt-[50px] max-[1199px]:pt-[35px]">
+                <div className="flex flex-wrap justify-between relative items-center">
                     <div className="flex flex-wrap w-full mb-[-24px]">
                         <div className="min-[992px]:w-[33.33%] w-full px-[12px] mb-[24px]">
                             <div className="bb-checkout-sidebar mb-[-24px]">

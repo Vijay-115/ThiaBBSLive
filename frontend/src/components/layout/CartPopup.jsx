@@ -34,7 +34,7 @@ function CartPopup({ cartPopup, setCartPopup }) {
     };
 
     return (
-        <div className={`bg-black overflow-hidden bg-opacity-50 z-50 w-full h-full transition-all duration-[0.3s] ease-in-out delay-300 ${cartPopup ? 'absolute top-0' : ''}`}> 
+        <div className={`bg-black overflow-hidden bg-opacity-50 z-50 transition-all duration-[0.3s] ease-in-out delay-300 ${cartPopup ? 'absolute top-0' : 'relative'}`}> 
             <div className={`flex flex-wrap bg-white p-5 overflow-y-auto h-full min-w-[300px] md:min-w-[400px] float-right transition-all duration-[0.3s] ease-in-out absolute top-0 ${cartPopup ? 'right-0':'-right-[1000%]'}`}>
                 <div className="w-full px-[12px]">
                     <div className="bb-inner-cart relative z-[9] flex flex-col h-full justify-between">

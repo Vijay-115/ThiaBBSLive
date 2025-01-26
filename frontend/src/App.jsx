@@ -21,6 +21,7 @@ import ResetPassword from "./components/auth/ResetPassword"
 import { Toaster } from 'react-hot-toast';
 import CheckoutPage from './components/pages/CheckoutPage';
 import WishlistPage from './components/pages/WishlistPage';
+import ProductsListPage from './components/pages/admin/ProductsListPage';
 
 
 import AdminDashboard from './components/admin/Dashboard';
@@ -64,7 +65,9 @@ function App() {
                 {/* Add additional routes as needed */}   
                 <Route path="/admin/dashboard" element={<AdminDashboard />} />             
                 <Route path="/admin/products" element={<Products />} />             
-                <Route path="/admin/orders" element={<Orders />} />             
+                <Route path="/admin/orders" element={<Orders />} />     
+                <Route path="/adminproduct" element={<ProductsListPage />} />
+                {/* Add additional routes as needed */}
             </Routes>
             
             {shouldRenderHeaderFooter && <FooterTop />}

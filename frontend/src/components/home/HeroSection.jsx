@@ -24,7 +24,7 @@ const HeroSection = () => {
   ];
 
   return (
-    <section className="hero-section section-hero mb-5 sm:mb-8">
+    <section className="hero-section section-hero mb-5 sm:mb-8 bbscontainer">
       {/* Hero Slider */}
       <Swiper spaceBetween={50} slidesPerView={1} loop={true}>
         {slides.map((slide) => (

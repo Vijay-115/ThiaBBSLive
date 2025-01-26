@@ -115,7 +115,7 @@ const menuItems = [
                         </Link>
                         <div className='hidden md:block bg-primary border-t rounded-2xl opacity-0 invisible h-0 group-hover:h-[20px] group-hover:opacity-[1] group-hover:visible absolute top-[25px] z-[4] w-full transition ease-in-out delay-150'></div>                        
                         <div className={`hidded md:grid dropdown-item bg-white rounded-2xl shadow-md md:p-5 absolute top-[35px] left-[-30px] z-10 opacity-0 invisible h-0 md:group-hover:h-auto md:group-hover:opacity-[1] md:group-hover:visible transition ease-in-out delay-100`} 
-                        style={{ minWidth: `${25 * menu.dropdown.length}vH`, gridTemplateColumns: 'repeat('+menu.dropdown.length+',auto)' }}>
+                        style={{ minWidth: `${15 * menu.dropdown.length}vh`, gridTemplateColumns: 'repeat('+menu.dropdown.length+',auto)' }}>
                             {
                                 menu.dropdown.map((submenu,index) => 
                                     submenu.subDropdown.length === 0 

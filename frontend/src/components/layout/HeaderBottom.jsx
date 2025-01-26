@@ -4,7 +4,7 @@ function HeaderBottom() {
   return (
     <>
         <div className="bb-main-menu-desk bg-[#fff] py-[5px] border-t-[1px] border-solid border-[#eee] max-[991px]:hidden">
-            <div className="flex flex-wrap justify-between relative items-center mx-auto min-[1400px]:max-w-[1320px] min-[1200px]:max-w-[1140px] min-[992px]:max-w-[960px] min-[768px]:max-w-[720px] min-[576px]:max-w-[540px]">
+            <div className="flex flex-wrap justify-between relative items-center">
                 <div className="flex flex-wrap w-full">
                     <div className="w-full px-[12px]">
                         <div className="bb-inner-menu-desk flex max-[1199px]:relative max-[991px]:justify-between">

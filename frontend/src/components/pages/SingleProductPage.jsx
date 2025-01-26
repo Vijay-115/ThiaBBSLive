@@ -8,7 +8,9 @@ function SingleProductPage() {
     console.log('id - ',id);
   return (
     <>
-        <SingleProduct/>
+    <div className="product_single_page bbscontainer">
+      <SingleProduct/>
+    </div>
     </>
   )
 }
