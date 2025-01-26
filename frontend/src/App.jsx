@@ -23,6 +23,11 @@ import CheckoutPage from './components/pages/CheckoutPage';
 import WishlistPage from './components/pages/WishlistPage';
 import ProductsListPage from './components/pages/admin/ProductsListPage';
 
+
+import AdminDashboard from './components/admin/Dashboard';
+import Products from './components/admin/Products';
+import Orders from './components/admin/Orders';
+
 function App() {  
     const [menuOpen, setMenuOpen] = useState(false);
 
@@ -36,10 +41,13 @@ function App() {
         setMenuOpen(false);
     };
 
+    const excludeHeaderFooterRoutes = ['/admin/dashboard', '/admin/products', '/admin/orders'];
+    const shouldRenderHeaderFooter = !excludeHeaderFooterRoutes.includes(location.pathname);
+
     return (
         <Router>
-            <HeaderTop toggleMenu={toggleMenu} />
-            <Navbar menuOpen={menuOpen} closeMenu={closeMenu} />
+            {shouldRenderHeaderFooter && <HeaderTop toggleMenu={toggleMenu} />}
+            {shouldRenderHeaderFooter && <Navbar menuOpen={menuOpen} closeMenu={closeMenu} />}
             
             {/* Main Content */}
             <Routes>
@@ -54,10 +62,15 @@ function App() {
                 <Route path="/reset-password/:token" element={<ResetPassword />} />
                 <Route path="/checkout" element={<CheckoutPage />} />
                 <Route path="/wishlist" element={<WishlistPage />} />
+                {/* Add additional routes as needed */}   
+                <Route path="/admin/dashboard" element={<AdminDashboard />} />             
+                <Route path="/admin/products" element={<Products />} />             
+                <Route path="/admin/orders" element={<Orders />} />     
                 <Route path="/adminproduct" element={<ProductsListPage />} />
                 {/* Add additional routes as needed */}
             </Routes>
-            <FooterTop />
+            
+            {shouldRenderHeaderFooter && <FooterTop />}
             <Toaster position="top-right" />
         </Router>
     );
