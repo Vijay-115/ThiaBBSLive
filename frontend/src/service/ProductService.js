@@ -20,6 +20,7 @@ export const ProductService = {
     try {
       const response = await axios.post(BASE_URL, product, {
         headers: { "Content-Type": "application/json" },
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
       console.log("Created Product:", response.data);
       return response.data;
@@ -35,6 +36,7 @@ export const ProductService = {
     try {
       const response = await axios.put(`${BASE_URL}/${productId}`, productData, {
         headers: { "Content-Type": "application/json" },
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
       console.log("Updated Product:", response.data);
       return response.data;
