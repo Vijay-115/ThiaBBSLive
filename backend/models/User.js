@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 const { ObjectId } = mongoose.Schema.Types;
 
 const UserSchema = new mongoose.Schema({
-    user_id: { type: ObjectId, required: true, unique: true }, // Unique identifier for the user
+    user_id: { type: String, required: true, unique: true }, // Unique identifier for the user
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
     name: String, // User's full name
     email: { type: String, unique: true }, // User's email (unique)

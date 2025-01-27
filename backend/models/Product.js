@@ -5,14 +5,14 @@ const bcrypt = require('bcryptjs');
 const { ObjectId } = mongoose.Schema.Types;
 
 const ProductSchema = new mongoose.Schema({
-    product_id: { type: ObjectId, required: true, unique: true }, // Unique identifier for the product
-    name: String, // Product name
-    description: String, // Product description
-    price: Number, // Product price
-    stock: Number, // Stock quantity
-    category: String, // Product category
-    image_urls: [String], // Array of image URLs
-    created_at: { type: Date, default: Date.now }, // Product creation date
+    product_id: { type: String, required: true, unique: true }, // Use String instead of ObjectId
+    name: String,
+    description: String,
+    price: Number,
+    stock: Number,
+    category: String,
+    image_urls: [String],
+    created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now },
 });
 

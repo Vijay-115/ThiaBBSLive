@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 const { ObjectId } = mongoose.Schema.Types;
 
 const CartSchema = new mongoose.Schema({
-    cart_id: { type: ObjectId, required: true, unique: true }, // Unique identifier for the cart
+    cart_id: { type: String, required: true, unique: true }, // Unique identifier for the cart
     user_id: ObjectId, // ID of the user owning the cart (reference to Users collection)
     products: [
       {

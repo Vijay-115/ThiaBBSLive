@@ -21,10 +21,10 @@ exports.getAllProducts = async (req, res) => {
     }
 };
 
-// READ: Get a single product by ID
+// READ: Get a single product by product_id
 exports.getProductById = async (req, res) => {
     try {
-        const product = await Product.findById(req.params.id);
+        const product = await Product.findOne({ product_id: req.params.id });  // Query by product_id
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });
         }
@@ -34,10 +34,14 @@ exports.getProductById = async (req, res) => {
     }
 };
 
-// UPDATE: Update a product by ID
+// UPDATE: Update a product by product_id
 exports.updateProduct = async (req, res) => {
     try {
-        const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const product = await Product.findOneAndUpdate(
+            { product_id: req.params.id },  // Query by product_id
+            req.body,
+            { new: true }
+        );
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });
         }
@@ -47,10 +51,10 @@ exports.updateProduct = async (req, res) => {
     }
 };
 
-// DELETE: Delete a product by ID
+// DELETE: Delete a product by product_id
 exports.deleteProduct = async (req, res) => {
     try {
-        const product = await Product.findByIdAndDelete(req.params.id);
+        const product = await Product.findOneAndDelete({ product_id: req.params.id });  // Query by product_id
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });
         }

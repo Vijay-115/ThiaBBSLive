@@ -1,19 +1,27 @@
-import React, { useEffect, useState } from 'react';
-import ProductForm from '../../admin/ProductForm';
-import { ProductService } from '../../../service/ProductService';
+import React, { useEffect, useState } from "react";
+import Modal from "react-modal"; // Import the Modal component
+import ProductForm from "../../admin/ProductForm";
+import { ProductService } from "../../../service/ProductService";
+
+Modal.setAppElement("#root"); // To avoid accessibility issues
 
 function ProductsListPage() {
   const [products, setProducts] = useState([]);
   const [editProduct, setEditProduct] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isAddEditModalOpen, setIsAddEditModalOpen] = useState(false); // Modal state for add/edit
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false); // Modal state for delete confirmation
+  const [productToDelete, setProductToDelete] = useState(null); // Product selected for deletion
 
+  // Fetch products on component mount
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const data = await ProductService.getProducts();
         setProducts(data);
       } catch (error) {
-        setErrorMessage("Failed to fetch products.");
+        console.error("Error fetching products:", error);
+        setErrorMessage(error.message || "Failed to fetch products.");
       }
     };
     fetchProducts();
@@ -39,23 +47,41 @@ function ProductsListPage() {
         setProducts((prev) => [...prev, newProduct]);
       }
       setErrorMessage("");
+      setIsAddEditModalOpen(false); // Close the modal after saving
     } catch (error) {
-      setErrorMessage(error.message || "An error occurred.");
+      console.error("Error saving product:", error);
+      setErrorMessage(error.message || "An error occurred while saving the product.");
     }
   };
 
-  const handleDeleteProduct = async (productId) => {
+  const handleDeleteProduct = async () => {
     try {
-      await ProductService.deleteProduct(productId);
-      setProducts((prev) => prev.filter((product) => product.product_id !== productId));
+      await ProductService.deleteProduct(productToDelete.product_id);
+      setProducts((prev) =>
+        prev.filter((product) => product.product_id !== productToDelete.product_id)
+      );
+      setProductToDelete(null);
       setErrorMessage("");
+      setIsDeleteModalOpen(false); // Close the delete modal after deleting
     } catch (error) {
+      console.error("Error deleting product:", error);
       setErrorMessage(error.message || "Failed to delete the product.");
     }
   };
 
   const handleEditProduct = (product) => {
     setEditProduct(product);
+    setIsAddEditModalOpen(true); // Open the modal for editing
+  };
+
+  const openDeleteModal = (product) => {
+    setProductToDelete(product);
+    setIsDeleteModalOpen(true); // Open the delete confirmation modal
+  };
+
+  const openAddProductModal = () => {
+    setEditProduct(null); // Ensure no product is selected for editing
+    setIsAddEditModalOpen(true); // Open the modal for adding a new product
   };
 
   return (
@@ -65,7 +91,59 @@ function ProductsListPage() {
           <strong>Error:</strong> {errorMessage}
         </div>
       )}
-      <ProductForm product={editProduct} onSave={handleAddProduct} />
+
+      {/* Add/Edit Product Modal */}
+      <Modal
+        isOpen={isAddEditModalOpen}
+        onRequestClose={() => setIsAddEditModalOpen(false)}
+        contentLabel="Product Form"
+        className="modal-content"
+        overlayClassName="modal-overlay"
+        shouldCloseOnOverlayClick={true} // Allow closing when clicking overlay
+      >
+        <ProductForm product={editProduct} onSave={handleAddProduct} />
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onRequestClose={() => setIsDeleteModalOpen(false)}
+        contentLabel="Confirm Deletion"
+        className="modal-content"
+        overlayClassName="modal-overlay"
+        shouldCloseOnOverlayClick={true} // Allow closing when clicking overlay
+      >
+        <div className="p-4">
+          <h3 className="text-lg">Are you sure you want to delete this product?</h3>
+          <p className="mt-2">This action cannot be undone.</p>
+          <div className="mt-4">
+            <button
+              onClick={handleDeleteProduct}
+              className="bg-red-500 text-white px-4 py-2 rounded-md mr-2"
+            >
+              Yes, Delete
+            </button>
+            <button
+              onClick={() => setIsDeleteModalOpen(false)}
+              className="bg-gray-500 text-white px-4 py-2 rounded-md"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Create Product Button */}
+      <div className="mb-4">
+        <button
+          onClick={openAddProductModal}
+          className="bg-blue-500 text-white px-4 py-2 rounded-md"
+        >
+          Add New Product
+        </button>
+      </div>
+
+      {/* Product List */}
       <div className="mt-8">
         <h2 className="text-2xl font-semibold mb-4">Product List</h2>
         {products.length === 0 ? (
@@ -95,7 +173,7 @@ function ProductsListPage() {
                     </button>
                     <button
                       className="bg-red-500 text-white px-4 py-1 ml-2 rounded-md"
-                      onClick={() => handleDeleteProduct(product.product_id)}
+                      onClick={() => openDeleteModal(product)}
                     >
                       Delete
                     </button>
@@ -110,4 +188,4 @@ function ProductsListPage() {
   );
 }
 
-export default ProductsListPage
+export default ProductsListPage;
