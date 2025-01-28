@@ -1,30 +1,17 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 
-const Navbar = () => {
-    const [isDarkMode, setDarkMode] = useState(false);
-    const [isSearchFormShown, setSearchFormShown] = useState(false);
-    const [isSidebarHidden, setSidebarHidden] = useState(window.innerWidth <= 576);
-    const [isNotificationMenuOpen, setNotificationMenuOpen] = useState(false);
-    const [isProfileMenuOpen, setProfileMenuOpen] = useState(false);
-
-    const toggleDarkMode = () => {
-        setDarkMode((prev) => !prev);
-    };
-    const toggleSidebar = () => {
-        setSidebarHidden((prev) => !prev);
-    };
-    const toggleSearchForm = (e) => {
-        e.preventDefault();
-        setSearchFormShown((prev) => !prev);
-    };
-    const toggleNotificationMenu = () => {
-        setNotificationMenuOpen((prev) => !prev);
-        setProfileMenuOpen(false); // Close profile menu if open
-    };
-
-    const toggleProfileMenu = () => {
-        setProfileMenuOpen((prev) => !prev);
-    }
+const Navbar = ({
+    isDarkMode,
+    toggleDarkMode,
+    toggleSidebar,
+    isSidebarHidden,
+    isNotificationMenuOpen,
+    toggleNotificationMenu,
+    isProfileMenuOpen,
+    toggleProfileMenu,
+    isSearchFormShown,
+    toggleSearchForm,
+}) => {
 
     return (
         <nav>

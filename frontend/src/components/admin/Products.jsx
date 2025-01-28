@@ -1,49 +1,76 @@
-import React, { useState, useEffect } from 'react';
-import { getProducts, addProduct, deleteProduct } from '../../services/api';
+import React from "react";
+import { getMetrics } from '../../services/api';
+import { NavLink } from 'react-router-dom';
+import './assets/dashboard.css';
+import Sidebar from './layout/sidebar';
+import Navbar from './layout/Navbar';
+import useDashboardLogic from "./hooks/useDashboardLogic"; 
 
 const Products = () => {
-    const [products, setProducts] = useState([]);
 
-    useEffect(() => {
-        fetchProducts();
-    }, []);
-
-    const fetchProducts = async () => {
-        const data = await getProducts();
-        setProducts(data);
-    };
-
-    const handleDelete = async (id) => {
-        await deleteProduct(id);
-        fetchProducts();
-    };
+    const {
+        isSidebarHidden,
+        toggleSidebar,
+        isSearchFormShown,
+        toggleSearchForm,
+        isDarkMode,
+        toggleDarkMode,
+        isNotificationMenuOpen,
+        toggleNotificationMenu,
+        isProfileMenuOpen,
+        toggleProfileMenu,
+    } = useDashboardLogic();
 
     return (
-        <div>
-            <h1>Products</h1>
-            <button>Add Product</button>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Price</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {products.map(product => (
-                        <tr key={product.id}>
-                            <td>{product.name}</td>
-                            <td>{product.price}</td>
-                            <td>
-                                <button>Edit</button>
-                                <button onClick={() => handleDelete(product.id)}>Delete</button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
+        <>
+
+            <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet' />
+
+            <div className={isDarkMode ? 'dark' : ''}>
+
+                <Sidebar isSidebarHidden={isSidebarHidden} toggleSidebar={toggleSidebar} />
+
+                <section id="content">
+
+                    <Navbar isDarkMode={isDarkMode}
+                        toggleDarkMode={toggleDarkMode}
+                        toggleSidebar={toggleSidebar}
+                        isSidebarHidden={isSidebarHidden}
+                        isNotificationMenuOpen={isNotificationMenuOpen}
+                        toggleNotificationMenu={toggleNotificationMenu}
+                        isProfileMenuOpen={isProfileMenuOpen}
+                        toggleProfileMenu={toggleProfileMenu}
+                        isSearchFormShown={isSearchFormShown}
+                        toggleSearchForm={toggleSearchForm}
+                    />
+
+                    <main>
+                        <div className="head-title">
+                            <div className="left">
+                                <h1>Products</h1>
+                                <ul className="breadcrumb">
+                                    <li>
+                                        <NavLink className="active" to="/admin/dashboard">Dashboard</NavLink>
+                                    </li>
+                                    <li>
+                                        <i className="bx bx-chevron-right" />
+                                    </li>
+                                    <li>
+                                        <a> Products </a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <NavLink className="btn-download" to="#">
+                                <i className="bx bxs-cloud-download bx-fade-down-hover" />
+                                <span className="text">Download PDF</span>
+                            </NavLink>
+                        </div>                        
+                    </main>
+                </section>
+            </div>
+
+
+        </>
     );
 };
 

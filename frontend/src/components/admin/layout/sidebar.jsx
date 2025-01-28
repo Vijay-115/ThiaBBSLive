@@ -1,12 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { NavLink } from 'react-router-dom';
-// import './dashboard.css';
 
-const Sidebar = () => {
-    const [isSidebarHidden, setSidebarHidden] = useState(window.innerWidth <= 576);
+const Sidebar = ({ isSidebarHidden, toggleSidebar }) => {
     return (
         <>
-
             <section id="sidebar" className={isSidebarHidden ? 'hide' : 'show'}>
                 <NavLink className="brand" to="#">
                     <img src="/img/logo/favicon.png" className="bx bxs-smile bx-lg" />
@@ -14,33 +11,39 @@ const Sidebar = () => {
                 </NavLink>
                 <ul className="side-menu top">
                     <li className="active">
-                        <NavLink to="/">
+                        <NavLink to="/admin/dashboard">
                             <i className="bx bxs-dashboard bx-sm" />
                             <span className="text">Dashboard</span>
                         </NavLink>
                     </li>
                     <li>
-                        <NavLink to="/">
+                        <NavLink to="/admin/products">
                             <i className="bx bxs-shopping-bag-alt bx-sm" />
-                            <span className="text">My Store</span>
+                            <span className="text">Products</span>
                         </NavLink>
                     </li>
                     <li>
                         <NavLink to="/">
                             <i className="bx bxs-doughnut-chart bx-sm" />
-                            <span className="text">Analytics</span>
+                            <span className="text">Customers</span>
                         </NavLink>
                     </li>
                     <li>
-                        <NavLink to="/">
+                        <NavLink to="/admin/orders">
                             <i className="bx bxs-message-dots bx-sm" />
-                            <span className="text">Message</span>
+                            <span className="text">Orders</span>
                         </NavLink>
                     </li>
                     <li>
                         <NavLink to="/">
                             <i className="bx bxs-group bx-sm" />
-                            <span className="text">Team</span>
+                            <span className="text">Marketing</span>
+                        </NavLink>
+                    </li>
+                    <li>
+                        <NavLink to="/">
+                            <i className="bx bxs-group bx-sm" />
+                            <span className="text">Reporting</span>
                         </NavLink>
                     </li>
                 </ul>
