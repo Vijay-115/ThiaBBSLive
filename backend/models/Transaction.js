@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 const { ObjectId } = mongoose.Schema.Types;
 
 const TransactionSchema = new mongoose.Schema({
-  transaction_id: { type: ObjectId, required: true, unique: true }, // Unique identifier for the transaction
+  transaction_id: { type: String, required: true, unique: true }, // Unique identifier for the transaction
   order_id: ObjectId, // Associated order ID (reference to Orders collection)
   payment_method: String, // Payment method used (e.g., card, COD)
   payment_status: { type: String, default: 'success' }, // Payment status (e.g., success, failed)

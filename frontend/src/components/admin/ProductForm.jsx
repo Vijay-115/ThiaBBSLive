@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 const ProductForm = ({ product, onSave }) => {
   const [formData, setFormData] = useState({
@@ -8,7 +8,7 @@ const ProductForm = ({ product, onSave }) => {
     price: product ? product.price : "",
     stock: product ? product.stock : "",
     category: product ? product.category : "",
-    image_urls: product ? product.image_urls : [],
+    images: [], // To store uploaded image files
   });
 
   const handleChange = (e) => {
@@ -19,19 +19,48 @@ const ProductForm = ({ product, onSave }) => {
     }));
   };
 
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    setFormData((prev) => ({
+      ...prev,
+      images: files, // Store the selected image files
+    }));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(formData);
+
+    // Create FormData object to send the images with other form data
+    const submissionData = new FormData();
+
+    // Append form data fields
+    submissionData.append("product_id", formData.product_id);
+    submissionData.append("name", formData.name);
+    submissionData.append("description", formData.description);
+    submissionData.append("price", formData.price);
+    submissionData.append("stock", formData.stock);
+    submissionData.append("category", formData.category);
+
+    // Append images (ensure images is an array of files)
+    formData.images.forEach((image) => {
+      submissionData.append("images", image); // Append images using the same key
+    });
+
+    // Trigger onSave function with FormData object
+    onSave(submissionData);
+
+    // Reset form after submission
     setFormData({
-      product_id: "",
-      name: "",
-      description: "",
-      price: "",
-      stock: "",
-      category: "",
-      image_urls: [],
+        product_id: "",
+        name: "",
+        description: "",
+        price: "",
+        stock: "",
+        category: "",
+        images: [], // Reset image array
     });
   };
+
 
   return (
     <div className="max-w-md mx-auto bg-white p-8 shadow-md rounded-md">
@@ -117,19 +146,13 @@ const ProductForm = ({ product, onSave }) => {
         </div>
 
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">Image URLs</label>
+          <label className="block text-sm font-medium text-gray-700">Upload Images</label>
           <input
-            type="text"
-            name="image_urls"
-            value={formData.image_urls}
-            onChange={(e) => {
-              setFormData((prev) => ({
-                ...prev,
-                image_urls: e.target.value.split(","),
-              }));
-            }}
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleFileChange}
             className="mt-1 p-2 w-full border border-gray-300 rounded-md"
-            placeholder="Comma separated URLs"
           />
         </div>
 

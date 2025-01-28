@@ -1,18 +1,22 @@
 const express = require('express');
 const router = express.Router();
 const productController = require('../controllers/productController');
+const { uploadMultiple } = require('../middleware/upload');
 
-// CREATE: Add a new product
-router.post('/products', productController.createProduct);
-
+// Create product with image upload
+router.post("/products", uploadMultiple, productController.createProduct);
 // READ: Get all products
 router.get('/products', productController.getAllProducts);
 
 // READ: Get a single product by ID
 router.get('/products/:id', productController.getProductById);
 
-// UPDATE: Update a product by ID
-router.put('/products/:id', productController.updateProduct);
+// Update product with image upload
+router.put(
+    '/products/:id',
+    uploadMultiple, // Accept up to 5 images
+    productController.updateProduct
+);
 
 // DELETE: Delete a product by ID
 router.delete('/products/:id', productController.deleteProduct);
