@@ -13,6 +13,9 @@ const Navbar = ({
     toggleSearchForm,
 }) => {
 
+    const userName = localStorage.getItem('userName') || 'Admin';
+    const userRole = localStorage.getItem('userRole') || 'admin';
+
     return (
         <nav>
             <i className="bx bx-menu bx-sm" onClick={toggleSidebar} />
@@ -52,12 +55,13 @@ const Navbar = ({
                     </ul>
                 </div>
             )}
+            <strong>Hi <span style={{color: "var(--red)"}}>{userName}</span>!</strong>
             <div className="profile" onClick={toggleProfileMenu}>
                 <img alt="Profile" src="https://placehold.co/600x400/png" />
             </div>
             {isProfileMenuOpen && (
                 <div className="profile-menu">
-                    <ul>
+                    <ul>                        
                         <li>
                             <a href="#">My Profile</a>
                         </li>
@@ -65,7 +69,7 @@ const Navbar = ({
                             <a href="#">Settings</a>
                         </li>
                         <li>
-                            <a href="#">Log Out</a>
+                            <a onClick={() => { localStorage.clear(); window.location.reload(); }}>Log Out</a>
                         </li>
                     </ul>
                 </div>
