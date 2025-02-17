@@ -8,7 +8,8 @@ const ProductForm = ({ product, onSave }) => {
     price: product ? product.price : "",
     stock: product ? product.stock : "",
     category: product ? product.category : "",
-    images: [], // To store uploaded image files
+    product_img: null, // Single product image
+    gallery_imgs: [], // Multiple gallery images
   });
 
   const handleChange = (e) => {
@@ -19,21 +20,28 @@ const ProductForm = ({ product, onSave }) => {
     }));
   };
 
-  const handleFileChange = (e) => {
+  // Handle single product image upload
+  const handleProductImageChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      product_img: e.target.files[0], // Store only one file
+    }));
+  };
+
+  // Handle multiple gallery images upload
+  const handleGalleryImagesChange = (e) => {
     const files = Array.from(e.target.files);
     setFormData((prev) => ({
       ...prev,
-      images: files, // Store the selected image files
+      gallery_imgs: files, // Store multiple files
     }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Create FormData object to send the images with other form data
     const submissionData = new FormData();
 
-    // Append form data fields
     submissionData.append("product_id", formData.product_id);
     submissionData.append("name", formData.name);
     submissionData.append("description", formData.description);
@@ -41,26 +49,30 @@ const ProductForm = ({ product, onSave }) => {
     submissionData.append("stock", formData.stock);
     submissionData.append("category", formData.category);
 
-    // Append images (ensure images is an array of files)
-    formData.images.forEach((image) => {
-      submissionData.append("images", image); // Append images using the same key
+    // Append single product image
+    if (formData.product_img) {
+      submissionData.append("product_img", formData.product_img);
+    }
+
+    // Append multiple gallery images
+    formData.gallery_imgs.forEach((image) => {
+      submissionData.append("gallery_imgs", image);
     });
 
-    // Trigger onSave function with FormData object
     onSave(submissionData);
 
-    // Reset form after submission
+    // Reset form
     setFormData({
-        product_id: "",
-        name: "",
-        description: "",
-        price: "",
-        stock: "",
-        category: "",
-        images: [], // Reset image array
+      product_id: "",
+      name: "",
+      description: "",
+      price: "",
+      stock: "",
+      category: "",
+      product_img: null,
+      gallery_imgs: [],
     });
   };
-
 
   return (
     <div className="max-w-md mx-auto bg-white p-8 shadow-md rounded-md">
@@ -145,13 +157,25 @@ const ProductForm = ({ product, onSave }) => {
           />
         </div>
 
+        {/* Single Product Image Upload */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">Upload Images</label>
+          <label className="block text-sm font-medium text-gray-700">Product Image</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleProductImageChange}
+            className="mt-1 p-2 w-full border border-gray-300 rounded-md"
+          />
+        </div>
+
+        {/* Multiple Gallery Images Upload */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700">Product Gallery Images</label>
           <input
             type="file"
             accept="image/*"
             multiple
-            onChange={handleFileChange}
+            onChange={handleGalleryImagesChange}
             className="mt-1 p-2 w-full border border-gray-300 rounded-md"
           />
         </div>

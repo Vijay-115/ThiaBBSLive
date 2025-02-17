@@ -302,4 +302,23 @@ select {
     align-items: center;
     z-index: 99;
   }
-  
+  @media screen and (max-width: 767px) {
+    .bb-table table td::before {
+        content: attr(data-label);
+        float: left;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+    .bb-table table td {
+        border-bottom: 1px solid #ddd;
+        display: block;
+        font-size: .8em;
+        text-align: right;
+    }
+    .bb-table table tr {
+        border: 1px solid #ddd !important;
+        display: block;
+        margin-bottom: 0.85em;
+        border-radius: 5px !important;
+    }
+}
