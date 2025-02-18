@@ -42,17 +42,21 @@ const Login = () => {
                 password: loginData.lpassword
             });
 
-            const { role } = response.data.user; // Access 'role' from 'user' object
-            const { token } = response.data;
+            const { user, token } = response.data; // Extract user and token
+            const { role, name, email } = user;   // Extract user details
+        
+            // Save user and token to local storage
             localStorage.setItem('userRole', role);
+            localStorage.setItem('userName', name); // Save name
+            localStorage.setItem('userEmail', email); // Save email
             localStorage.setItem('token', token);
 
             toast.success('Login successful');
             setLoginData({ lemail: '', lpassword: '' });
             setErrors({});
-
+            
             if (role === 'admin') {
-                navigate('/admin');
+                navigate('/admin/dashboard');
             } else {
                 navigate('/');
             }

@@ -3,7 +3,7 @@ import './ProductSlider.css';
 import './bannerOne.css';
 import './SingleProduct.css';
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation, Outlet } from "react-router-dom";
 import HeaderTop from './components/layout/HeaderTop';
 import Navbar from './components/layout/Navbar';
 import HomePage from './components/pages/HomePage';
@@ -24,19 +24,25 @@ import WishlistPage from './components/pages/WishlistPage';
 import ProductsListPage from './components/pages/admin/ProductsListPage';
 
 
+import ProtectedRoute from './components/ProtectedRoute';
+
 import AdminDashboard from './components/admin/Dashboard';
 import Products from './components/admin/Products';
 import Orders from './components/admin/Orders';
 
-function App() {  
+const AdminRoutes = () => (
+    <ProtectedRoute requiredRole="admin">
+        <Outlet />
+    </ProtectedRoute>
+);
+
+function App() {
     const [menuOpen, setMenuOpen] = useState(false);
 
-    // Function to toggle menu
     const toggleMenu = () => {
         setMenuOpen(true);
     };
 
-    // Function to close menu
     const closeMenu = () => {
         setMenuOpen(false);
     };
@@ -48,7 +54,7 @@ function App() {
         <Router>
             {shouldRenderHeaderFooter && <HeaderTop toggleMenu={toggleMenu} />}
             {shouldRenderHeaderFooter && <Navbar menuOpen={menuOpen} closeMenu={closeMenu} />}
-            
+
             {/* Main Content */}
             <Routes>
                 {/* Default Route */}
@@ -62,14 +68,20 @@ function App() {
                 <Route path="/reset-password/:token" element={<ResetPassword />} />
                 <Route path="/checkout" element={<CheckoutPage />} />
                 <Route path="/wishlist" element={<WishlistPage />} />
-                {/* Add additional routes as needed */}   
-                <Route path="/admin/dashboard" element={<AdminDashboard />} />             
-                <Route path="/admin/products" element={<Products />} />             
-                <Route path="/admin/orders" element={<Orders />} />     
+                {/* Add additional routes as needed */}
+                {/* <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                <Route path="/admin/products" element={<Products />} />
+                <Route path="/admin/orders" element={<Orders />} /> */}
                 <Route path="/adminproduct" element={<ProductsListPage />} />
                 {/* Add additional routes as needed */}
+
+                <Route path="/admin" element={<AdminRoutes />}>
+                    <Route path="dashboard" element={<AdminDashboard />} />
+                    <Route path="products" element={<Products />} />
+                    <Route path="orders" element={<Orders />} />
+                </Route>
             </Routes>
-            
+
             {shouldRenderHeaderFooter && <FooterTop />}
             <Toaster position="top-right" />
         </Router>

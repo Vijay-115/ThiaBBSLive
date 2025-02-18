@@ -1,30 +1,20 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 
-const Navbar = () => {
-    const [isDarkMode, setDarkMode] = useState(false);
-    const [isSearchFormShown, setSearchFormShown] = useState(false);
-    const [isSidebarHidden, setSidebarHidden] = useState(window.innerWidth <= 576);
-    const [isNotificationMenuOpen, setNotificationMenuOpen] = useState(false);
-    const [isProfileMenuOpen, setProfileMenuOpen] = useState(false);
+const Navbar = ({
+    isDarkMode,
+    toggleDarkMode,
+    toggleSidebar,
+    isSidebarHidden,
+    isNotificationMenuOpen,
+    toggleNotificationMenu,
+    isProfileMenuOpen,
+    toggleProfileMenu,
+    isSearchFormShown,
+    toggleSearchForm,
+}) => {
 
-    const toggleDarkMode = () => {
-        setDarkMode((prev) => !prev);
-    };
-    const toggleSidebar = () => {
-        setSidebarHidden((prev) => !prev);
-    };
-    const toggleSearchForm = (e) => {
-        e.preventDefault();
-        setSearchFormShown((prev) => !prev);
-    };
-    const toggleNotificationMenu = () => {
-        setNotificationMenuOpen((prev) => !prev);
-        setProfileMenuOpen(false); // Close profile menu if open
-    };
-
-    const toggleProfileMenu = () => {
-        setProfileMenuOpen((prev) => !prev);
-    }
+    const userName = localStorage.getItem('userName') || 'Admin';
+    const userRole = localStorage.getItem('userRole') || 'admin';
 
     return (
         <nav>
@@ -65,12 +55,13 @@ const Navbar = () => {
                     </ul>
                 </div>
             )}
+            <strong>Hi <span style={{color: "var(--red)"}}>{userName}</span>!</strong>
             <div className="profile" onClick={toggleProfileMenu}>
                 <img alt="Profile" src="https://placehold.co/600x400/png" />
             </div>
             {isProfileMenuOpen && (
                 <div className="profile-menu">
-                    <ul>
+                    <ul>                        
                         <li>
                             <a href="#">My Profile</a>
                         </li>
@@ -78,7 +69,7 @@ const Navbar = () => {
                             <a href="#">Settings</a>
                         </li>
                         <li>
-                            <a href="#">Log Out</a>
+                            <a onClick={() => { localStorage.clear(); window.location.reload(); }}>Log Out</a>
                         </li>
                     </ul>
                 </div>
