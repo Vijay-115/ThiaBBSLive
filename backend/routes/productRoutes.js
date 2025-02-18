@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const productController = require('../controllers/productController');
-const { uploadMultiple } = require('../middleware/upload');
+const { uploadFields } = require('../middleware/upload');
 
 // Create product with image upload
-router.post("/products", uploadMultiple, productController.createProduct);
+router.post("/products", uploadFields, productController.createProduct);
 // READ: Get all products
 router.get('/products', productController.getAllProducts);
 
@@ -14,7 +14,7 @@ router.get('/products/:id', productController.getProductById);
 // Update product with image upload
 router.put(
     '/products/:id',
-    uploadMultiple, // Accept up to 5 images
+    uploadFields, // Accept up to 5 images
     productController.updateProduct
 );
 

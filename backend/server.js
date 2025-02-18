@@ -5,6 +5,7 @@ const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/adminRoutes');
 const productRoutes = require('./routes/productRoutes'); 
 const cors = require('cors');
+const path = require('path');
 
 // Load environment variables
 dotenv.config();
@@ -13,6 +14,9 @@ dotenv.config();
 connectDB();
 
 const app = express();
+
+// Serve static files from the 'uploads' folder
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Middleware
 app.use(express.json({ extended: false }));
