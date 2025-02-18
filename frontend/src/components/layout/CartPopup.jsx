@@ -34,7 +34,7 @@ function CartPopup({ cartPopup, setCartPopup }) {
     };
 
     return (
-        <div className={`bg-black overflow-hidden bg-opacity-50 z-50 transition-all duration-[0.3s] ease-in-out delay-300 ${cartPopup ? 'absolute top-0' : 'relative'}`}> 
+        <div className={`bg-black overflow-hidden bg-opacity-50 z-50 transition-all duration-[0.3s] ease-in-out delay-300 ${cartPopup ? 'absolute top-0 w-full h-full' : 'relative'}`}> 
             <div className={`flex flex-wrap bg-white p-5 overflow-y-auto h-full min-w-[300px] md:min-w-[400px] float-right transition-all duration-[0.3s] ease-in-out absolute top-0 ${cartPopup ? 'right-0':'-right-[1000%]'}`}>
                 <div className="w-full px-[12px]">
                     <div className="bb-inner-cart relative z-[9] flex flex-col h-full justify-between">
@@ -48,18 +48,18 @@ function CartPopup({ cartPopup, setCartPopup }) {
                             <ul className="bb-cart-items mb-[-24px]">
                             {cartItems && Object.keys(cartItems).length > 0 ? (
                                 Object.values(cartItems).map(({ product, quantity }) => (
-                                <li key={product.id} className="cart-sidebar-list mb-[24px] p-[10px] flex bg-[#f8f8fb] rounded-[20px] border-[1px] border-solid border-[#eee] relative max-[575px]:p-[10px]">
-                                    <button onClick={() => handleRemovecart(product.id)} className="cart-remove-item transition-all duration-[0.3s] ease-in-out bg-secondary w-[20px] h-[20px] text-[#fff] absolute top-[-3px] right-[-3px] rounded-[50%] flex items-center justify-center opacity-[0.5] text-[15px]"><i className="ri-close-line"></i></button>
-                                    <img src={product.thumbnail} alt="product-img-1" className="w-[85px] rounded-[10px] border-[1px] border-solid border-[#eee] max-[575px]:w-[50px]"/>
+                                <li key={product._id} className="cart-sidebar-list mb-[24px] p-[10px] flex bg-[#f8f8fb] rounded-[20px] border-[1px] border-solid border-[#eee] relative max-[575px]:p-[10px]">
+                                    <button onClick={() => handleRemovecart(product._id)} className="cart-remove-item transition-all duration-[0.3s] ease-in-out bg-secondary w-[20px] h-[20px] text-[#fff] absolute top-[-3px] right-[-3px] rounded-[50%] flex items-center justify-center opacity-[0.5] text-[15px]"><i className="ri-close-line"></i></button>
+                                    <img src={import.meta.env.VITE_API_URL+''+product.product_img ?? ''} alt="product-img-1" className="w-[85px] rounded-[10px] border-[1px] border-solid border-[#eee] max-[575px]:w-[50px]"/>
                                     <div className="bb-cart-contact pl-[15px] relative grow-[1] shrink-[0] basis-[70%] overflow-hidden">
-                                        <Link to={`/product/${product.id}`} className="bb-cart-sub-title w-full mb-[8px] font-Poppins tracking-[0.03rem] text-secondary whitespace-nowrap overflow-hidden text-ellipsis block text-[14px] leading-[18px] font-medium">{product.title}</Link>
+                                        <Link to={`/product/${product._id}`} className="bb-cart-sub-title w-full mb-[8px] font-Poppins tracking-[0.03rem] text-secondary whitespace-nowrap overflow-hidden text-ellipsis block text-[14px] leading-[18px] font-medium">{product.name}</Link>
                                         <span className="cart-price mb-[8px] text-[16px] leading-[18px] block font-Poppins text-secondary font-light tracking-[0.03rem]">
                                             <span className="new-price px-[3px] text-[14px] leading-[14px] text-secondary font-bold">₹{product.price}</span>
                                         </span>
                                         <div className="qty-plus-minus w-[85px] h-[45px] py-[0px] border-[1px] border-solid border-[#eee] overflow-hidden relative flex items-center justify-between bg-[#fff] rounded-[10px] px-3">
-                                            <div className="dec bb-qtybtn cursor-pointer" onClick={() => handleDecrement(product.id)}>-</div>
-                                            <span>{cartItems[product.id]?.quantity || 1}</span>
-                                            <div className="inc bb-qtybtn cursor-pointer" onClick={() => handleIncrement(product.id)}>+</div>
+                                            <div className="dec bb-qtybtn cursor-pointer" onClick={() => handleDecrement(product._id)}>-</div>
+                                            <span>{cartItems[product._id]?.quantity || 1}</span>
+                                            <div className="inc bb-qtybtn cursor-pointer" onClick={() => handleIncrement(product._id)}>+</div>
                                         </div>
                                     </div>
                                 </li>

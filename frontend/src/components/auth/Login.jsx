@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import axios from 'axios';
+import { login } from "../../services/authService";
 
 const Login = () => {
 
@@ -35,37 +35,27 @@ const Login = () => {
             toast.error("Please fix the errors and try again.");
             return;
         }
-
+    
         try {
-            const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
-                email: loginData.lemail,
-                password: loginData.lpassword
-            });
-
-            const { user, token } = response.data; // Extract user and token
-            const { role, name, email } = user;   // Extract user details
-        
-            // Save user and token to local storage
-            localStorage.setItem('userRole', role);
-            localStorage.setItem('userName', name); // Save name
-            localStorage.setItem('userEmail', email); // Save email
-            localStorage.setItem('token', token);
-
-            toast.success('Login successful');
-            setLoginData({ lemail: '', lpassword: '' });
-            setErrors({});
-            
-            if (role === 'admin') {
-                navigate('/admin/dashboard');
-            } else {
-                navigate('/');
+            const response = await login(loginData.lemail, loginData.lpassword);
+            if (response) {
+                const { user, token } = response;
+                const { role, name, email } = user;
+    
+                // Save user data and token to local storage
+                localStorage.setItem("userRole", role);
+                localStorage.setItem("userName", name);
+                localStorage.setItem("userEmail", email);
+                localStorage.setItem("token", token);
+    
+                toast.success("Login successful");
+                setLoginData({ lemail: "", lpassword: "" });
+                setErrors({});
+    
+                navigate(role === "admin" ? "/admin/dashboard" : "/");
             }
         } catch (error) {
-            if (error.response && error.response.status === 400) {
-                toast.error(error.response.data.message);
-            } else {
-                toast.error('Login failed. Please try again.');
-            }
+            toast.error(error.message || "Login failed. Please try again.");
         }
     };
 

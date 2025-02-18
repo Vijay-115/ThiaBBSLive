@@ -12,7 +12,11 @@ exports.createProduct = async (req, res) => {
         const galleryImages = req.files['gallery_imgs'] ? req.files['gallery_imgs'].map(file => `/uploads/${file.filename}`) : [];
 
         // Get the current user's ID from the authenticated request
-        const seller_id = '60d85c4f77c8b3c825f45f25'; // Assuming user ID is available in req.user
+        const seller_id = req.user ? req.user.userId : null;  // Assuming user info is stored in req.user
+
+        if (!seller_id) {
+            return res.status(401).json({ message: "Unauthorized: User ID not found" });
+        }
 
         // Create a new product with seller_id and image paths
         const newProduct = new Product({

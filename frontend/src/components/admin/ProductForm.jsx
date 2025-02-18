@@ -75,7 +75,7 @@ const ProductForm = ({ product, onSave }) => {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white p-8 shadow-md rounded-md">
+    <div className="max-w-[50vw] w-full mx-auto bg-white border border-gray-400 p-8 shadow-md rounded-md">
       <h2 className="text-2xl font-semibold text-center mb-6">
         {product ? "Edit Product" : "Add Product"}
       </h2>

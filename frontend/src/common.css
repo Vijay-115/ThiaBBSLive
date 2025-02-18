@@ -284,8 +284,9 @@ select {
 } 
 
 .modal-content {
-    max-width: 991px;
-    width: 100%;
+    /* max-width: 90vw; */
+    display: contents;
+    width: max-content;
     margin: auto;
     background: white;
     padding: 20px;

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from "react-redux";
 import { updateQuantity, removeFromCart } from '../../slice/cartSlice';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 function CartPage() {
     const dispatch = useDispatch();
@@ -116,11 +116,11 @@ function CartPage() {
                                     </thead>
                                     <tbody>
                                     {Object.values(cartItems).map(({ product, quantity }) => (
-                                        <tr key={product.id} className="border-b-[1px] border-solid border-[#eee]">
+                                        <tr key={product._id} className="border-b-[1px] border-solid border-[#eee]">
                                             <td className="p-[12px]">
                                                 <div className="Product-cart flex items-center">
-                                                    <img src={product.thumbnail} alt="new-product-1" className="w-[70px] border-[1px] border-solid border-[#eee] rounded-[10px]"/>
-                                                    <span className="ml-[10px] font-Poppins text-[14px] font-normal leading-[28px] tracking-[0.03rem] text-secondary">{product.title}</span>
+                                                    <img src={import.meta.env.VITE_API_URL+''+product.product_img ?? ''} alt="new-product-1" className="w-[70px] border-[1px] border-solid border-[#eee] rounded-[10px]"/>
+                                                    <span className="ml-[10px] font-Poppins text-[14px] font-normal leading-[28px] tracking-[0.03rem] text-secondary">{product.name}</span>
                                                 </div>
                                             </td>
                                             <td className="p-[12px]">
@@ -128,9 +128,9 @@ function CartPage() {
                                             </td>
                                             <td className="p-[12px]">
                                                 <div className="qty-plus-minus w-[85px] h-[45px] py-[7px] border-[1px] border-solid border-[#eee] overflow-hidden relative flex items-center justify-between bg-[#fff] px-2 rounded-[10px]">
-                                                    <div className="dec bb-qtybtn" onClick={()=> handleDecrement(product.id)}>-</div>
-                                                    <span>{cartItems[product.id]?.quantity || 1}</span>
-                                                    <div className="inc bb-qtybtn" onClick={()=> handleIncrement(product.id)}>+</div>
+                                                    <div className="dec bb-qtybtn" onClick={()=> handleDecrement(product._id)}>-</div>
+                                                    <span>{cartItems[product._id]?.quantity || 1}</span>
+                                                    <div className="inc bb-qtybtn" onClick={()=> handleIncrement(product._id)}>+</div>
                                                 </div>
                                             </td>
                                             <td className="p-[12px]">
@@ -138,7 +138,7 @@ function CartPage() {
                                             </td>
                                             <td className="p-[12px]">
                                                 <div className="pro-remove">
-                                                    <button onClick={()=>handleRemovecart(product.id)}>
+                                                    <button onClick={()=>handleRemovecart(product._id)}>
                                                         <i className="ri-delete-bin-line transition-all duration-[0.3s] ease-in-out text-[20px] text-secondary hover:text-[#ff0000]"></i>
                                                     </button>
                                                 </div>
@@ -148,7 +148,7 @@ function CartPage() {
                                     </tbody>
                                 </table>
                             </div>                    
-                            <a href="checkout.html" className="bb-btn-2 mt-[24px] inline-flex items-center justify-center check-btn transition-all duration-[0.3s] ease-in-out font-Poppins leading-[28px] tracking-[0.03rem] py-[8px] px-[20px] text-[14px] font-normal text-[#fff] bg-[#6c7fd8] rounded-[10px] border-[1px] border-solid border-[#6c7fd8] hover:bg-transparent hover:border-[#3d4750] hover:text-secondary aos-init aos-animate" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="400">Check Out</a>
+                            <Link to="/checkout" className="bb-btn-2 mt-[24px] inline-flex items-center justify-center check-btn transition-all duration-[0.3s] ease-in-out font-Poppins leading-[28px] tracking-[0.03rem] py-[8px] px-[20px] text-[14px] font-normal text-[#fff] bg-[#6c7fd8] rounded-[10px] border-[1px] border-solid border-[#6c7fd8] hover:bg-transparent hover:border-[#3d4750] hover:text-secondary aos-init aos-animate" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="400">Check Out</Link>
                         </div>
                     </div>
                 ) : (

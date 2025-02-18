@@ -53,25 +53,34 @@ const Products = () => {
   }, []);
 
   useEffect(() => {
-    let filtered = products.filter((product) =>
-      product.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filterAndSortProducts = () => {
+      let filtered = products.filter((product) =>
+        product.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+  
+      // Sorting logic
+      if (sortConfig.key) {
+        filtered.sort((a, b) => {
+          if (a[sortConfig.key] < b[sortConfig.key]) {
+            return sortConfig.direction === "ascending" ? -1 : 1;
+          }
+          if (a[sortConfig.key] > b[sortConfig.key]) {
+            return sortConfig.direction === "ascending" ? 1 : -1;
+          }
+          return 0;
+        });
+      }
+      console.log(filtered); // Log the filtered products
+      setFilteredProducts(filtered);
+    };
+  
+    filterAndSortProducts();
+  }, [searchQuery, sortConfig, products]); // Run when these values change
 
-    if (sortConfig.key) {
-      filtered.sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key]) {
-          return sortConfig.direction === "ascending" ? -1 : 1;
-        }
-        if (a[sortConfig.key] > b[sortConfig.key]) {
-          return sortConfig.direction === "ascending" ? 1 : -1;
-        }
-        return 0;
-      });
-    }
-
-    setFilteredProducts(filtered);
-    setCurrentPage(1); // Reset to the first page when filters or sorting change
-  }, [searchQuery, sortConfig, products]);
+  // Update this in the search input handler:
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
 
   const handleAddProduct = async (productData) => {
     try {
@@ -252,7 +261,7 @@ const Products = () => {
                             placeholder="Search products..."
                             className="border p-2 rounded-md text-sm"
                             value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onChange={handleSearchChange}
                             />
                         </div>
 
@@ -295,7 +304,7 @@ const Products = () => {
                                             <div className="Product flex justify-end md:justify-normal md:items-center">
                                                 <img src={import.meta.env.VITE_API_URL+''+product.product_img ?? ''} alt="new-product-1" className="w-[70px] border-[1px] border-solid border-[#eee] rounded-[10px]"/>
                                                 <div>   
-                                                    <span className="ml-[10px] block font-Poppins text-[14px] font-semibold leading-[24px] tracking-[0.03rem] text-secondary">{product.title ?? ''}</span>
+                                                    <span className="ml-[10px] block font-Poppins text-[14px] font-semibold leading-[24px] tracking-[0.03rem] text-secondary">{product.name ?? ''}</span>
                                                     <span className="ml-[10px] block font-Poppins text-[12px] font-normal leading-[16px] tracking-[0.03rem] text-secondary">{product.description ?? ''}</span>
                                                     <div className='px-2'>
                                                     {Array.from({ length: 5 }).map((_, index) => (

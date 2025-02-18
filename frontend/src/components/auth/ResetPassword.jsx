@@ -15,14 +15,15 @@ function ResetPassword() {
             toast.error("Password must be at least 6 characters long");
             return;
         }
+    
         try {
-             await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/reset-password/${token}`, { password });
+            await resetPassword(token, password);
             toast.success("Password reset successful");
             setTimeout(() => {
                 navigate("/");
             }, 2000);
         } catch (error) {
-            toast.error(error.response?.data?.message || "Password reset failed");
+            toast.error(error.message || "Password reset failed");
         }
     };
 

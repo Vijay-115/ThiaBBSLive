@@ -3,6 +3,7 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import ProductlistItem from "./ProductlistItem";
+import { ProductService } from "../../services/ProductService";
 
 // Custom Previous Arrow
 const CustomPrevArrow = (props) => {
@@ -36,15 +37,15 @@ function ProductList({ heading,type,category,filter  }) {
 
   // Fetch products from API
   useEffect(() => {
-    let skip = category === 'womens-jewellery' ? 0 : 5;
+    // let skip = category === 'womens-jewellery' ? 0 : 5;
     const fetchProducts = async () => {
       try {
-        const response = await fetch(
-          `https://dummyjson.com/products/category/${category}?limit=10&skip=${skip}`
-        );
-        const data = await response.json();
+        // const response = await fetch(
+        //   `https://dummyjson.com/products/category/${category}?limit=10&skip=${skip}`
+        // );
+        const data = await ProductService.getProducts();
         console.log(data);
-        setProducts(data.products);
+        setProducts(data);
       } catch (error) {
         console.error("Error fetching products:", error);
       }
@@ -95,13 +96,13 @@ function ProductList({ heading,type,category,filter  }) {
             {type === "Slider" ? (
                 <Slider {...settings}>
                 {products.map((product) => (
-                    <ProductlistItem key={product.id} product={product} />
+                    <ProductlistItem key={product._id} product={product} />
                 ))}
                 </Slider>
             ) : (
                 <div className={`grid grid-cols-2 ${filter ? 'md:grid-cols-3 lg:grid-cols-4' : 'sm:grid-cols-3 w-881:grid-cols-4 w-1125:grid-cols-5'} gap-2 sm:gap-5 px-4`}>
                 {products.map((product) => (
-                <ProductlistItem key={product.id} product={product} />
+                <ProductlistItem key={product._id} product={product} />
                 ))}
                 </div>
             )}
