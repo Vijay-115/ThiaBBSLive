@@ -284,7 +284,8 @@ select {
 } 
 
 .modal-content {
-    max-width: 500px;
+    max-width: 991px;
+    width: 100%;
     margin: auto;
     background: white;
     padding: 20px;
@@ -300,7 +301,7 @@ select {
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 99;
+    z-index: 9999;
   }
   @media screen and (max-width: 767px) {
     .bb-table table td::before {
