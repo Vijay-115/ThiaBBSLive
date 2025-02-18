@@ -5,7 +5,7 @@ const Sidebar = ({ isSidebarHidden, toggleSidebar }) => {
     return (
         <>
             <section id="sidebar" className={isSidebarHidden ? 'hide' : 'show'}>
-                <NavLink className="brand" to="#">
+                <NavLink className="brand" to="/">
                     <img src="/img/logo/favicon.png" className="bx bxs-smile bx-lg" />
                     <span className="text">BBSCart</span>
                 </NavLink>
