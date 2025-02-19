@@ -324,3 +324,10 @@ select {
         border-radius: 5px !important;
     }
 }
+.css-13cymwt-control, .css-t3ipsp-control{
+    padding: 4px 0px !important;
+    border-radius: 10px !important;
+}
+.css-13cymwt-control{
+    border-color: hsl(0, 0%, 93.3%) !important;
+}

@@ -57,7 +57,6 @@ exports.login = async (req, res) => {
 
     try {
         // Check if the user exists
-        // const user = await User.findOne({ email });
         const user = await User.findOne({ email }).select('+password');
         if (!user) {
             return res.status(400).json({ message: 'User not found' });
@@ -69,9 +68,30 @@ exports.login = async (req, res) => {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
-        // Generate a JWT token
-        const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        res.status(200).json({ token, user });
+        // Generate Access Token (Short Expiry)
+        const accessToken = jwt.sign(
+            { userId: user._id, role: user.role },
+            process.env.JWT_SECRET,
+            { expiresIn: '1h' } // Access token valid for 1 hour
+        );
+
+        // Generate Refresh Token (Longer Expiry)
+        const refreshToken = jwt.sign(
+            { userId: user._id },
+            process.env.REFRESH_TOKEN_SECRET,
+            { expiresIn: '7d' } // Refresh token valid for 7 days
+        );
+
+        // Optionally, store refreshToken in the database (or a secure storage)
+        user.refreshToken = refreshToken;
+        await user.save();
+
+        // Send tokens in response
+        res.status(200).json({
+            accessToken,
+            refreshToken,
+            user,
+        });
 
     } catch (err) {
         console.error(err.message);

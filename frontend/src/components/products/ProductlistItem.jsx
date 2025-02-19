@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux"; // Import Redux hooks
 import { Link } from "react-router-dom"; // Import Link for navigation
-import { addToCart, updateQuantity } from "../../slice/cartSlice";
+import { addToCart, removeFromCart, updateQuantity, fetchCartItems } from "../../slice/cartSlice";
 import toast from 'react-hot-toast';
 import { addToWishlist, removeFromWishlist } from "../../slice/wishlistSlice";
 
@@ -10,6 +10,10 @@ function ProductlistItem({ type, product, filter }) {
   const dispatch = useDispatch(); // Redux dispatch function
   const cartItems = useSelector((state) => state.cart.items); // Get cart items from Redux state
   const wishlistItems = useSelector((state) => state.wishlist.items); // Get wishlist items from Redux state
+
+  useEffect(() => {
+    dispatch(fetchCartItems());
+  }, [dispatch]);
 
   // Handle increment
   const handleIncrement = () => {
@@ -52,8 +56,8 @@ function ProductlistItem({ type, product, filter }) {
   // Handle adding to cart
   const handleAddToCart = () => {
     const initialQuantity = quantities[product._id] || 1;
-
-    dispatch(addToCart({ product, quantity: initialQuantity }));
+    console.log("Adding product to cart:", product._id);
+    dispatch(addToCart({ productId:product._id, quantity: initialQuantity }));
 
     setQuantities((prev) => ({
       ...prev,
