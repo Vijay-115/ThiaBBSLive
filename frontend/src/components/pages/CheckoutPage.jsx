@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation } from 'react-router-dom';
+import { placeOrder } from '../../slice/orderSlice';
 
 function CheckoutPage() {
     const dispatch = useDispatch();
@@ -10,6 +11,28 @@ function CheckoutPage() {
         0
       ).toFixed(2);
     const deliveryCharge = 0;
+    const { loading, order, error } = useSelector((state) => state.order);
+
+    const [orderData, setOrderData] = useState({
+        userId: '', // Change to dynamic user ID
+        products:cartItems,
+        totalAmount: cartTotal,
+        shippingAddress: { street: '', city: '', state: '', zip: '', country: '' },
+        paymentMethod: 'COD',
+    });
+
+    const handleChange = (e) => {
+        setOrderData({
+            ...orderData,
+            shippingAddress: { ...orderData.shippingAddress, [e.target.name]: e.target.value }
+        });
+        console.log(orderData);
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        dispatch(placeOrder(formData));
+    };
 
     useEffect(() => {
         console.log("cartTotal:", cartTotal); // Debugging
@@ -73,10 +96,10 @@ function CheckoutPage() {
                                         Object.values(cartItems).map(({ product, quantity }) => (
                                             <div className="pro-items p-[15px] bg-[#f8f8fb] border-[1px] border-solid border-[#eee] rounded-[20px] flex mb-[24px] max-[420px]:flex-col">
                                             <div className="image mr-[15px] max-[420px]:mr-[0] max-[420px]:mb-[15px]">
-                                                <img src={product.thumbnail} alt="new-product-1" className="max-w-max w-[100px] h-[100px] border-[1px] border-solid border-[#eee] rounded-[20px] max-[1399px]:h-[80px] max-[1399px]:w-[80px]"/>
+                                                <img src={import.meta.env.VITE_API_URL+''+product.product_img ?? ''} alt="new-product-1" className="max-w-max w-[100px] h-[100px] border-[1px] border-solid border-[#eee] rounded-[20px] max-[1399px]:h-[80px] max-[1399px]:w-[80px]"/>
                                             </div>
                                             <div className="items-contact">
-                                                <h4 className="text-[16px]"><Link to={`/product/${product.id}`} className="font-Poppins tracking-[0.03rem] text-[15px] font-medium leading-[18px] text-secondary">{product.title}</Link></h4>
+                                                <h4 className="text-[16px]"><Link to={`/product/${product._id}`} className="font-Poppins tracking-[0.03rem] text-[15px] font-medium leading-[18px] text-secondary">{product.name}</Link></h4>
                                                 <span className="bb-pro-rating flex">
                                                     {
                                                         Array.from({ length: 5 }).map((_, index) => (
@@ -190,7 +213,7 @@ function CheckoutPage() {
                                     </div>
                                 </div>
                                 <div className="input-box-form mt-[20px]">
-                                    <form method="post">
+                                    <form onSubmit={handleSubmit}>
                                         <div className="flex flex-wrap mx-[-12px]">
                                             <div className="min-[992px]:w-[50%] w-full px-[12px]">
                                                 <div className="input-item mb-[24px]">
@@ -207,14 +230,14 @@ function CheckoutPage() {
                                             <div className="w-full px-[12px]">
                                                 <div className="input-item mb-[24px]">
                                                     <label className="inline-block font-Poppins leading-[26px] tracking-[0.02rem] mb-[8px] text-[14px] font-medium text-secondary">Address *</label>
-                                                    <input type="text" name="name" placeholder="Address Line 1" className="w-full p-[10px] text-[14px] font-normal text-secondary border-[1px] border-solid border-[#eee] leading-[26px] outline-[0] rounded-[10px]" required=""/>
+                                                    <input onChange={handleChange} type="text" name="name" placeholder="Address Line 1" className="w-full p-[10px] text-[14px] font-normal text-secondary border-[1px] border-solid border-[#eee] leading-[26px] outline-[0] rounded-[10px]" required=""/>
                                                 </div>
                                             </div>
                                             <div className="min-[992px]:w-[50%] w-full px-[12px]">
                                                 <div className="input-item mb-[24px]">
                                                     <label className="inline-block font-Poppins leading-[26px] tracking-[0.02rem] mb-[8px] text-[14px] font-medium text-secondary">City *</label>
                                                     <div className="custom-select p-[10px] border-[1px] border-solid border-[#eee] leading-[26px] rounded-[10px]">
-                                                        <div className="select"><select className="hide-select">
+                                                        <div onChange={handleChange} className="select"><select className="hide-select">
                                                             <option value="option1">City</option>
                                                             <option value="option1">City 1</option>
                                                             <option value="option2">City 2</option>
@@ -227,14 +250,14 @@ function CheckoutPage() {
                                             <div className="min-[992px]:w-[50%] w-full px-[12px]">
                                                 <div className="input-item mb-[24px]">
                                                     <label className="inline-block font-Poppins leading-[26px] tracking-[0.02rem] mb-[8px] text-[14px] font-medium text-secondary">Post Code *</label>
-                                                    <input type="text" name="name" placeholder="Post Code" className="w-full p-[10px] text-[14px] font-normal text-secondary border-[1px] border-solid border-[#eee] leading-[26px] outline-[0] rounded-[10px]" required=""/>
+                                                    <input onChange={handleChange} type="text" name="name" placeholder="Post Code" className="w-full p-[10px] text-[14px] font-normal text-secondary border-[1px] border-solid border-[#eee] leading-[26px] outline-[0] rounded-[10px]" required=""/>
                                                 </div>
                                             </div>
                                             <div className="min-[992px]:w-[50%] w-full px-[12px]">
                                                 <div className="input-item mb-[24px]">
                                                     <label className="inline-block font-Poppins leading-[26px] tracking-[0.02rem] mb-[8px] text-[14px] font-medium text-secondary">Country *</label>
                                                     <div className="custom-select p-[10px] border-[1px] border-solid border-[#eee] leading-[26px] rounded-[10px]">
-                                                        <div className="select"><select className="hide-select">
+                                                        <div className="select"><select onChange={handleChange} className="hide-select">
                                                             <option value="option1">Country</option>
                                                             <option value="option1">Country 1</option>
                                                             <option value="option2">Country 2</option>
@@ -248,7 +271,7 @@ function CheckoutPage() {
                                                 <div className="input-item mb-[24px]">
                                                     <label className="inline-block font-Poppins leading-[26px] tracking-[0.02rem] mb-[8px] text-[14px] font-medium text-secondary">Region State *</label>
                                                     <div className="custom-select p-[10px] border-[1px] border-solid border-[#eee] leading-[26px] rounded-[10px]">
-                                                        <div className="select"><select className="hide-select">
+                                                        <div className="select"><select onChange={handleChange} className="hide-select">
                                                             <option value="option1">Region/State</option>
                                                             <option value="option1">Region/State 1</option>
                                                             <option value="option2">Region/State 2</option>

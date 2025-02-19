@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from 'react-router-dom';
-import axios from 'axios';
 import toast from 'react-hot-toast';
+import { register } from "../../services/authService";
 
 const Register = () => {
 
@@ -32,22 +32,14 @@ const Register = () => {
             toast.error("Please fix the errors and try again.");
             return;
         }
-
+    
         try {
-            await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/register`, userData);
-            toast.success('User registered successfully');
-            setUserData({ name: '', email: '', phone: '', password: '' });
+            await register(userData);
+            toast.success("User registered successfully");
+            setUserData({ name: "", email: "", phone: "", password: "" });
             setErrors({});
         } catch (error) {
-            if (error.response) {
-                if (error.response.status === 400) {
-                    toast.error(error.response.data.msg);
-                } else {
-                    toast.error('Registration failed. Please try again.');
-                }
-            } else {
-                toast.error('Registration failed. Please try again.');
-            }
+            toast.error(error.message || "Registration failed. Please try again.");
         }
     };
 

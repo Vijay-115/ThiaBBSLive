@@ -18,10 +18,16 @@ export const ProductService = {
 
   async createProduct(product) {
     try {
+      // Get the token from localStorage or any other storage method
+      const token = localStorage.getItem('token');  // Adjust this to your actual storage method
+  
       const response = await axios.post(BASE_URL, product, {
-        headers: { "Content-Type": "application/json" },
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: {
+          "Content-Type": "multipart/form-data",  // This is needed for form-data submissions, like file uploads
+          "Authorization": `Bearer ${token}`     // Add the Authorization token in the headers
+        },
       });
+  
       console.log("Created Product:", response.data);
       return response.data;
     } catch (error) {
@@ -31,12 +37,15 @@ export const ProductService = {
       );
     }
   },
+  
 
   async updateProduct(productId, productData) {
     try {
+      const token = localStorage.getItem('token');  // Adjust this to your actual storage method
       const response = await axios.put(`${BASE_URL}/${productId}`, productData, {
         headers: { "Content-Type": "application/json" },
         headers: { 'Content-Type': 'multipart/form-data' },
+        headers: { 'Authorization': `Bearer ${token}` },
       });
       console.log("Updated Product:", response.data);
       return response.data;

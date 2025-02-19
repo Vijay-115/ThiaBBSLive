@@ -14,13 +14,13 @@ const cartSlice = createSlice({
       const { product, quantity } = action.payload;
   
       // Check if the product already exists in the cart
-      if (state.items[product.id]) {
+      if (state.items[product._id]) {
           // If the product exists, update the quantity
-          console.log(`If the product exists, update the quantity - ${state.items[product.id].quantity +'+='+ quantity}`,state.items[product.id]);
-          state.items[product.id].quantity += quantity;
+          console.log(`If the product exists, update the quantity - ${state.items[product._id].quantity +'+='+ quantity}`,state.items[product._id]);
+          state.items[product._id].quantity += quantity;
       } else {
           // If the product doesn't exist, add it to the cart
-          state.items[product.id] = { product, quantity };
+          state.items[product._id] = { product, quantity };
       }
   
       console.log("Cart Items After Add:", JSON.parse(JSON.stringify(state.items))); // Log plain object
