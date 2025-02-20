@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux"; // Import Redux hooks
 import { Link } from "react-router-dom"; // Import Link for navigation
-import { addToCart, updateQuantity } from "../../slice/cartSlice";
+import { addToCart, removeFromCart, updateQuantity, fetchCartItems } from "../../slice/cartSlice";
 import toast from 'react-hot-toast';
 import { addToWishlist, removeFromWishlist } from "../../slice/wishlistSlice";
 
@@ -11,28 +11,32 @@ function ProductlistItem({ type, product, filter }) {
   const cartItems = useSelector((state) => state.cart.items); // Get cart items from Redux state
   const wishlistItems = useSelector((state) => state.wishlist.items); // Get wishlist items from Redux state
 
+  useEffect(() => {
+    dispatch(fetchCartItems());
+  }, [dispatch]);
+
   // Handle increment
   const handleIncrement = () => {
-    const newQuantity = (quantities[product.id] || 1) + 1;
+    const newQuantity = (quantities[product._id] || 1) + 1;
 
     setQuantities((prev) => ({
       ...prev,
-      [product.id]: newQuantity,
+      [product._id]: newQuantity,
     }));
 
-    dispatch(updateQuantity({ productId: product.id, quantity: newQuantity }));
+    dispatch(updateQuantity({ productId: product._id, quantity: newQuantity }));
   };
 
   // Handle decrement
   const handleDecrement = () => {
-    const newQuantity = Math.max((quantities[product.id] || 1) - 1, 1);
+    const newQuantity = Math.max((quantities[product._id] || 1) - 1, 1);
 
     setQuantities((prev) => ({
       ...prev,
-      [product.id]: newQuantity,
+      [product._id]: newQuantity,
     }));
 
-    dispatch(updateQuantity({ productId: product.id, quantity: newQuantity }));
+    dispatch(updateQuantity({ productId: product._id, quantity: newQuantity }));
   };
 
   // Handle input change
@@ -42,61 +46,61 @@ function ProductlistItem({ type, product, filter }) {
 
       setQuantities((prev) => ({
         ...prev,
-        [product.id]: newQuantity,
+        [product._id]: newQuantity,
       }));
 
-      dispatch(updateQuantity({ productId: product.id, quantity: newQuantity }));
+      dispatch(updateQuantity({ productId: product._id, quantity: newQuantity }));
     }
   };
 
   // Handle adding to cart
   const handleAddToCart = () => {
-    const initialQuantity = quantities[product.id] || 1;
-
-    dispatch(addToCart({ product, quantity: initialQuantity }));
+    const initialQuantity = quantities[product._id] || 1;
+    console.log("Adding product to cart:", product._id);
+    dispatch(addToCart({ productId:product._id, quantity: initialQuantity }));
 
     setQuantities((prev) => ({
       ...prev,
-      [product.id]: initialQuantity,
+      [product._id]: initialQuantity,
     }));
     // Display toast notification
-    toast.success(`${product.title} added to cart!`);
+    toast.success(`${product.name} added to cart!`);
   };
 
   // Handle adding to cart
   const handleToggleWishlist = (id) => {
     const existingCartItem = Object.values(wishlistItems).find(
-        (item) => item.product.id === id
+        (item) => item.product._id === id
     );
     if (existingCartItem) {
         dispatch(removeFromWishlist( id )); // Pass productId as part of an object
-        toast.error(`${product.title} Removed from Wishlist!`);
+        toast.error(`${product.name} Removed from Wishlist!`);
     } else {
         dispatch(addToWishlist({ product }));
-        toast.success(`${product.title} added to Wishlist!`);
+        toast.success(`${product.name} added to Wishlist!`);
     }
   };
 
   return (
     <div
-      key={product.id}
+      key={product._id}
       className="product-list-item border rounded-xl shadow-md border-gray-400 hover:border-blue-800 transition ease-in-out p-2 font-Poppins mx-auto"
     >
       <div className="product-img bg-gray-100 rounded-lg mb-1 relative">
         <img
-          src={product.thumbnail}
-          alt={product.title}
+          src={import.meta.env.VITE_API_URL+''+product.product_img ?? ''}
+          alt={product.name}
           className="w-[200px] h-[200px] object-cover mx-auto w-full rounded-sm"
         />
-        <div onClick={()=> handleToggleWishlist(product.id)} className={`wishlist-sec w-[30px] h-[30px] group absolute top-0 right-0 rounded-full flex items-center justify-center border-[1.5px] border-red-600 ${Object.values(wishlistItems).find(
-      (item) => item.product.id === product.id
+        <div onClick={()=> handleToggleWishlist(product._id)} className={`wishlist-sec w-[30px] h-[30px] group absolute top-0 right-0 rounded-full flex items-center justify-center border-[1.5px] border-red-600 ${Object.values(wishlistItems).find(
+      (item) => item.product._id === product._id
     ) ? 'bg-red-600 hover:bg-white' : 'bg-white hover:bg-red-600'}`}>
           <i className={`ri-heart-line  ${Object.values(wishlistItems).find(
-      (item) => item.product.id === product.id
+      (item) => item.product._id === product._id
     ) ? 'text-white group-hover:text-red-600' : 'text-red-600 group-hover:text-white'}`}></i>
         </div>
       </div>
-      <Link to={`/product/${product.id}`} className="no-underline text-black">
+      <Link to={`/product/${product._id}`} className="no-underline text-black">
         <h5
           style={{
             overflow: "hidden",
@@ -105,9 +109,9 @@ function ProductlistItem({ type, product, filter }) {
             WebkitLineClamp: 1,
             WebkitBoxOrient: "vertical",
           }}
-          className="product-title font-quicksand text-sm leading-4 font-semibold mt-1 text-secondary hover:text-primary"
+          className="product-name font-quicksand text-sm leading-4 font-semibold mt-1 text-secondary hover:text-primary"
         >
-          {product.title}
+          {product.name}
         </h5>
       </Link>
       <div className="product-price text-secondary text-sm font-bold">Rs {product.price}</div>
@@ -132,7 +136,7 @@ function ProductlistItem({ type, product, filter }) {
           <input
             className="w-1/3 appearance-none p-0 text-center"
             type="text"
-            value={quantities[product.id] || 1}
+            value={quantities[product._id] || 1}
             onChange={(e) => handleInputChange(e.target.value)}
           />
           <button className="w-1/3" onClick={handleDecrement}>

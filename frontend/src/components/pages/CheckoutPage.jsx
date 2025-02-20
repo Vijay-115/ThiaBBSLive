@@ -1,15 +1,92 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { placeOrder } from '../../slice/orderSlice';
+import Select from "react-select";
+import toast from "react-hot-toast";
+import { removeFromCart } from '../../slice/cartSlice';
 
 function CheckoutPage() {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const cartItems = useSelector((state) => state.cart.items);
     const cartTotal = Object.values(cartItems).reduce(
         (total, item) => total + (item.quantity * item.product.price || 0),
         0
       ).toFixed(2);
     const deliveryCharge = 0;
+    const { loading, order, error } = useSelector((state) => state.order);
+
+    const [orderData, setOrderData] = useState({
+        userId: "", // Dynamic user ID
+        products: cartItems,
+        totalAmount: cartTotal,
+        shippingAddress: { street: "", city: "", state: "", zip: "", country: "" },
+        paymentMethod: "COD",
+    });
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setOrderData((prevData) => ({
+            ...prevData,
+            shippingAddress: { ...prevData.shippingAddress, [name]: value },
+        }));
+        console.log(orderData);
+    };
+
+    const handleSelectChange = (selectedOption, { name }) => {
+        setOrderData((prevData) => ({
+            ...prevData,
+            shippingAddress: { ...prevData.shippingAddress, [name]: selectedOption.value },
+        }));
+        console.log(orderData);
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        console.log(orderData);
+    
+        dispatch(placeOrder(orderData))
+            .then((response) => {
+                console.log("Dispatch Response:", response);
+                if (response.payload?.success) {
+                    Object.values(cartItems).forEach((item) => {
+                        console.log(item);
+                        dispatch(removeFromCart(item.product._id));  // ✅ Fix: Dispatch for each item
+                    });    
+                    toast.success("Order placed successfully!");
+                    navigate("/");
+                } else {
+                    toast.error(response.payload?.message || "Failed to place order.");
+                }
+            })
+            .catch((error) => {
+                toast.error("Something went wrong. Please try again.");
+                console.error("Order Error:", error);
+            });
+    };
+    
+
+    const cityOptions = [
+        { value: "city1", label: "City 1" },
+        { value: "city2", label: "City 2" },
+        { value: "city3", label: "City 3" },
+        { value: "city4", label: "City 4" },
+    ];
+
+    const countryOptions = [
+        { value: "country1", label: "Country 1" },
+        { value: "country2", label: "Country 2" },
+        { value: "country3", label: "Country 3" },
+        { value: "country4", label: "Country 4" },
+    ];
+
+    const regionOptions = [
+        { value: "region1", label: "Region/State 1" },
+        { value: "region2", label: "Region/State 2" },
+        { value: "region3", label: "Region/State 3" },
+        { value: "region4", label: "Region/State 4" },
+    ];
 
     useEffect(() => {
         console.log("cartTotal:", cartTotal); // Debugging
@@ -28,8 +105,7 @@ function CheckoutPage() {
             top: 0, // Scroll to the top
             behavior: 'smooth', // Enables smooth scrolling
         });
-    }, []);
-    
+    }, []);    
       
     return (
         <>
@@ -55,7 +131,7 @@ function CheckoutPage() {
                                             <li className="flex justify-between leading-[28px] mb-[8px]">
                                                 <span className="left-item font-Poppins leading-[28px] tracking-[0.03rem] text-[14px] font-medium text-secondary">Coupon Discount</span>
                                                 <span className="font-Poppins leading-[28px] tracking-[0.03rem] text-[14px] font-medium text-secondary">
-                                                    <a href="javascript:void(0)" className="apply drop-coupon font-Poppins leading-[28px] tracking-[0.03rem] text-[14px] font-medium text-[#ff0000]">Apply Coupon</a>
+                                                    <a href="" className="apply drop-coupon font-Poppins leading-[28px] tracking-[0.03rem] text-[14px] font-medium text-[#ff0000]">Apply Coupon</a>
                                                 </span>
                                             </li>
                                             <li className="flex justify-between leading-[28px]">
@@ -71,30 +147,30 @@ function CheckoutPage() {
                                     <div className="bb-checkout-pro mb-[-24px]">
                                     {cartItems && Object.keys(cartItems).length > 0 ? (
                                         Object.values(cartItems).map(({ product, quantity }) => (
-                                            <div className="pro-items p-[15px] bg-[#f8f8fb] border-[1px] border-solid border-[#eee] rounded-[20px] flex mb-[24px] max-[420px]:flex-col">
-                                            <div className="image mr-[15px] max-[420px]:mr-[0] max-[420px]:mb-[15px]">
-                                                <img src={product.thumbnail} alt="new-product-1" className="max-w-max w-[100px] h-[100px] border-[1px] border-solid border-[#eee] rounded-[20px] max-[1399px]:h-[80px] max-[1399px]:w-[80px]"/>
-                                            </div>
-                                            <div className="items-contact">
-                                                <h4 className="text-[16px]"><Link to={`/product/${product.id}`} className="font-Poppins tracking-[0.03rem] text-[15px] font-medium leading-[18px] text-secondary">{product.title}</Link></h4>
-                                                <span className="bb-pro-rating flex">
-                                                    {
-                                                        Array.from({ length: 5 }).map((_, index) => (
-                                                        <i
-                                                            key={index}
-                                                            className={`ri-star-fill float-left text-[15px] mr-[3px] ${
-                                                            index < product.rating ? 'text-[#e7d52e]' : 'text-[#777]'
-                                                            }`}
-                                                        ></i>
-                                                        ))
-                                                    }
-                                                </span>
-                                                <div className="inner-price flex items-center justify-left mb-[4px]">
-                                                    <span className="new-price font-Poppins text-secondary font-semibold leading-[26px] tracking-[0.02rem] text-[15px]">{product.price}</span>
-                                                    <span className="old-price ml-[10px] font-Poppins text-[#777] font-semibold leading-[26px] tracking-[0.02rem] text-[15px]"> * {quantity}</span>
+                                            <div key={product._id} className="pro-items p-[15px] bg-[#f8f8fb] border-[1px] border-solid border-[#eee] rounded-[20px] flex mb-[24px] max-[420px]:flex-col">
+                                                <div className="image mr-[15px] max-[420px]:mr-[0] max-[420px]:mb-[15px]">
+                                                    <img src={import.meta.env.VITE_API_URL+''+product.product_img ?? ''} alt="new-product-1" className="max-w-max w-[100px] h-[100px] border-[1px] border-solid border-[#eee] rounded-[20px] max-[1399px]:h-[80px] max-[1399px]:w-[80px]"/>
+                                                </div>
+                                                <div className="items-contact">
+                                                    <h4 className="text-[16px]"><Link to={`/product/${product._id}`} className="font-Poppins tracking-[0.03rem] text-[15px] font-medium leading-[18px] text-secondary">{product.name}</Link></h4>
+                                                    <span className="bb-pro-rating flex">
+                                                        {
+                                                            Array.from({ length: 5 }).map((_, index) => (
+                                                            <i
+                                                                key={index}
+                                                                className={`ri-star-fill float-left text-[15px] mr-[3px] ${
+                                                                index < product.rating ? 'text-[#e7d52e]' : 'text-[#777]'
+                                                                }`}
+                                                            ></i>
+                                                            ))
+                                                        }
+                                                    </span>
+                                                    <div className="inner-price flex items-center justify-left mb-[4px]">
+                                                        <span className="new-price font-Poppins text-secondary font-semibold leading-[26px] tracking-[0.02rem] text-[15px]">{product.price}</span>
+                                                        <span className="old-price ml-[10px] font-Poppins text-[#777] font-semibold leading-[26px] tracking-[0.02rem] text-[15px]"> * {quantity}</span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
                                         ))
                                     ): (
                                         <div className="w-full text-center">
@@ -174,7 +250,7 @@ function CheckoutPage() {
                                 <p className="font-Poppins leading-[28px] tracking-[0.03rem] mb-[16px] text-[14px] font-light text-secondary">By creating an account you will be able to shop faster, be up to date on an order's status,
                                     and keep track of the orders you have previously made.</p>
                                 <div className="inner-button mb-[20px]">
-                                    <a href="javascript:void(0)" className="bb-btn-2 inline-block items-center justify-center check-btn transition-all duration-[0.3s] ease-in-out font-Poppins leading-[28px] tracking-[0.03rem] py-[4px] px-[25px] text-[14px] font-normal text-[#fff] bg-[#6c7fd8] rounded-[10px] border-[1px] border-solid border-[#6c7fd8] hover:bg-transparent hover:border-[#3d4750] hover:text-secondary">Continue</a>
+                                    <a href="" className="bb-btn-2 inline-block items-center justify-center check-btn transition-all duration-[0.3s] ease-in-out font-Poppins leading-[28px] tracking-[0.03rem] py-[4px] px-[25px] text-[14px] font-normal text-[#fff] bg-[#6c7fd8] rounded-[10px] border-[1px] border-solid border-[#6c7fd8] hover:bg-transparent hover:border-[#3d4750] hover:text-secondary">Continue</a>
                                 </div>
                                 <div className="main-title mb-[20px]">
                                     <h4 className="font-quicksand tracking-[0.03rem] leading-[1.2] text-[20px] font-bold text-secondary">Billing Details</h4>
@@ -190,77 +266,94 @@ function CheckoutPage() {
                                     </div>
                                 </div>
                                 <div className="input-box-form mt-[20px]">
-                                    <form method="post">
+                                    <form onSubmit={handleSubmit}>
                                         <div className="flex flex-wrap mx-[-12px]">
+                                            {/* First Name */}
                                             <div className="min-[992px]:w-[50%] w-full px-[12px]">
                                                 <div className="input-item mb-[24px]">
-                                                    <label className="inline-block font-Poppins leading-[26px] tracking-[0.02rem] mb-[8px] text-[14px] font-medium text-secondary">First Name *</label>
-                                                    <input type="text" name="name" placeholder="Enter your First Name" className="w-full p-[10px] text-[14px] font-normal text-secondary border-[1px] border-solid border-[#eee] leading-[26px] outline-[0] rounded-[10px]" required=""/>
+                                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">First Name *</label>
+                                                    <input type="text" name="firstName" placeholder="Enter your First Name" className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" required />
                                                 </div>
                                             </div>
+
+                                            {/* Last Name */}
                                             <div className="min-[992px]:w-[50%] w-full px-[12px]">
                                                 <div className="input-item mb-[24px]">
-                                                    <label className="inline-block font-Poppins leading-[26px] tracking-[0.02rem] mb-[8px] text-[14px] font-medium text-secondary">Last Name *</label>
-                                                    <input type="text" name="name" placeholder="Enter your Last Name" className="w-full p-[10px] text-[14px] font-normal text-secondary border-[1px] border-solid border-[#eee] leading-[26px] outline-[0] rounded-[10px]" required=""/>
+                                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">Last Name *</label>
+                                                    <input type="text" name="lastName" placeholder="Enter your Last Name" className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" required />
                                                 </div>
                                             </div>
+
+                                            {/* Address */}
                                             <div className="w-full px-[12px]">
                                                 <div className="input-item mb-[24px]">
-                                                    <label className="inline-block font-Poppins leading-[26px] tracking-[0.02rem] mb-[8px] text-[14px] font-medium text-secondary">Address *</label>
-                                                    <input type="text" name="name" placeholder="Address Line 1" className="w-full p-[10px] text-[14px] font-normal text-secondary border-[1px] border-solid border-[#eee] leading-[26px] outline-[0] rounded-[10px]" required=""/>
+                                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">Address *</label>
+                                                    <input type="text" name="street" onChange={handleChange} value={orderData.shippingAddress.street} placeholder="Address Line 1" className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" required />
                                                 </div>
                                             </div>
+
+                                            {/* City Dropdown */}
                                             <div className="min-[992px]:w-[50%] w-full px-[12px]">
                                                 <div className="input-item mb-[24px]">
-                                                    <label className="inline-block font-Poppins leading-[26px] tracking-[0.02rem] mb-[8px] text-[14px] font-medium text-secondary">City *</label>
-                                                    <div className="custom-select p-[10px] border-[1px] border-solid border-[#eee] leading-[26px] rounded-[10px]">
-                                                        <div className="select"><select className="hide-select">
-                                                            <option value="option1">City</option>
-                                                            <option value="option1">City 1</option>
-                                                            <option value="option2">City 2</option>
-                                                            <option value="option3">City 3</option>
-                                                            <option value="option4">City 4</option>
-                                                        </select><div className="custom-select">City</div><ul className="select-options" ><li rel="option1">City</li><li rel="option1">City 1</li><li rel="option2">City 2</li><li rel="option3">City 3</li><li rel="option4">City 4</li></ul></div>
-                                                    </div>
+                                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">City *</label>
+                                                    <Select
+                                                        options={cityOptions}
+                                                        value={cityOptions.find(option => option.value === orderData.shippingAddress.city)}
+                                                        onChange={handleSelectChange}
+                                                        placeholder="Select City"
+                                                        isSearchable
+                                                        className="w-full"
+                                                        name="city"
+                                                    />
                                                 </div>
                                             </div>
+
+                                            {/* Post Code */}
                                             <div className="min-[992px]:w-[50%] w-full px-[12px]">
                                                 <div className="input-item mb-[24px]">
-                                                    <label className="inline-block font-Poppins leading-[26px] tracking-[0.02rem] mb-[8px] text-[14px] font-medium text-secondary">Post Code *</label>
-                                                    <input type="text" name="name" placeholder="Post Code" className="w-full p-[10px] text-[14px] font-normal text-secondary border-[1px] border-solid border-[#eee] leading-[26px] outline-[0] rounded-[10px]" required=""/>
+                                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">Post Code *</label>
+                                                    <input type="text" name="zip" onChange={handleChange} value={orderData.shippingAddress.zip} placeholder="Post Code" className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" required />
                                                 </div>
                                             </div>
+
+                                            {/* Country Dropdown */}
                                             <div className="min-[992px]:w-[50%] w-full px-[12px]">
                                                 <div className="input-item mb-[24px]">
-                                                    <label className="inline-block font-Poppins leading-[26px] tracking-[0.02rem] mb-[8px] text-[14px] font-medium text-secondary">Country *</label>
-                                                    <div className="custom-select p-[10px] border-[1px] border-solid border-[#eee] leading-[26px] rounded-[10px]">
-                                                        <div className="select"><select className="hide-select">
-                                                            <option value="option1">Country</option>
-                                                            <option value="option1">Country 1</option>
-                                                            <option value="option2">Country 2</option>
-                                                            <option value="option3">Country 3</option>
-                                                            <option value="option4">Country 4</option>
-                                                        </select><div className="custom-select">Country</div><ul className="select-options"><li rel="option1">Country</li><li rel="option1">Country 1</li><li rel="option2">Country 2</li><li rel="option3">Country 3</li><li rel="option4">Country 4</li></ul></div>
-                                                    </div>
+                                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">Country *</label>
+                                                    <Select
+                                                        options={countryOptions}
+                                                        value={countryOptions.find(option => option.value === orderData.shippingAddress.country)}
+                                                        onChange={handleSelectChange}
+                                                        placeholder="Select Country"
+                                                        isSearchable
+                                                        className="w-full"
+                                                        name="country"
+                                                    />
                                                 </div>
                                             </div>
+
+                                            {/* Region/State Dropdown */}
                                             <div className="min-[992px]:w-[50%] w-full px-[12px]">
                                                 <div className="input-item mb-[24px]">
-                                                    <label className="inline-block font-Poppins leading-[26px] tracking-[0.02rem] mb-[8px] text-[14px] font-medium text-secondary">Region State *</label>
-                                                    <div className="custom-select p-[10px] border-[1px] border-solid border-[#eee] leading-[26px] rounded-[10px]">
-                                                        <div className="select"><select className="hide-select">
-                                                            <option value="option1">Region/State</option>
-                                                            <option value="option1">Region/State 1</option>
-                                                            <option value="option2">Region/State 2</option>
-                                                            <option value="option3">Region/State 3</option>
-                                                            <option value="option4">Region/State 4</option>
-                                                        </select><div className="custom-select">Region/State</div><ul className="select-options"><li rel="option1">Region/State</li><li rel="option1">Region/State 1</li><li rel="option2">Region/State 2</li><li rel="option3">Region/State 3</li><li rel="option4">Region/State 4</li></ul></div>
-                                                    </div>
+                                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">Region/State *</label>
+                                                    <Select
+                                                        options={regionOptions}
+                                                        value={regionOptions.find(option => option.value === orderData.shippingAddress.state)}
+                                                        onChange={handleSelectChange}
+                                                        placeholder="Select Region/State"
+                                                        isSearchable
+                                                        className="w-full"
+                                                        name="state"
+                                                    />
                                                 </div>
                                             </div>
+
+                                            {/* Place Order Button */}
                                             <div className="w-full px-[12px]">
                                                 <div className="input-button">
-                                                    <button type="button" className="bb-btn-2 inline-block items-center justify-center check-btn transition-all duration-[0.3s] ease-in-out font-Poppins leading-[28px] tracking-[0.03rem] py-[4px] px-[25px] text-[14px] font-normal text-[#fff] bg-[#6c7fd8] rounded-[10px] border-[1px] border-solid border-[#6c7fd8] hover:bg-transparent hover:border-[#3d4750] hover:text-secondary">Place Order</button>
+                                                    <button type="submit" className="bb-btn-2 inline-block py-[10px] px-[25px] text-[14px] font-medium text-white bg-[#6c7fd8] rounded-[10px] hover:bg-transparent hover:border-[#3d4750] hover:text-secondary border">
+                                                        Place Order
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>

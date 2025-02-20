@@ -1,24 +1,26 @@
 const express = require('express');
 const router = express.Router();
 const productController = require('../controllers/productController');
-const { uploadMultiple } = require('../middleware/upload');
+const { uploadFields } = require('../middleware/upload');
+const { auth, adminOnly } = require('../middleware/authMiddleware');
 
 // Create product with image upload
-router.post("/products", uploadMultiple, productController.createProduct);
+router.post("/", auth, uploadFields, productController.createProduct);
 // READ: Get all products
-router.get('/products', productController.getAllProducts);
+router.get('/', productController.getAllProducts);
 
 // READ: Get a single product by ID
-router.get('/products/:id', productController.getProductById);
+router.get('/:id', productController.getProductById);
 
 // Update product with image upload
 router.put(
-    '/products/:id',
-    uploadMultiple, // Accept up to 5 images
+    '/:id',
+    auth,
+    uploadFields, // Accept up to 5 images
     productController.updateProduct
 );
 
 // DELETE: Delete a product by ID
-router.delete('/products/:id', productController.deleteProduct);
+router.delete('/:id', auth, productController.deleteProduct);
 
 module.exports = router;

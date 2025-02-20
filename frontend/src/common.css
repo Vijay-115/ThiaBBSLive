@@ -284,7 +284,9 @@ select {
 } 
 
 .modal-content {
-    max-width: 500px;
+    /* max-width: 90vw; */
+    display: contents;
+    width: max-content;
     margin: auto;
     background: white;
     padding: 20px;
@@ -300,6 +302,32 @@ select {
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 99;
+    z-index: 9999;
   }
-  
+  @media screen and (max-width: 767px) {
+    .bb-table table td::before {
+        content: attr(data-label);
+        float: left;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+    .bb-table table td {
+        border-bottom: 1px solid #ddd;
+        display: block;
+        font-size: .8em;
+        text-align: right;
+    }
+    .bb-table table tr {
+        border: 1px solid #ddd !important;
+        display: block;
+        margin-bottom: 0.85em;
+        border-radius: 5px !important;
+    }
+}
+.css-13cymwt-control, .css-t3ipsp-control{
+    padding: 4px 0px !important;
+    border-radius: 10px !important;
+}
+.css-13cymwt-control{
+    border-color: hsl(0, 0%, 93.3%) !important;
+}

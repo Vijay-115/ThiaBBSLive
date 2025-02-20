@@ -3,6 +3,10 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
 const nodemailer = require("nodemailer");
+const redis = require("redis");
+
+const client = redis.createClient();
+client.connect().catch(console.error);
 
 // Register user
 exports.register = async (req, res) => {
@@ -53,7 +57,6 @@ exports.login = async (req, res) => {
 
     try {
         // Check if the user exists
-        // const user = await User.findOne({ email });
         const user = await User.findOne({ email }).select('+password');
         if (!user) {
             return res.status(400).json({ message: 'User not found' });
@@ -65,9 +68,30 @@ exports.login = async (req, res) => {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
-        // Generate a JWT token
-        const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        res.status(200).json({ token, user });
+        // Generate Access Token (Short Expiry)
+        const accessToken = jwt.sign(
+            { userId: user._id, role: user.role },
+            process.env.JWT_SECRET,
+            { expiresIn: '1h' } // Access token valid for 1 hour
+        );
+
+        // Generate Refresh Token (Longer Expiry)
+        const refreshToken = jwt.sign(
+            { userId: user._id },
+            process.env.REFRESH_TOKEN_SECRET,
+            { expiresIn: '7d' } // Refresh token valid for 7 days
+        );
+
+        // Optionally, store refreshToken in the database (or a secure storage)
+        user.refreshToken = refreshToken;
+        await user.save();
+
+        // Send tokens in response
+        res.status(200).json({
+            accessToken,
+            refreshToken,
+            user,
+        });
 
     } catch (err) {
         console.error(err.message);
@@ -143,5 +167,44 @@ exports.resetPassword = async (req, res) => {
         res.status(200).json({ message: "Password reset successful" });
     } catch (error) {
         res.status(400).json({ message: "Invalid or expired token" });
+    }
+};
+
+// Logout user (Blacklist Token)
+exports.logout = async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(" ")[1];
+        if (!token) {
+            return res.status(400).json({ message: "No token provided" });
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const expiry = decoded.exp ? decoded.exp - Math.floor(Date.now() / 1000) : 86400; // 24-hour expiry fallback
+
+        await client.setEx(token, expiry, "blacklisted");
+
+        res.status(200).json({ message: "Logout successful" });
+    } catch (error) {
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+// Check if user is logged in
+exports.checkAuth = async (req, res) => {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+        return res.status(401).json({ message: "No token provided" });
+    }
+
+    try {
+        const isBlacklisted = await client.get(token);
+        if (isBlacklisted) {
+            return res.status(401).json({ message: "Token expired. Please login again" });
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        res.status(200).json({ userId: decoded.userId, role: decoded.role });
+    } catch (error) {
+        res.status(401).json({ message: "Invalid token" });
     }
 };

@@ -1,14 +1,31 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import CartPopup from "./CartPopup";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import toast from 'react-hot-toast';
+import { logout } from "../../services/authService";
 
 function HeaderTop (props) {
+const isLoggedIn = !!localStorage.getItem("token");
+const userName = localStorage.getItem('userName') ?? '';
 const cartItems = useSelector((state) => state.cart.items);
 const cartCount = Object.values(cartItems).length;
 const wishItems = useSelector((state) => state.wishlist.items);
 const wishCount = Object.values(wishItems).length;
 const [cartPopup,setCartPopup] = useState(false);  
+const navigate = useNavigate(); 
+const handleLogout = async (e) => {
+    e.preventDefault();
+    try {
+        await logout();
+        toast.success("Successfully Logged Out");
+
+        // Redirect to home page
+        navigate("/");
+    } catch (error) {
+        toast.error(error.message || "Logout Failed");
+    }
+};
   return (
         <>
             <div className="top-header py-[10px] max-[991px]:py-[5px] bbscontainer">
@@ -56,13 +73,45 @@ const [cartPopup,setCartPopup] = useState(false);
                                                         <img src="/img/header/profile.png" alt="profile" className="w-[35px] h-[35px] relative -right-1" />
                                                     </div>
                                                     <div className="bb-btn-desc flex flex-col ml-[10px] max-[1199px]:hidden">
-                                                        <span className="bb-btn-title font-Poppins transition-all duration-[0.3s] ease-in-out text-[12px] leading-[1] text-secondary mb-[4px] tracking-[0.6px] capitalize font-medium whitespace-nowrap">Account</span>
-                                                        <span className="bb-btn-stitle font-Poppins transition-all duration-[0.3s] ease-in-out text-[14px] leading-[16px] font-semibold text-secondary  tracking-[0.03rem] whitespace-nowrap">Login</span>
+                                                    {!isLoggedIn ? (
+                                                        <>
+                                                            <span className="bb-btn-title font-Poppins transition-all duration-[0.3s] ease-in-out text-[12px] leading-[1] text-secondary mb-[4px] tracking-[0.6px] capitalize font-medium whitespace-nowrap">Account</span>
+                                                            <span className="bb-btn-stitle font-Poppins transition-all duration-[0.3s] ease-in-out text-[14px] leading-[16px] font-semibold text-secondary  tracking-[0.03rem] whitespace-nowrap">Login</span>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <span className="bb-btn-title font-Poppins transition-all duration-[0.3s] ease-in-out text-[12px] leading-[1] text-secondary mb-[4px] tracking-[0.6px] capitalize font-medium whitespace-nowrap">Hi!</span>
+                                                            <span className="bb-btn-stitle font-Poppins transition-all duration-[0.3s] ease-in-out text-[14px] leading-[16px] font-semibold text-secondary  tracking-[0.03rem] whitespace-nowrap">{userName}</span>
+                                                        </>
+                                                    )} 
                                                     </div>                                                    
-                                                    <ul className="hidden absolute top-[33px] bg-white z-50 rounded-[10px] group-hover:block p-3">
-                                                        <li className="py-[4px] px-[15px] m-[0] font-Poppins text-[15px] text-secondary font-light leading-[28px] tracking-[0.03rem]"><Link to="/register" className="dropdown-item transition-all duration-[0.3s] ease-in-out font-Poppins text-[13px] hover:text-primary leading-[22px] block w-full font-normal tracking-[0.03rem]">Register</Link></li>
-                                                        <li className="py-[4px] px-[15px] m-[0] font-Poppins text-[15px] text-secondary font-light leading-[28px] tracking-[0.03rem]"><Link to="/checkout" className="dropdown-item transition-all duration-[0.3s] ease-in-out font-Poppins text-[13px] hover:text-primary leading-[22px] block w-full font-normal tracking-[0.03rem]">Checkout</Link></li>
-                                                        <li className="py-[4px] px-[15px] m-[0] font-Poppins text-[15px] text-secondary font-light leading-[28px] tracking-[0.03rem]"><Link to="/login" className="dropdown-item transition-all duration-[0.3s] ease-in-out font-Poppins text-[13px] hover:text-primary leading-[22px] block w-full font-normal tracking-[0.03rem]">Login</Link></li>
+                                                    <ul className="hidden absolute top-[33px] bg-white z-50 rounded-[10px] group-hover:block shadow-md p-3">
+                                                    {!isLoggedIn ? (
+                                                        <>
+                                                            <li className="py-[4px] px-[15px] m-[0] font-Poppins text-[15px] text-secondary font-light leading-[28px] tracking-[0.03rem]">
+                                                                <Link to="/register" className="dropdown-item transition-all duration-[0.3s] ease-in-out font-Poppins text-[13px] hover:text-primary leading-[22px] block w-full font-normal tracking-[0.03rem]">
+                                                                    Register
+                                                                </Link>
+                                                            </li>
+                                                            <li className="py-[4px] px-[15px] m-[0] font-Poppins text-[15px] text-secondary font-light leading-[28px] tracking-[0.03rem]">
+                                                                <Link to="/login" className="dropdown-item transition-all duration-[0.3s] ease-in-out font-Poppins text-[13px] hover:text-primary leading-[22px] block w-full font-normal tracking-[0.03rem]">
+                                                                    Login
+                                                                </Link>
+                                                            </li>
+                                                        </>
+                                                    ) : (
+                                                        <li className="py-[4px] px-[15px] m-[0] font-Poppins text-[15px] text-secondary font-light leading-[28px] tracking-[0.03rem]">
+                                                            <Link to="/myaccount" className="dropdown-item transition-all duration-[0.3s] ease-in-out font-Poppins text-[13px] hover:text-primary leading-[22px] block w-full font-normal tracking-[0.03rem]">
+                                                                My Account
+                                                            </Link>
+                                                            <Link to="/checkout" className="dropdown-item transition-all duration-[0.3s] ease-in-out font-Poppins text-[13px] hover:text-primary leading-[22px] block w-full font-normal tracking-[0.03rem]">
+                                                                Checkout
+                                                            </Link>
+                                                            <button onClick={handleLogout} className="dropdown-item transition-all duration-[0.3s] ease-in-out font-Poppins text-[13px] hover:text-primary leading-[22px] block w-full text-left font-normal tracking-[0.03rem]">
+                                                                Logout
+                                                            </button>
+                                                        </li>
+                                                    )}                                                        
                                                     </ul>
                                                 </div>
                                             </div>
@@ -75,7 +124,7 @@ const [cartPopup,setCartPopup] = useState(false);
                                                     <span className="bb-btn-stitle font-Poppins transition-all duration-[0.3s] ease-in-out text-[14px] leading-[16px] font-semibold text-secondary  tracking-[0.03rem] whitespace-nowrap">Wishlist</span>
                                                 </div>
                                             </Link>
-                                            <button onClick={()=> setCartPopup(true)} className="bb-header-btn bb-cart-toggle transition-all duration-[0.3s] ease-in-out relative flex w-[auto] items-center ml-[30px] max-[1199px]:ml-[20px]" title="Cart">
+                                            <button onClick={()=> {setCartPopup(true); console.log(cartPopup)}} className="bb-header-btn bb-cart-toggle transition-all duration-[0.3s] ease-in-out relative flex w-[auto] items-center ml-[30px] max-[1199px]:ml-[20px]" title="Cart">
                                                 <div className="header-icon relative flex">
                                                     <img src="/img/header/cart.png" alt="profile" className="w-[35px] h-[35px] relative -right-2" />
                                                     <span className="main-label-note-new"></span>

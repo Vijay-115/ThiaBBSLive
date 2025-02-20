@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import Modal from "react-modal";
 import ProductForm from "../../admin/ProductForm";
-import { ProductService } from "../../../service/ProductService";
+import { ProductService } from "../../../services/ProductService";
+import toast from "react-hot-toast";
+
 
 Modal.setAppElement("#root");
 
@@ -56,30 +58,33 @@ function ProductsListPage() {
 
   const handleAddProduct = async (productData) => {
     try {
-      if (editProduct) {
-        const updatedProduct = await ProductService.updateProduct(
-          editProduct.product_id,
-          productData
-        );
-        setProducts((prev) =>
-          prev.map((product) =>
-            product.product_id === updatedProduct.product_id
-              ? updatedProduct
-              : product
-          )
-        );
-        setEditProduct(null);
-      } else {
-        const newProduct = await ProductService.createProduct(productData);
-        setProducts((prev) => [...prev, newProduct]);
-      }
-      setErrorMessage("");
-      setIsAddEditModalOpen(false);
+        if (editProduct) {
+            const updatedProduct = await ProductService.updateProduct(
+                editProduct.product_id,
+                productData
+            );
+            setProducts((prev) =>
+                prev.map((product) =>
+                    product.product_id === updatedProduct.product_id
+                        ? updatedProduct
+                        : product
+                )
+            );
+            setEditProduct(null);
+            toast.success("Product updated successfully!");
+        } else {
+            const newProduct = await ProductService.createProduct(productData);
+            setProducts((prev) => [...prev, newProduct]);
+            toast.success("Product created successfully!");
+        }
+        setErrorMessage("");
+        setIsAddEditModalOpen(false);
     } catch (error) {
-      console.error("Error saving product:", error);
-      setErrorMessage(
-        error.message || "An error occurred while saving the product."
-      );
+        console.error("Error saving product:", error);
+        setErrorMessage(
+            error.message || "An error occurred while saving the product."
+        );
+        toast.error("Failed to save the product. Please try again.");
     }
   };
 
@@ -175,17 +180,17 @@ function ProductsListPage() {
         </div>
       </Modal>
 
-      <div className="mb-4 flex justify-between">
+      <div className="mb-4 flex gap-4 justify-between">
         <button
           onClick={openAddProductModal}
-          className="bg-blue-500 text-white px-4 py-2 rounded-md"
+          className="bg-blue-500 text-white px-4 py-2 rounded-md text-sm"
         >
           Add New Product
         </button>
         <input
           type="text"
           placeholder="Search products..."
-          className="border p-2 rounded-md"
+          className="border p-2 rounded-md text-sm"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
@@ -193,58 +198,84 @@ function ProductsListPage() {
 
       <div className="mt-8">
         <h2 className="text-2xl font-semibold mb-4">Product List</h2>
-        {paginatedProducts.length === 0 ? (
-          <p className="text-gray-500">No products available.</p>
-        ) : (
-          <table className="w-full table-auto border-collapse">
-            <thead>
-              <tr>
-                <th
-                  className="border p-2 cursor-pointer"
-                  onClick={() => handleSort("product_id")}
-                >
-                  Product ID
-                </th>
-                <th
-                  className="border p-2 cursor-pointer"
-                  onClick={() => handleSort("name")}
-                >
-                  Name
-                </th>
-                <th
-                  className="border p-2 cursor-pointer"
-                  onClick={() => handleSort("price")}
-                >
-                  Price
-                </th>
-                <th className="border p-2">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedProducts.map((product) => (
-                <tr key={product.product_id}>
-                  <td className="border p-2">{product.product_id}</td>
-                  <td className="border p-2">{product.name}</td>
-                  <td className="border p-2">{product.price}</td>
-                  <td className="border p-2">
-                    <button
-                      className="bg-yellow-500 text-white px-4 py-1 rounded-md"
-                      onClick={() => handleEditProduct(product)}
+        <div className="flex flex-wrap w-full mb-[-24px]">
+          <div className="w-full px-[12px] mb-[24px]">
+            <div className="bb-table border-none border-[1px] md:border-solid border-[#eee] rounded-none md:rounded-[20px] overflow-hidden max-[1399px]:overflow-y-auto aos-init aos-animate" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="400">
+            {paginatedProducts.length === 0 ? (
+              <p className="text-gray-500">No products available.</p>
+            ) : (
+              <table className="w-full table-auto border-collapse">
+                <thead className="hidden md:table-header-group">
+                  <tr className="border-b-[1px] border-solid border-[#eee]">
+                    <th
+                      className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize"
+                      onClick={() => handleSort("product_id")}
                     >
-                      Edit
-                    </button>
-                    <button
-                      className="bg-red-500 text-white px-4 py-1 ml-2 rounded-md"
-                      onClick={() => openDeleteModal(product)}
+                      Product ID
+                    </th>
+                    <th
+                      className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize"
+                      onClick={() => handleSort("name")}
                     >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+                      Name
+                    </th>
+                    <th
+                      className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize"
+                      onClick={() => handleSort("price")}
+                    >
+                      Price
+                    </th>
+                    <th className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedProducts.map((product) => (
+                    <tr key={product.product_id} className="border-b-[1px] border-solid border-[#eee]">
+                      <td data-label="Product ID" className="p-[12px]">
+                        <div className="Product flex justify-end md:justify-normal md:items-center">
+                            <img src={import.meta.env.VITE_API_URL+''+product.product_img ?? ''} alt="new-product-1" className="w-[70px] border-[1px] border-solid border-[#eee] rounded-[10px]"/>
+                            <div>   
+                                <span className="ml-[10px] block font-Poppins text-[14px] font-semibold leading-[24px] tracking-[0.03rem] text-secondary">{product.title ?? ''}</span>
+                                <span className="ml-[10px] block font-Poppins text-[12px] font-normal leading-[16px] tracking-[0.03rem] text-secondary">{product.description ?? ''}</span>
+                                <div className='px-2'>
+                                {Array.from({ length: 5 }).map((_, index) => (
+                                <i
+                                    key={index}
+                                    className={`ri-star-fill float-left text-[15px] mr-[3px] ${
+                                    index < product.rating ? 'text-[#e7d52e]' : 'text-[#777]'
+                                    }`}
+                                ></i>
+                                ))}
+                                </div>
+                            </div>
+                        </div>
+                      </td>
+                      <td data-label="Name" className="p-[12px]">
+                        <span className="price font-Poppins text-[15px] font-medium leading-[26px] tracking-[0.02rem] text-secondary">₹{product.price ?? ''}</span>
+                      </td>
+                      <td data-label="Price" className="p-[12px]">{product.price}</td>
+                      <td data-label="Action" className="p-[12px]">
+                        <button
+                          className="bg-yellow-500 text-white px-4 py-1 rounded-md"
+                          onClick={() => handleEditProduct(product)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="bg-red-500 text-white px-4 py-1 ml-2 rounded-md"
+                          onClick={() => openDeleteModal(product)}
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+           </div>
+          </div>
+        </div>
 
         <div className="mt-4 flex justify-between items-center">
           <button

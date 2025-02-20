@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from 'react-router-dom';
-import axios from "axios";
 import toast from 'react-hot-toast';
+import { forgotPassword } from "../../services/authService";
 
 const Forgot = () => {
 
@@ -10,19 +10,15 @@ const Forgot = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!email) {
-            console.log('e email');
             toast.error("Please enter your email");
             return;
         }
+    
         try {
-            await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/forgot-password`, { email });
+            await forgotPassword(email);
             toast.success("Password reset email sent");
         } catch (error) {
-            if (error.response?.status === 404) {
-                toast.error("Email not found in our records");
-            } else {
-                toast.error(error.response?.data?.message || "Failed to send email");
-            }
+            toast.error(error.message || "Failed to send email");
         }
     };
 

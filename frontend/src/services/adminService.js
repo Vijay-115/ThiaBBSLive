@@ -1,15 +1,4 @@
-import axios from 'axios';
-
-const API_URL = 'http://localhost:5000/api/admin';
-const token = localStorage.getItem('token');
-
-const api = axios.create({
-    baseURL: API_URL,
-    headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-    },
-});
+import api from "../utils/api";
 
 export const getMetrics = async () => {
     const { data } = await api.get('/dashboard');

@@ -13,7 +13,7 @@ const wishlistSlice = createSlice({
     
         const { product } = action.payload;
         // If the product doesn't exist, add it to the wishlist
-        state.items[product.id] = { product };
+        state.items[product._id] = { product };
     
         console.log("Wishlist Items After Add:", JSON.parse(JSON.stringify(state.items))); // Log plain object
     },    
