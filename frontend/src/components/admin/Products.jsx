@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getMetrics } from '../../services/api';
+import { getMetrics } from '../../services/adminService';
 import { NavLink } from 'react-router-dom';
 import './assets/dashboard.css';
 import Sidebar from './layout/sidebar';

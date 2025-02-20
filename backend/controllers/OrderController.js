@@ -1,24 +1,41 @@
 const Order = require('../models/Order');
 
-// Create a new order
 exports.createOrder = async (req, res) => {
   try {
-    const { user_id, products, total_price, shipping_address, payment_method, payment_details } = req.body;
+    const { products, totalAmount, shippingAddress, paymentMethod, payment_details } = req.body;
+
+    console.log("Request Body:", req.body); // Debugging step
+
+    if (!products || Object.keys(products).length === 0) {
+      return res.status(400).json({ success: false, message: "Products cannot be empty" });
+    }
+
+    const user_id = req.user ? req.user.userId : null;
+
+    // Convert products from object to array
+    const formattedProducts = Object.values(products || {}).map(item => ({
+      product_id: item?.product?._id || null,
+      name: item?.product?.name || "Unknown",
+      price: item?.product?.price || 0,
+      quantity: item?.quantity || 1,
+      seller_id: item?.product?.seller_id || null
+    }));
 
     const newOrder = new Order({
-      order_id: `ORD-${Date.now()}`, // Generate unique order ID
+      order_id: `ORD-${Date.now()}`,
       user_id,
-      products,
-      total_price,
-      shipping_address,
+      products: formattedProducts,
+      total_price: totalAmount,
+      shipping_address: shippingAddress,
       status: 'pending',
-      payment_method,
+      payment_method: paymentMethod,
       payment_details,
     });
 
     const savedOrder = await newOrder.save();
     res.status(201).json({ success: true, message: 'Order created successfully', order: savedOrder });
   } catch (error) {
+    console.error("Error creating order:", error); // Log the error for debugging
     res.status(500).json({ success: false, message: 'Error creating order', error: error.message });
   }
 };
