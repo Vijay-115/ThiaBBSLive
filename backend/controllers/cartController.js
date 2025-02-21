@@ -5,10 +5,17 @@ const Product = require("../models/Product");
 // ✅ Get all cart items for a user
 exports.getCartItems = async (req, res) => {
     try {
-        const userId = req.user ? req.user.userId : null;
+        // Check if user is logged in, else use session ID
+        let userId = req.user ? req.user.userId : req.session.userId;
+
+        if (!userId) {
+            return res.status(400).json({ message: "No user or session found" });
+        }
+
         const cartItems = await Cart.find({ user: userId }).populate("product");
         res.status(200).json(cartItems);
     } catch (error) {
+        console.error("Error fetching cart items:", error);
         res.status(500).json({ message: "Error fetching cart items", error });
     }
 };
@@ -23,9 +30,18 @@ exports.addToCart = async (req, res) => {
             return res.status(400).json({ message: "Product ID is required" });
         }
 
-        const userId = req.user ? req.user.userId : null;
-        let product = await Product.findById(productId);
+        // Check if user is logged in
+        let userId = req.user ? req.user.userId : null;
 
+        // If user is not logged in, use session ID
+        if (!userId) {
+            if (!req.session.userId) {
+                req.session.userId = new mongoose.Types.ObjectId().toString(); // Generate unique session ID
+            }
+            userId = req.session.userId;
+        }
+
+        let product = await Product.findById(productId);
         if (!product) {
             return res.status(404).json({ message: "Product not found" });
         }
@@ -36,11 +52,11 @@ exports.addToCart = async (req, res) => {
             cartItem.quantity += quantity;
             await cartItem.save();
         } else {
-            cartItem = new Cart({ 
-                user: userId, 
-                product: productId, 
+            cartItem = new Cart({
+                user: userId,
+                product: productId,
                 quantity,
-                cart_id: new mongoose.Types.ObjectId().toString() // ✅ Fix: Generate unique cart_id
+                cart_id: new mongoose.Types.ObjectId().toString(), // Generate unique cart_id
             });
 
             console.log("Saving Cart Item:", cartItem); // ✅ Debugging
@@ -58,13 +74,17 @@ exports.addToCart = async (req, res) => {
 exports.updateQuantity = async (req, res) => {
     try {
         const { productId, quantity } = req.body;
-        const userId = req.user ? req.user.userId : null;
+        let userId = req.user ? req.user.userId : req.session.userId;
+
+        if (!userId) {
+            return res.status(400).json({ message: "No user or session found" });
+        }
 
         let cartItem = await Cart.findOne({ user: userId, product: productId });
 
         if (!cartItem) return res.status(404).json({ message: "Cart item not found" });
 
-        cartItem.quantity = quantity;
+        cartItem.quantity =  quantity;
         await cartItem.save();
 
         res.status(200).json({ message: "Quantity updated", cartItem });
@@ -77,7 +97,11 @@ exports.updateQuantity = async (req, res) => {
 exports.removeFromCart = async (req, res) => {
     try {
         const { productId } = req.params;
-        const userId = req.user ? req.user.userId : null;
+        let userId = req.user ? req.user.userId : req.session.userId;
+
+        if (!userId) {
+            return res.status(400).json({ message: "No user or session found" });
+        }
 
         await Cart.findOneAndDelete({ user: userId, product: productId });
 

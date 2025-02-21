@@ -3,11 +3,15 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { placeOrder } from '../../slice/orderSlice';
 import Select from "react-select";
+import { GetCountries, GetState, GetCity } from "react-country-state-city";
 import toast from "react-hot-toast";
-import { removeFromCart } from '../../slice/cartSlice';
+import { fetchCartItems, removeFromCart } from '../../slice/cartSlice';
 
 function CheckoutPage() {
     const dispatch = useDispatch();
+    useEffect(() => {
+        dispatch(fetchCartItems());
+    }, [dispatch]);
     const navigate = useNavigate();
     const cartItems = useSelector((state) => state.cart.items);
     const cartTotal = Object.values(cartItems).reduce(
@@ -35,9 +39,13 @@ function CheckoutPage() {
     };
 
     const handleSelectChange = (selectedOption, { name }) => {
+        console.log(selectedOption);
         setOrderData((prevData) => ({
             ...prevData,
-            shippingAddress: { ...prevData.shippingAddress, [name]: selectedOption.value },
+            shippingAddress: { 
+                ...prevData.shippingAddress, 
+                [name]: selectedOption.label // Store label instead of value
+            },
         }));
         console.log(orderData);
     };
@@ -66,27 +74,55 @@ function CheckoutPage() {
             });
     };
     
+    const [countries, setCountries] = useState([]);
+    const [states, setStates] = useState([]);
+    const [cities, setCities] = useState([]);
 
-    const cityOptions = [
-        { value: "city1", label: "City 1" },
-        { value: "city2", label: "City 2" },
-        { value: "city3", label: "City 3" },
-        { value: "city4", label: "City 4" },
-    ];
+    useEffect(() => {
+        const fetchCountries = async () => {
+            const countryList = await GetCountries();
+            if (Array.isArray(countryList)) {
+                setCountries(countryList.map(country => ({ value: country.id, label: country.name })));
+            }
+        };
+        fetchCountries();
+    }, []);
 
-    const countryOptions = [
-        { value: "country1", label: "Country 1" },
-        { value: "country2", label: "Country 2" },
-        { value: "country3", label: "Country 3" },
-        { value: "country4", label: "Country 4" },
-    ];
+    useEffect(() => {
+        const fetchStates = async () => {
+            const selectedCountry = countries.find(c => c.label === orderData.shippingAddress.country);
+            if (selectedCountry) {
+                const stateList = await GetState(selectedCountry.value);
+                if (Array.isArray(stateList)) {
+                    setStates(stateList.map(state => ({ value: state.id, label: state.name })));
+                } else {
+                    setStates([]);
+                }
+                setOrderData(prev => ({ ...prev, shippingAddress: { ...prev.shippingAddress, state: "", city: "" } }));
+            }
+        };
+        fetchStates();
+    }, [orderData.shippingAddress.country]);
 
-    const regionOptions = [
-        { value: "region1", label: "Region/State 1" },
-        { value: "region2", label: "Region/State 2" },
-        { value: "region3", label: "Region/State 3" },
-        { value: "region4", label: "Region/State 4" },
-    ];
+    useEffect(() => {
+        const fetchCities = async () => {
+            if (orderData.shippingAddress.country && orderData.shippingAddress.state) {
+                const selectedCountry = countries.find(c => c.label === orderData.shippingAddress.country);
+                const selectedState = states.find(s => s.label === orderData.shippingAddress.state);
+    
+                if (selectedCountry && selectedState) {
+                    const cityList = await GetCity(selectedCountry.value, selectedState.value); // ✅ Using both country & state
+                    if (Array.isArray(cityList)) {
+                        setCities(cityList.map(city => ({ value: city.id, label: city.name })));
+                    } else {
+                        setCities([]);
+                    }
+                    setOrderData(prev => ({ ...prev, shippingAddress: { ...prev.shippingAddress, city: "" } }));
+                }
+            }
+        };
+        fetchCities();
+    }, [orderData.shippingAddress.state]);
 
     useEffect(() => {
         console.log("cartTotal:", cartTotal); // Debugging
@@ -122,11 +158,11 @@ function CheckoutPage() {
                                         <ul className="mb-[20px]">
                                             <li className="flex justify-between leading-[28px] mb-[8px]">
                                                 <span className="left-item font-Poppins leading-[28px] tracking-[0.03rem] text-[14px] font-medium text-secondary">sub-total</span>
-                                                <span className="font-Poppins leading-[28px] tracking-[0.03rem] text-[14px] font-medium text-secondary">$56</span>
+                                                <span className="font-Poppins leading-[28px] tracking-[0.03rem] text-[14px] font-medium text-secondary">Rs  {cartTotal ?? 0}</span>
                                             </li>
                                             <li className="flex justify-between leading-[28px] mb-[8px]">
                                                 <span className="left-item font-Poppins leading-[28px] tracking-[0.03rem] text-[14px] font-medium text-secondary">Delivery Charges</span>
-                                                <span className="font-Poppins leading-[28px] tracking-[0.03rem] text-[14px] font-medium text-secondary">$56</span>
+                                                <span className="font-Poppins leading-[28px] tracking-[0.03rem] text-[14px] font-medium text-secondary">Rs 0</span>
                                             </li>
                                             <li className="flex justify-between leading-[28px] mb-[8px]">
                                                 <span className="left-item font-Poppins leading-[28px] tracking-[0.03rem] text-[14px] font-medium text-secondary">Coupon Discount</span>
@@ -191,14 +227,14 @@ function CheckoutPage() {
                                                 <span className="bb-del-head font-Poppins leading-[26px] tracking-[0.02rem] text-[15px] font-semibold text-secondary">Free Shipping</span>
                                                 <div className="radio-itens">
                                                     <input type="radio" id="rate1" name="rate" className="w-full text-[14px] font-normal text-secondary border-[1px] border-solid border-[#eee] outline-[0] rounded-[10px]" />
-                                                    <label for="rate1" className="relative pl-[26px] cursor-pointer leading-[16px] inline-block text-secondary tracking-[0]">Rate - $0 .00</label>
+                                                    <label for="rate1" className="relative pl-[26px] cursor-pointer leading-[16px] inline-block text-secondary tracking-[0]">Rate - Rs 0 .00</label>
                                                 </div>
                                             </div>
                                             <div className="inner-del w-[50%] max-[480px]:w-full">
                                                 <span className="bb-del-head font-Poppins leading-[26px] tracking-[0.02rem] text-[15px] font-semibold text-secondary">Flat Rate</span>
                                                 <div className="radio-itens">
                                                     <input type="radio" id="rate2" name="rate" className="w-full text-[14px] font-normal text-secondary border-[1px] border-solid border-[#eee] outline-[0] rounded-[10px]"/>
-                                                    <label for="rate2" className="relative pl-[26px] cursor-pointer leading-[16px] inline-block text-secondary tracking-[0]">Rate - $5.00</label>
+                                                    <label for="rate2" className="relative pl-[26px] cursor-pointer leading-[16px] inline-block text-secondary tracking-[0]">Rate - Rs 5.00</label>
                                                 </div>
                                             </div>
                                         </div>
@@ -290,6 +326,39 @@ function CheckoutPage() {
                                                     <label className="block text-[14px] font-medium text-secondary mb-[8px]">Address *</label>
                                                     <input type="text" name="street" onChange={handleChange} value={orderData.shippingAddress.street} placeholder="Address Line 1" className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" required />
                                                 </div>
+                                            </div>                                            
+
+                                            {/* Country Dropdown */}
+                                            <div className="min-[992px]:w-[50%] w-full px-[12px]">
+                                                <div className="input-item mb-[24px]">
+                                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">Country *</label>
+                                                    <Select
+                                                        options={countries}
+                                                        value={countries.find(option => option.value === orderData.shippingAddress.country)}
+                                                        onChange={handleSelectChange}
+                                                        placeholder="Select Country"
+                                                        isSearchable
+                                                        className="w-full"
+                                                        name="country"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            
+                                            {/* Region/State Dropdown */}
+                                            <div className="min-[992px]:w-[50%] w-full px-[12px]">
+                                                <div className="input-item mb-[24px]">
+                                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">State *</label>
+                                                    <Select
+                                                        options={states}
+                                                        value={states.find(option => option.value === orderData.shippingAddress.state)}
+                                                        onChange={handleSelectChange}
+                                                        placeholder="Select Region/State"
+                                                        isSearchable
+                                                        className="w-full"
+                                                        name="state"
+                                                    />
+                                                </div>
                                             </div>
 
                                             {/* City Dropdown */}
@@ -297,8 +366,8 @@ function CheckoutPage() {
                                                 <div className="input-item mb-[24px]">
                                                     <label className="block text-[14px] font-medium text-secondary mb-[8px]">City *</label>
                                                     <Select
-                                                        options={cityOptions}
-                                                        value={cityOptions.find(option => option.value === orderData.shippingAddress.city)}
+                                                        options={cities}
+                                                        value={cities.find(option => option.value === orderData.shippingAddress.city)}
                                                         onChange={handleSelectChange}
                                                         placeholder="Select City"
                                                         isSearchable
@@ -313,38 +382,6 @@ function CheckoutPage() {
                                                 <div className="input-item mb-[24px]">
                                                     <label className="block text-[14px] font-medium text-secondary mb-[8px]">Post Code *</label>
                                                     <input type="text" name="zip" onChange={handleChange} value={orderData.shippingAddress.zip} placeholder="Post Code" className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" required />
-                                                </div>
-                                            </div>
-
-                                            {/* Country Dropdown */}
-                                            <div className="min-[992px]:w-[50%] w-full px-[12px]">
-                                                <div className="input-item mb-[24px]">
-                                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">Country *</label>
-                                                    <Select
-                                                        options={countryOptions}
-                                                        value={countryOptions.find(option => option.value === orderData.shippingAddress.country)}
-                                                        onChange={handleSelectChange}
-                                                        placeholder="Select Country"
-                                                        isSearchable
-                                                        className="w-full"
-                                                        name="country"
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            {/* Region/State Dropdown */}
-                                            <div className="min-[992px]:w-[50%] w-full px-[12px]">
-                                                <div className="input-item mb-[24px]">
-                                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">Region/State *</label>
-                                                    <Select
-                                                        options={regionOptions}
-                                                        value={regionOptions.find(option => option.value === orderData.shippingAddress.state)}
-                                                        onChange={handleSelectChange}
-                                                        placeholder="Select Region/State"
-                                                        isSearchable
-                                                        className="w-full"
-                                                        name="state"
-                                                    />
                                                 </div>
                                             </div>
 

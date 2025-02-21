@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from "react-redux";
-import { updateQuantity, removeFromCart } from '../../slice/cartSlice';
+import { updateQuantity, removeFromCart, fetchCartItems } from '../../slice/cartSlice';
 
 function CartPopup({ cartPopup, setCartPopup }) {
     const dispatch = useDispatch();
+    useEffect(() => {
+        dispatch(fetchCartItems());
+    }, [dispatch, cartPopup]);
     const navigate = useNavigate();  // Initialize useNavigate hook
     const cartItems = useSelector((state) => state.cart.items);
     const cartTotal = Object.values(cartItems).reduce(

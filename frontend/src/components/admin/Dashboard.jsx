@@ -1,10 +1,13 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { getMetrics } from '../../services/adminService';
 import { NavLink } from 'react-router-dom';
 import './assets/dashboard.css';
 import Sidebar from './layout/sidebar';
 import Navbar from './layout/Navbar';
 import useDashboardLogic from "./hooks/useDashboardLogic"; 
+import { getAllOrders } from "../../slice/orderSlice";
+import { useDispatch, useSelector } from "react-redux";
+import moment from "moment";
 
 const Dashboard = () => {
 
@@ -76,6 +79,12 @@ const Dashboard = () => {
         toggleProfileMenu,
     } = useDashboardLogic();
 
+    const dispatch = useDispatch();
+    const { orders, loading, error } = useSelector((state) => state.order);
+
+    useEffect(() => {
+        dispatch(getAllOrders());
+    }, [dispatch]);
 
     return (
         <>
@@ -160,56 +169,19 @@ const Dashboard = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr>
-                                            <td>
-                                                <img src="https://placehold.co/600x400/png" />
-                                                <p>Micheal John</p>
-                                            </td>
-                                            <td>18-10-2021</td>
-                                            <td>
-                                                <span className="status completed">Completed</span>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <img src="https://placehold.co/600x400/png" />
-                                                <p>Ryan Doe</p>
-                                            </td>
-                                            <td>01-06-2022</td>
-                                            <td>
-                                                <span className="status pending">Pending</span>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <img src="https://placehold.co/600x400/png" />
-                                                <p>Tarry White</p>
-                                            </td>
-                                            <td>14-10-2021</td>
-                                            <td>
-                                                <span className="status process">Process</span>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <img src="https://placehold.co/600x400/png" />
-                                                <p>Selma</p>
-                                            </td>
-                                            <td>01-02-2023</td>
-                                            <td>
-                                                <span className="status pending">Pending</span>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <img src="https://placehold.co/600x400/png" />
-                                                <p>Andreas Doe</p>
-                                            </td>
-                                            <td>31-10-2021</td>
-                                            <td>
-                                                <span className="status completed">Completed</span>
-                                            </td>
-                                        </tr>
+                                    {orders.map((order) => (
+                                    <tr key={order._id}>
+                                        <td>
+                                            <img src="https://placehold.co/600x400/png" />
+                                            {/* <p>Order #{order._id}</p> */}
+                                            <p>{order.user_id.name}</p>
+                                        </td>
+                                        <td>{moment(order.created_at).format("DD-MM-YYYY")}</td>
+                                        <td>
+                                            <span className="status completed">{order.status}</span>
+                                        </td>
+                                    </tr>
+                                    ))}
                                     </tbody>
                                 </table>
                             </div>

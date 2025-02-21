@@ -10,16 +10,6 @@ const UserSchema = new mongoose.Schema({
     name: String, // User's full name
     email: { type: String, unique: true }, // User's email (unique)
     password: String, // Encrypted user password
-    phone: String, // User's phone number
-    address: [
-        {
-        street: String,
-        city: String,
-        state: String,
-        zip: String,
-        country: String,
-        },
-    ], // Array of saved addresses
     created_at: { type: Date, default: Date.now }, // Account creation date
     updated_at: { type: Date, default: Date.now }, // Last updated date
 });

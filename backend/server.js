@@ -1,4 +1,5 @@
 const express = require('express');
+const session = require("express-session");
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth');
@@ -23,6 +24,14 @@ app.use(cors({
     credentials: true, // Allow cookies/auth headers
     methods: "GET,POST,PUT,DELETE",
     allowedHeaders: "Content-Type,Authorization",
+}));
+
+// ✅ Initialize session middleware
+app.use(session({
+  secret: process.env.REFRESH_TOKEN_SECRET, // Change this to a strong secret
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false } // Set `true` if using HTTPS
 }));
 
 // ✅ Serve static files from the 'uploads' folder

@@ -3,7 +3,12 @@ import api from "../utils/api"; // Import the centralized Axios instance
 // Register function
 export const register = async (userData) => {
     try {
-        await api.post("/auth/register", userData);
+        const response = await api.post("/auth/register", userData);
+        if (response.data.accessToken && response.data.refreshToken) {
+            localStorage.setItem("token", response.data.accessToken);
+            localStorage.setItem("refreshToken", response.data.refreshToken);
+        }
+        return response.data;
     } catch (error) {
         throw new Error(error.response?.data?.msg || "Registration failed");
     }
@@ -13,8 +18,9 @@ export const register = async (userData) => {
 export const login = async (email, password) => {
     try {
         const response = await api.post("/auth/login", { email, password });
-        if (response.data.token) {
-            localStorage.setItem("token", response.data.token);
+        if (response.data.accessToken && response.data.refreshToken) {
+            localStorage.setItem("token", response.data.accessToken);
+            localStorage.setItem("refreshToken", response.data.refreshToken);
         }
         return response.data;
     } catch (error) {
