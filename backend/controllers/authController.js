@@ -1,49 +1,96 @@
-const User = require('../models/User');
+const User = require("../models/User");
+const UserDetails = require("../models/UserDetails");
+const Cart = require("../models/Cart");
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
 const nodemailer = require("nodemailer");
 const redis = require("redis");
+const crypto = require('crypto');
 
 const client = redis.createClient();
 client.connect().catch(console.error);
 
+// Function to generate a 7-digit alphanumeric referral code
+const generateReferralCode = () => {
+    return crypto.randomBytes(4).toString('hex').toUpperCase().slice(0, 7);
+};
+
 // Register user
 exports.register = async (req, res) => {
-
-    const { name, email, phone, password } = req.body;
+    const { name, email, phone, password, referredBy } = req.body;
 
     try {
-        // Check if user already exists
+        // ✅ Check if user already exists
         let user = await User.findOne({ email });
         if (user) {
-            return res.status(400).json({ msg: 'User already exists' });
+            return res.status(400).json({ msg: "User already exists" });
         }
 
-        // Create new user
-        user = new User({ name, email, phone , password });
+        // ✅ Generate unique referral code
+        const referralCode = generateReferralCode();
 
-        // Hash the password
+        // ✅ Create new user
+        user = new User({ name, email, phone, password });
+
+        // ✅ Hash the password
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(password, salt);
 
-        // Save user to the database
+        // ✅ Save user to the database
         await user.save();
 
-        // Create and return JWT token
-        const payload = { user: { id: user.id } };
-        jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: 360000 }, (err, token) => {
-            if (err) throw err;
-            res.json({ token });
+        // ✅ Create UserDetails record
+        const userDetails = new UserDetails({
+            userId: user._id,
+            referralCode,
+            referredBy,
+            phone
         });
-    } catch (error) {
-        console.error(error.message);
-        if (error.code === 11000) { // MongoDB duplicate key error code
-            return res.status(400).json({ msg: 'User already exists' });
+
+        await userDetails.save();
+
+        // ✅ Merge guest cart with registered user cart (if applicable)
+        if (req.session.userId) {
+            await mergeGuestCartWithUser(req.session.userId, user._id);
+            req.session.userId = null; // Clear session cart after merging
         }
-        res.status(500).send('Server error');
+
+        // ✅ Generate Access Token (Short Expiry)
+        const accessToken = jwt.sign(
+            { userId: user._id, role: user.role },
+            process.env.JWT_SECRET,
+            { expiresIn: "1h" } // 1-hour expiry
+        );
+
+        // ✅ Generate Refresh Token (Longer Expiry)
+        const refreshToken = jwt.sign(
+            { userId: user._id },
+            process.env.REFRESH_TOKEN_SECRET,
+            { expiresIn: "7d" } // 7-day expiry
+        );
+
+        // ✅ Store refresh token in the database
+        user.refreshToken = refreshToken;
+        await user.save();
+
+        // ✅ Send response with tokens and user data
+        res.status(201).json({
+            accessToken,
+            refreshToken,
+            user,
+            userDetails
+        });
+
+    } catch (error) {
+        console.error("Registration error:", error);
+        if (error.code === 11000) { // MongoDB duplicate key error
+            return res.status(400).json({ msg: "User already exists" });
+        }
+        res.status(500).json({ msg: "Server error", error: error.message });
     }
 };
+
 
 // Login controller
 exports.login = async (req, res) => {
@@ -68,25 +115,31 @@ exports.login = async (req, res) => {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
-        // Generate Access Token (Short Expiry)
+        // ✅ Merge guest cart with logged-in user cart (if applicable)
+        if (req.session.userId) {
+            await mergeGuestCartWithUser(req.session.userId, user._id);
+            req.session.userId = null; // Clear session cart after merging
+        }
+
+        // ✅ Generate Access Token (Short Expiry)
         const accessToken = jwt.sign(
             { userId: user._id, role: user.role },
             process.env.JWT_SECRET,
             { expiresIn: '1h' } // Access token valid for 1 hour
         );
 
-        // Generate Refresh Token (Longer Expiry)
+        // ✅ Generate Refresh Token (Longer Expiry)
         const refreshToken = jwt.sign(
             { userId: user._id },
             process.env.REFRESH_TOKEN_SECRET,
             { expiresIn: '7d' } // Refresh token valid for 7 days
         );
 
-        // Optionally, store refreshToken in the database (or a secure storage)
+        // ✅ Store refreshToken securely in the database
         user.refreshToken = refreshToken;
         await user.save();
 
-        // Send tokens in response
+        // ✅ Send response with tokens and user data
         res.status(200).json({
             accessToken,
             refreshToken,
@@ -94,8 +147,39 @@ exports.login = async (req, res) => {
         });
 
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
+        console.error("Login error:", err);
+        res.status(500).json({ message: "Server error", error: err.message });
+    }
+};
+
+// ✅ Function to merge guest cart with logged-in user cart
+const mergeGuestCartWithUser = async (sessionUserId, realUserId) => {
+    try {
+        const sessionCart = await Cart.find({ user: sessionUserId });
+        const userCart = await Cart.find({ user: realUserId });
+
+        for (const sessionItem of sessionCart) {
+            const existingItem = userCart.find(item => item.product.toString() === sessionItem.product.toString());
+
+            if (existingItem) {
+                // ✅ If product already in user’s cart, update quantity
+                existingItem.quantity += sessionItem.quantity;
+                await existingItem.save();
+            } else {
+                // ✅ If new product, assign it to the logged-in user
+                await Cart.create({
+                    user: realUserId,
+                    product: sessionItem.product,
+                    quantity: sessionItem.quantity,
+                    cart_id: new mongoose.Types.ObjectId().toString()
+                });
+            }
+        }
+
+        // ✅ Remove session cart after merging
+        await Cart.deleteMany({ user: sessionUserId });
+    } catch (error) {
+        console.error("Error merging guest cart:", error);
     }
 };
 

@@ -40,15 +40,24 @@ exports.createOrder = async (req, res) => {
   }
 };
 
-// Get all orders
+// Get all orders with user information
 exports.getAllOrders = async (req, res) => {
   try {
-    const orders = await Order.find().sort({ created_at: -1 });
+    const orders = await Order.find()
+      .populate("user_id", "name email phone") // ✅ Populate user details
+      .populate("products.product_id", "name price image") // ✅ Populate product details
+      .sort({ created_at: -1 });
+
     res.status(200).json({ success: true, orders });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Error fetching orders', error: error.message });
+    res.status(500).json({ 
+      success: false, 
+      message: "Error fetching orders", 
+      error: error.message 
+    });
   }
 };
+
 
 // Get order by ID
 exports.getOrderById = async (req, res) => {

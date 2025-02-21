@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import CartPopup from "./CartPopup";
 import { Link, useNavigate } from "react-router-dom";
 import toast from 'react-hot-toast';
 import { logout } from "../../services/authService";
+import { fetchCartItems } from "../../slice/cartSlice";
 
 function HeaderTop (props) {
 const isLoggedIn = !!localStorage.getItem("token");
@@ -124,7 +125,7 @@ const handleLogout = async (e) => {
                                                     <span className="bb-btn-stitle font-Poppins transition-all duration-[0.3s] ease-in-out text-[14px] leading-[16px] font-semibold text-secondary  tracking-[0.03rem] whitespace-nowrap">Wishlist</span>
                                                 </div>
                                             </Link>
-                                            <button onClick={()=> {setCartPopup(true); console.log(cartPopup)}} className="bb-header-btn bb-cart-toggle transition-all duration-[0.3s] ease-in-out relative flex w-[auto] items-center ml-[30px] max-[1199px]:ml-[20px]" title="Cart">
+                                            <button onClick={()=> {setCartPopup(true);  dispatch(fetchCartItems()); console.log(cartPopup)}} className="bb-header-btn bb-cart-toggle transition-all duration-[0.3s] ease-in-out relative flex w-[auto] items-center ml-[30px] max-[1199px]:ml-[20px]" title="Cart">
                                                 <div className="header-icon relative flex">
                                                     <img src="/img/header/cart.png" alt="profile" className="w-[35px] h-[35px] relative -right-2" />
                                                     <span className="main-label-note-new"></span>

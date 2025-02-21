@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { register } from "../../services/authService";
 
@@ -7,6 +7,7 @@ const Register = () => {
 
     const [userData, setUserData] = useState({ name: '', email: '', phone: '', password: '' });
     const [errors, setErrors] = useState({});
+    const navigate = useNavigate();
 
     const validateRegister = () => {
         let formErrors = {};
@@ -34,10 +35,19 @@ const Register = () => {
         }
     
         try {
-            await register(userData);
-            toast.success("User registered successfully");
-            setUserData({ name: "", email: "", phone: "", password: "" });
-            setErrors({});
+            const response = await register(userData);
+            if (response) {
+                const { user } = response;
+                const { role, name, email } = user;    
+                // Save user data and token to local storage
+                localStorage.setItem("userRole", role);
+                localStorage.setItem("userName", name);
+                localStorage.setItem("userEmail", email);
+                toast.success("User registered successfully");
+                setUserData({ name: "", email: "", phone: "", password: "" });
+                setErrors({});
+                navigate("/");
+            }
         } catch (error) {
             toast.error(error.message || "Registration failed. Please try again.");
         }

@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from "react-redux";
-import { updateQuantity, removeFromCart } from '../../slice/cartSlice';
+import { updateQuantity, removeFromCart, fetchCartItems } from '../../slice/cartSlice';
 import { Link, useLocation } from 'react-router-dom';
 
 function CartPage() {
     const dispatch = useDispatch();
+
+    useEffect(() => {
+        dispatch(fetchCartItems());
+    }, [dispatch]);
+
     const cartItems = useSelector((state) => state.cart.items);
     const cartTotal = Object.values(cartItems).reduce(
         (total, item) => total + (item.quantity * item.product.price || 0),
@@ -14,6 +19,7 @@ function CartPage() {
 
     useEffect(() => {
         console.log("cartTotal:", cartTotal); // Debugging
+        console.log("cartItem:", cartItems); // Debugging
     }, [cartItems]);
 
     const location = useLocation();
@@ -25,15 +31,15 @@ function CartPage() {
 
 
     // Handle increment
-    const handleIncrement = (prodId) => {
-        const currentQuantity = cartItems[prodId]?.quantity || 1;
+    const handleIncrement = (prodId,qty) => {
+        const currentQuantity = qty || 1;
         const newQuantity = currentQuantity + 1;
         dispatch(updateQuantity({ productId: prodId, quantity: newQuantity }));
     };
 
     // Handle decrement
-    const handleDecrement = (prodId) => {
-        const currentQuantity = cartItems[prodId]?.quantity || 1;
+    const handleDecrement = (prodId,qty) => {
+        const currentQuantity = qty || 1;
         const newQuantity = Math.max(currentQuantity - 1, 1);
         if (newQuantity > 0) {
             dispatch(updateQuantity({ productId: prodId, quantity: newQuantity }));
@@ -115,7 +121,7 @@ function CartPage() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                    {Object.values(cartItems).map(({ product, quantity }) => (
+                                    {Object.values(cartItems).map(({ index , product, quantity }) => (
                                         <tr key={product._id} className="border-b-[1px] border-solid border-[#eee]">
                                             <td className="p-[12px]">
                                                 <div className="Product-cart flex items-center">
@@ -128,9 +134,9 @@ function CartPage() {
                                             </td>
                                             <td className="p-[12px]">
                                                 <div className="qty-plus-minus w-[85px] h-[45px] py-[7px] border-[1px] border-solid border-[#eee] overflow-hidden relative flex items-center justify-between bg-[#fff] px-2 rounded-[10px]">
-                                                    <div className="dec bb-qtybtn" onClick={()=> handleDecrement(product._id)}>-</div>
-                                                    <span>{cartItems[product._id]?.quantity || 1}</span>
-                                                    <div className="inc bb-qtybtn" onClick={()=> handleIncrement(product._id)}>+</div>
+                                                    <div className="dec bb-qtybtn" onClick={()=> handleDecrement(product._id,quantity)}>-</div>
+                                                    <span>{quantity || 1}</span>
+                                                    <div className="inc bb-qtybtn" onClick={()=> handleIncrement(product._id,quantity)}>+</div>
                                                 </div>
                                             </td>
                                             <td className="p-[12px]">
