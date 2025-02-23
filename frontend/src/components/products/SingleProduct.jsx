@@ -6,6 +6,7 @@ import ProductList from './ProductList';
 import { addToCart, updateQuantity } from '../../slice/cartSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-hot-toast';
+import { ProductService } from '../../services/ProductService';
 
 function SingleProduct() {
   const { id } = useParams();
@@ -50,9 +51,8 @@ function SingleProduct() {
   useEffect(() => {
     const fetchProduct = async (id) => {
       try {
-        const response = await fetch(`https://dummyjson.com/products/${id}`);
-        const data = await response.json();
-        console.log(data);
+        const data = await ProductService.getProductID(id);
+        console.log(data.name);
         setProduct(data);
       } catch (error) {
         console.error("Error fetching product:", error);
@@ -209,7 +209,7 @@ function SingleProduct() {
                 {/* Left Section: Image Slider */}
                 <div className="min-[992px]:w-[41.66%] w-full px-[12px] mb-[24px]">
                   <div className="single-pro-slider sticky top-[0] p-[15px] border-[1px] border-solid border-[#eee] rounded-[24px] max-[991px]:max-w-[500px] max-[991px]:m-auto">
-                    <SingleProductGallery images={product.images ?? []} />
+                    <SingleProductGallery images={product.gallery_imgs ?? []} />
                   </div>
                 </div>
 
@@ -218,7 +218,7 @@ function SingleProduct() {
                   <div className="bb-single-pro-contact">
                     <div className="bb-sub-title mb-[10px]">
                       <h4 className="font-quicksand text-[22px] tracking-[0.03rem] font-bold leading-[1.2] text-secondary">
-                        {product.title}
+                        {product.name}
                       </h4>
                     </div>
                     <div className="bb-single-rating mb-[8px]">
@@ -260,7 +260,7 @@ function SingleProduct() {
                       <div className="bb-single-price py-[15px]">
                         <div className="sku mb-[8px]">
                           <h5 className="font-quicksand text-[18px] font-extrabold leading-[1.2] tracking-[0.03rem] text-secondary">
-                            SKU#: {product.sku}
+                            SKU#: {product.sku ?? ''}
                           </h5>
                         </div>
                         <div className="stock">

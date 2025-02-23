@@ -27,6 +27,15 @@ exports.register = async (req, res) => {
             return res.status(400).json({ msg: "User already exists" });
         }
 
+        // ✅ Validate Referral Code
+        let referrer = null;
+        if (referredBy) {
+            referrer = await UserDetails.findOne({ referralCode: referredBy });
+            if (!referrer) {
+                return res.status(400).json({ msg: "Invalid referral code" });
+            }
+        }
+
         // ✅ Generate unique referral code
         const referralCode = generateReferralCode();
 
@@ -44,11 +53,15 @@ exports.register = async (req, res) => {
         const userDetails = new UserDetails({
             userId: user._id,
             referralCode,
-            referredBy,
+            referredBy: referrer ? referrer.userId : null, // Save referrer if valid
             phone
         });
 
         await userDetails.save();
+
+        // ✅ Link User to UserDetails
+        user.userdetails = userDetails._id;
+        await user.save();
 
         // ✅ Merge guest cart with registered user cart (if applicable)
         if (req.session.userId) {
@@ -60,19 +73,15 @@ exports.register = async (req, res) => {
         const accessToken = jwt.sign(
             { userId: user._id, role: user.role },
             process.env.JWT_SECRET,
-            { expiresIn: "1h" } // 1-hour expiry
+            { expiresIn: "1h" }
         );
 
         // ✅ Generate Refresh Token (Longer Expiry)
         const refreshToken = jwt.sign(
             { userId: user._id },
             process.env.REFRESH_TOKEN_SECRET,
-            { expiresIn: "7d" } // 7-day expiry
+            { expiresIn: "7d" }
         );
-
-        // ✅ Store refresh token in the database
-        user.refreshToken = refreshToken;
-        await user.save();
 
         // ✅ Send response with tokens and user data
         res.status(201).json({
@@ -90,7 +99,6 @@ exports.register = async (req, res) => {
         res.status(500).json({ msg: "Server error", error: error.message });
     }
 };
-
 
 // Login controller
 exports.login = async (req, res) => {
@@ -289,6 +297,23 @@ exports.checkAuth = async (req, res) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         res.status(200).json({ userId: decoded.userId, role: decoded.role });
     } catch (error) {
+        res.status(401).json({ message: "Invalid token" });
+    }
+};
+
+// Get User Info
+exports.getUserInfo = async (req, res) => {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+        return res.status(401).json({ message: "No token provided" });
+    }
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const userInfo = await User.findById(decoded.userId)
+        .populate("userdetails");
+        res.status(200).json({ userInfo });
+    } catch (error) {
+        console.error("Error fetching user info:", error);
         res.status(401).json({ message: "Invalid token" });
     }
 };

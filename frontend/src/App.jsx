@@ -23,6 +23,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import AdminDashboard from './components/admin/Dashboard'; 
 import Products from './components/admin/Products'; 
 import Orders from './components/admin/Orders';  
+import MyAccount from './components/auth/MyAccount';
 
 const AdminRoutes = () => (     
   <ProtectedRoute requiredRole="admin">         
@@ -70,6 +71,7 @@ function App() {
         <Route path="/checkout" element={<CheckoutPage />} />                 
         <Route path="/wishlist" element={<WishlistPage />} />                 
         <Route path="/adminproduct" element={<ProductsListPage />} />                 
+        <Route path="/my-account" element={<MyAccount />} />                 
         <Route path="/admin" element={<AdminRoutes />}>                     
           <Route path="dashboard" element={<AdminDashboard />} />                     
           <Route path="products" element={<Products />} />                     

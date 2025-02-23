@@ -69,3 +69,13 @@ export const isAuthenticated = async () => {
         return false;
     }
 };
+
+// Check if user is authenticated
+export const getUserInfo = async () => {
+    try {
+        const response = await api.get("/auth/user-info");
+        return response.data; // Returns userId and role if valid
+    } catch (error) {
+        return false;
+    }
+};
