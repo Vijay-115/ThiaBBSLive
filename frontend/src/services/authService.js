@@ -75,7 +75,24 @@ export const getUserInfo = async () => {
     try {
         const response = await api.get("/auth/user-info");
         return response.data; // Returns userId and role if valid
+        console.log(response.data);
     } catch (error) {
+        console.log(response.data);
+        return false;
+    }
+};
+
+// Check if user is authenticated
+export const updateProfile = async (userData) => {
+    try {
+        const response = await api.put("/auth/update-profile", userData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+        });
+        return response.data; // Returns updated user data
+    } catch (error) {
+        console.error("Update Profile Error:", error.response?.data || error.message);
         return false;
     }
 };

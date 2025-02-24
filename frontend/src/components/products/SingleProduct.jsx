@@ -40,11 +40,10 @@ function SingleProduct() {
     // Handle adding to cart
     const handleAddToCart = () => {
       const initialQuantity = quantities || 1;
-  
-      dispatch(addToCart({ product, quantity: initialQuantity }));
+      dispatch(addToCart({ productId: product._id, quantity: initialQuantity }));
       setQuantities(1);
       // Display toast notification
-      toast.success(`${product.title} added to cart!`);
+      toast.success(`${product.name} added to cart!`);
     };
 
   // Fetch product from API

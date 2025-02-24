@@ -14,16 +14,6 @@ function CheckoutPage() {
     const [userInfo, setUserInfo] = useState(null);
     useEffect(() => {
         dispatch(fetchCartItems());
-        const fetchUser = async () => {
-            try {
-                const user = await getUserInfo(); // Call the function correctly
-                setUserInfo(user.userInfo);
-                // console.log(userInfo.name);
-            } catch (error) {
-                console.error("Error fetching user info:", error);
-            }
-        };
-        fetchUser();
     }, [dispatch]);
     const navigate = useNavigate();
     const cartItems = useSelector((state) => state.cart.items);
@@ -38,9 +28,36 @@ function CheckoutPage() {
         userId: "", // Dynamic user ID
         products: cartItems,
         totalAmount: cartTotal,
-        shippingAddress: { street: "", city: "", state: "", zip: "", country: "" },
+        shippingAddress: { street: "", city: "", state: "", postalCode: "", country: "" },
         paymentMethod: "COD",
     });
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const user = await getUserInfo();
+                setUserInfo(user.userInfo);
+            } catch (error) {
+                console.error("Error fetching user info:", error);
+            }
+        };
+        fetchUser();
+    }, []);
+
+    useEffect(() => {
+        if (userInfo) {
+            setOrderData(prev => ({
+                ...prev,
+                shippingAddress: userInfo?.userdetails?.addresses?.[0] || {
+                    street: "",
+                    city: "",
+                    state: "",
+                    postalCode: "",
+                    country: "",
+                },
+            }));     
+        }
+    }, [userInfo]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -111,31 +128,27 @@ function CheckoutPage() {
                 } else {
                     setStates([]);
                 }
-                setOrderData(prev => ({ ...prev, shippingAddress: { ...prev.shippingAddress, state: "", city: "" } }));
             }
         };
-        fetchStates();
-    }, [orderData.shippingAddress.country]);
+        if (orderData.shippingAddress.country) fetchStates();
+    }, [orderData.shippingAddress.country, countries]);
 
     useEffect(() => {
         const fetchCities = async () => {
-            if (orderData.shippingAddress.country && orderData.shippingAddress.state) {
-                const selectedCountry = countries.find(c => c.label === orderData.shippingAddress.country);
-                const selectedState = states.find(s => s.label === orderData.shippingAddress.state);
-    
-                if (selectedCountry && selectedState) {
-                    const cityList = await GetCity(selectedCountry.value, selectedState.value); // ✅ Using both country & state
-                    if (Array.isArray(cityList)) {
-                        setCities(cityList.map(city => ({ value: city.id, label: city.name })));
-                    } else {
-                        setCities([]);
-                    }
-                    setOrderData(prev => ({ ...prev, shippingAddress: { ...prev.shippingAddress, city: "" } }));
+            const selectedCountry = countries.find(c => c.label === orderData.shippingAddress.country);
+            const selectedState = states.find(s => s.label === orderData.shippingAddress.state);
+            
+            if (selectedCountry && selectedState) {
+                const cityList = await GetCity(selectedCountry.value, selectedState.value);
+                if (Array.isArray(cityList)) {
+                    setCities(cityList.map(city => ({ value: city.id, label: city.name })));
+                } else {
+                    setCities([]);
                 }
             }
         };
-        fetchCities();
-    }, [orderData.shippingAddress.state]);
+        if (orderData.shippingAddress.state) fetchCities();
+    }, [orderData.shippingAddress.state, states]);
 
     useEffect(() => {
         console.log("cartTotal:", cartTotal); // Debugging
@@ -344,7 +357,7 @@ function CheckoutPage() {
                                                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Country *</label>
                                                                 <Select
                                                                     options={countries}
-                                                                    value={countries.find(option => option.value === orderData.shippingAddress.country)}
+                                                                    value={countries.find(option => option.label === orderData.shippingAddress.country) || null}
                                                                     onChange={handleSelectChange}
                                                                     placeholder="Select Country"
                                                                     isSearchable
@@ -361,7 +374,7 @@ function CheckoutPage() {
                                                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">State *</label>
                                                                 <Select
                                                                     options={states}
-                                                                    value={states.find(option => option.value === orderData.shippingAddress.state)}
+                                                                    value={states.find(option => option.label === orderData.shippingAddress.state) || null}
                                                                     onChange={handleSelectChange}
                                                                     placeholder="Select Region/State"
                                                                     isSearchable
@@ -377,7 +390,7 @@ function CheckoutPage() {
                                                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">City *</label>
                                                                 <Select
                                                                     options={cities}
-                                                                    value={cities.find(option => option.value === orderData.shippingAddress.city)}
+                                                                    value={cities.find(option => option.label === orderData.shippingAddress.city) || null}
                                                                     onChange={handleSelectChange}
                                                                     placeholder="Select City"
                                                                     isSearchable
@@ -391,7 +404,7 @@ function CheckoutPage() {
                                                         <div className="min-[992px]:w-[50%] w-full px-[12px]">
                                                             <div className="input-item mb-[24px]">
                                                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Post Code *</label>
-                                                                <input type="text" name="zip" onChange={handleChange} value={orderData.shippingAddress.zip} placeholder="Post Code" className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" required />
+                                                                <input type="text" name="postalCode" onChange={handleChange} value={orderData.shippingAddress.postalCode} placeholder="Post Code" className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" required />
                                                             </div>
                                                         </div>
 
