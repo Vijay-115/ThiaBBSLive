@@ -24,6 +24,7 @@ import AdminDashboard from './components/admin/Dashboard';
 import Products from './components/admin/Products'; 
 import Orders from './components/admin/Orders';  
 import MyAccount from './components/auth/MyAccount';
+import Seller from './components/admin/Seller';
 
 const AdminRoutes = () => (     
   <ProtectedRoute requiredRole="admin">         
@@ -76,6 +77,7 @@ function App() {
           <Route path="dashboard" element={<AdminDashboard />} />                     
           <Route path="products" element={<Products />} />                     
           <Route path="orders" element={<Orders />} />                 
+          <Route path="seller" element={<Seller />} />                 
         </Route>             
       </Routes>              
       {shouldRenderHeaderFooter && <FooterTop />}             

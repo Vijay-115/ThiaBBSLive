@@ -6,11 +6,12 @@ import Sidebar from './layout/sidebar';
 import Navbar from './layout/Navbar';
 import useDashboardLogic from "./hooks/useDashboardLogic"; 
 import Modal from "react-modal";
-import ProductForm from "./ProductForm";
-import { ProductService } from "../../services/ProductService";
 import toast from "react-hot-toast";
+import moment from "moment";
+import SellerForm from "./SellerForm";
+import { UserService } from "../../services/UserService";
 
-const Products = () => {
+const Seller = () => {
 
     const {
         isSidebarHidden,
@@ -25,13 +26,13 @@ const Products = () => {
         toggleProfileMenu,
     } = useDashboardLogic();
 
-  const [products, setProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
-  const [editProduct, setEditProduct] = useState(null);
+  const [sellers, setSellers] = useState([]);
+  const [filteredSellers, setFilteredSellers] = useState([]);
+  const [editSellers, setEditProduct] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [isAddEditModalOpen, setIsAddEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [productToDelete, setProductToDelete] = useState(null);
+  const [sellerToDelete, setSellerToDelete] = useState(null);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: "", direction: "" });
@@ -39,23 +40,23 @@ const Products = () => {
   const itemsPerPage = 5;
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchUsers = async () => {
       try {
-        const data = await ProductService.getProducts();
-        setProducts(data);
-        setFilteredProducts(data);
+        const data = await UserService.getUserRole('seller');
+        setSellers(data);
+        setFilteredSellers(data);
       } catch (error) {
-        console.error("Error fetching products:", error);
-        setErrorMessage(error.message || "Failed to fetch products.");
+        console.error("Error fetching sellers:", error);
+        setErrorMessage(error.message || "Failed to fetch sellers.");
       }
     };
-    fetchProducts();
+    fetchUsers();
   }, []);
 
   useEffect(() => {
-    const filterAndSortProducts = () => {
-      let filtered = products.filter((product) =>
-        product.name.toLowerCase().includes(searchQuery.toLowerCase())
+    const filterAndSortUsers = () => {
+      let filtered = sellers.filter((seller) =>
+        seller.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
   
       // Sorting logic
@@ -70,74 +71,43 @@ const Products = () => {
           return 0;
         });
       }
-      console.log(filtered); // Log the filtered products
-      setFilteredProducts(filtered);
+      console.log(filtered); // Log the filtered sellers
+      setFilteredSellers(filtered);
     };
   
-    filterAndSortProducts();
-  }, [searchQuery, sortConfig, products]); // Run when these values change
+    filterAndSortUsers();
+  }, [searchQuery, sortConfig, sellers]); // Run when these values change
 
   // Update this in the search input handler:
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
   };
 
-  const handleAddProduct = async (productData) => {
-    try {
-        if (editProduct) {
-            const updatedProduct = await ProductService.updateProduct(
-                editProduct.product_id,
-                productData
-            );
-            setProducts((prev) =>
-                prev.map((product) =>
-                    product.product_id === updatedProduct.product_id
-                        ? updatedProduct
-                        : product
-                )
-            );
-            setEditProduct(null);
-            toast.success("Product updated successfully!");
-        } else {
-            const newProduct = await ProductService.createProduct(productData);
-            setProducts((prev) => [...prev, newProduct]);
-            toast.success("Product created successfully!");
-        }
-        setErrorMessage("");
-        setIsAddEditModalOpen(false);
-    } catch (error) {
-        console.error("Error saving product:", error);
-        setErrorMessage(
-            error.message || "An error occurred while saving the product."
-        );
-        toast.error("Failed to save the product. Please try again.");
-    }
-  };
 
   const handleDeleteProduct = async () => {
     try {
-      await ProductService.deleteProduct(productToDelete.product_id);
-      setProducts((prev) =>
+      await UserService.deleteUser(sellerToDelete._id);
+      setSellers((prev) =>
         prev.filter(
-          (product) => product.product_id !== productToDelete.product_id
+          (seller) => seller._id !== sellerToDelete._id
         )
       );
-      setProductToDelete(null);
+      setSellerToDelete(null);
       setErrorMessage("");
       setIsDeleteModalOpen(false);
     } catch (error) {
-      console.error("Error deleting product:", error);
-      setErrorMessage(error.message || "Failed to delete the product.");
+      console.error("Error deleting seller:", error);
+      setErrorMessage(error.message || "Failed to delete the seller.");
     }
   };
 
-  const handleEditProduct = (product) => {
-    setEditProduct(product);
+  const handleEditProduct = (seller) => {
+    setEditProduct(seller);
     setIsAddEditModalOpen(true);
   };
 
-  const openDeleteModal = (product) => {
-    setProductToDelete(product);
+  const openDeleteModal = (seller) => {
+    setSellerToDelete(seller);
     setIsDeleteModalOpen(true);
   };
 
@@ -154,12 +124,12 @@ const Products = () => {
     setSortConfig({ key, direction });
   };
 
-  const paginatedProducts = filteredProducts.slice(
+  const paginatedProducts = filteredSellers.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredSellers.length / itemsPerPage);
 
     return (
         <>
@@ -167,11 +137,11 @@ const Products = () => {
             <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet' />
 
             <div className={isDarkMode ? 'dark' : ''}>
-
+                
                 <Sidebar isSidebarHidden={isSidebarHidden} toggleSidebar={toggleSidebar} />
 
                 <section id="content">
-
+                    
                     <Navbar isDarkMode={isDarkMode}
                         toggleDarkMode={toggleDarkMode}
                         toggleSidebar={toggleSidebar}
@@ -179,7 +149,7 @@ const Products = () => {
                         isNotificationMenuOpen={isNotificationMenuOpen}
                         toggleNotificationMenu={toggleNotificationMenu}
                         isProfileMenuOpen={isProfileMenuOpen}
-                        toggleProfileMenu={toggleProfileMenu}
+                        toggleProfileMenu={toggleProfileMenu} 
                         isSearchFormShown={isSearchFormShown}
                         toggleSearchForm={toggleSearchForm}
                     />
@@ -187,7 +157,7 @@ const Products = () => {
                     <main>
                         <div className="head-title">
                             <div className="left">
-                                <h1>Products</h1>
+                                <h1>Seller</h1>
                                 <ul className="breadcrumb">
                                     <li>
                                         <NavLink className="active" to="/admin/dashboard">Dashboard</NavLink>
@@ -196,7 +166,7 @@ const Products = () => {
                                         <i className="bx bx-chevron-right" />
                                     </li>
                                     <li>
-                                        <a> Products </a>
+                                        <a> Seller </a>
                                     </li>
                                 </ul>
                             </div>
@@ -205,6 +175,7 @@ const Products = () => {
                                 <span className="text">Download PDF</span>
                             </NavLink>
                         </div>
+                        
                         <div className="container mx-auto p-4">
                         {errorMessage && (
                             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -215,11 +186,11 @@ const Products = () => {
                         <Modal
                             isOpen={isAddEditModalOpen}
                             onRequestClose={() => setIsAddEditModalOpen(false)}
-                            contentLabel="Product Form"
+                            contentLabel="Seller Form"
                             className="modal-content"
                             overlayClassName="modal-overlay"
                         >
-                            <ProductForm product={editProduct} onSave={handleAddProduct} />
+                            <SellerForm seller={editSellers} />
                         </Modal>
 
                         <Modal
@@ -230,7 +201,7 @@ const Products = () => {
                             overlayClassName="modal-overlay"
                         >
                             <div className="p-4">
-                            <h3 className="text-lg">Are you sure you want to delete this product?</h3>
+                            <h3 className="text-lg">Are you sure you want to delete this seller?</h3>
                             <p className="mt-2">This action cannot be undone.</p>
                             <div className="mt-4">
                                 <button
@@ -254,11 +225,11 @@ const Products = () => {
                             onClick={openAddProductModal}
                             className="bg-blue-500 text-white px-4 py-2 rounded-md text-sm"
                             >
-                            Add New Product
+                            Add New Seller
                             </button>
                             <input
                             type="text"
-                            placeholder="Search products..."
+                            placeholder="Search sellers..."
                             className="border p-2 rounded-md text-sm"
                             value={searchQuery}
                             onChange={handleSearchChange}
@@ -266,21 +237,21 @@ const Products = () => {
                         </div>
 
                         <div className="mt-8">
-                            <h2 className="text-2xl font-semibold mb-4">Product List</h2>
+                            <h2 className="text-2xl font-semibold mb-4">Seller List</h2>
                             <div className="flex flex-wrap w-full mb-[-24px]">
                             <div className="w-full px-[12px] mb-[24px]">
                                 <div className="bb-table border-none border-[1px] md:border-solid border-[#eee] rounded-none md:rounded-[20px] overflow-hidden max-[1399px]:overflow-y-auto aos-init aos-animate" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="400">
                                 {paginatedProducts.length === 0 ? (
-                                <p className="text-gray-500">No products available.</p>
+                                <p className="text-gray-500">No sellers available.</p>
                                 ) : (
                                 <table className="w-full table-auto border-collapse">
                                     <thead className="hidden md:table-header-group">
                                     <tr className="border-b-[1px] border-solid border-[#eee]">
                                         <th
                                         className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize"
-                                        onClick={() => handleSort("product_id")}
+                                        onClick={() => handleSort("_id")}
                                         >
-                                        Product ID
+                                        Seller ID
                                         </th>
                                         <th
                                         className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize"
@@ -298,20 +269,20 @@ const Products = () => {
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    {paginatedProducts.map((product) => (
-                                        <tr key={product.product_id} className="border-b-[1px] border-solid border-[#eee]">
-                                        <td data-label="Product ID" className="p-[12px]">
-                                            <div className="Product flex justify-end md:justify-normal md:items-center">
-                                                <img src={import.meta.env.VITE_API_URL+''+product.product_img ?? ''} alt="new-product-1" className="w-[70px] border-[1px] border-solid border-[#eee] rounded-[10px]"/>
+                                    {paginatedProducts.map((seller) => (
+                                        <tr key={seller._id} className="border-b-[1px] border-solid border-[#eee]">
+                                        <td data-label="Seller ID" className="p-[12px]">
+                                            <div className="Seller flex justify-end md:justify-normal md:items-center">
+                                                <img src={import.meta.env.VITE_API_URL+''+seller.product_img ?? ''} alt="new-seller-1" className="w-[70px] border-[1px] border-solid border-[#eee] rounded-[10px]"/>
                                                 <div>   
-                                                    <span className="ml-[10px] block font-Poppins text-[14px] font-semibold leading-[24px] tracking-[0.03rem] text-secondary">{product.name ?? ''}</span>
-                                                    <span className="ml-[10px] block font-Poppins text-[12px] font-normal leading-[16px] tracking-[0.03rem] text-secondary">{product.description ?? ''}</span>
+                                                    <span className="ml-[10px] block font-Poppins text-[14px] font-semibold leading-[24px] tracking-[0.03rem] text-secondary">{seller.name ?? ''}</span>
+                                                    <span className="ml-[10px] block font-Poppins text-[12px] font-normal leading-[16px] tracking-[0.03rem] text-secondary">{seller.description ?? ''}</span>
                                                     <div className='px-2'>
                                                     {Array.from({ length: 5 }).map((_, index) => (
                                                     <i
                                                         key={index}
                                                         className={`ri-star-fill float-left text-[15px] mr-[3px] ${
-                                                        index < product.rating ? 'text-[#e7d52e]' : 'text-[#777]'
+                                                        index < seller.rating ? 'text-[#e7d52e]' : 'text-[#777]'
                                                         }`}
                                                     ></i>
                                                     ))}
@@ -320,19 +291,19 @@ const Products = () => {
                                             </div>
                                         </td>
                                         <td data-label="Name" className="p-[12px]">
-                                            <span className="price font-Poppins text-[15px] font-medium leading-[26px] tracking-[0.02rem] text-secondary">₹{product.price ?? ''}</span>
+                                            <span className="price font-Poppins text-[15px] font-medium leading-[26px] tracking-[0.02rem] text-secondary">₹{seller.price ?? ''}</span>
                                         </td>
-                                        <td data-label="Price" className="p-[12px]">{product.price}</td>
+                                        <td data-label="Price" className="p-[12px]">{seller.price}</td>
                                         <td data-label="Action" className="p-[12px]">
                                             <button
                                             className="bg-yellow-500 text-white px-4 py-1 rounded-md"
-                                            onClick={() => handleEditProduct(product)}
+                                            onClick={() => handleEditProduct(seller)}
                                             >
                                             Edit
                                             </button>
                                             <button
                                             className="bg-red-500 text-white px-4 py-1 ml-2 rounded-md"
-                                            onClick={() => openDeleteModal(product)}
+                                            onClick={() => openDeleteModal(seller)}
                                             >
                                             Delete
                                             </button>
@@ -366,7 +337,7 @@ const Products = () => {
                             </button>
                             </div>
                         </div>
-                        </div>                  
+                        </div>
                     </main>
                 </section>
             </div>
@@ -376,4 +347,4 @@ const Products = () => {
     );
 };
 
-export default Products;
+export default Seller;
