@@ -17,15 +17,15 @@ function CartPopup({ cartPopup, setCartPopup }) {
     const deliveryCharge = 0;
 
     // Handle increment
-    const handleIncrement = (prodId) => {
-        const currentQuantity = cartItems[prodId]?.quantity || 1;
+    const handleIncrement = (prodId,quantity) => {
+        const currentQuantity = quantity || 1;
         const newQuantity = currentQuantity + 1;
         dispatch(updateQuantity({ productId: prodId, quantity: newQuantity }));
     };
 
     // Handle decrement
-    const handleDecrement = (prodId) => {
-        const currentQuantity = cartItems[prodId]?.quantity || 1;
+    const handleDecrement = (prodId,quantity) => {
+        const currentQuantity = quantity || 1;
         const newQuantity = Math.max(currentQuantity - 1, 1);
         if (newQuantity > 0) {
             dispatch(updateQuantity({ productId: prodId, quantity: newQuantity }));
@@ -60,9 +60,9 @@ function CartPopup({ cartPopup, setCartPopup }) {
                                             <span className="new-price px-[3px] text-[14px] leading-[14px] text-secondary font-bold">₹{product.price}</span>
                                         </span>
                                         <div className="qty-plus-minus w-[85px] h-[45px] py-[0px] border-[1px] border-solid border-[#eee] overflow-hidden relative flex items-center justify-between bg-[#fff] rounded-[10px] px-3">
-                                            <div className="dec bb-qtybtn cursor-pointer" onClick={() => handleDecrement(product._id)}>-</div>
-                                            <span>{cartItems[product._id]?.quantity || 1}</span>
-                                            <div className="inc bb-qtybtn cursor-pointer" onClick={() => handleIncrement(product._id)}>+</div>
+                                            <div className="dec bb-qtybtn cursor-pointer" onClick={() => handleDecrement(product._id,quantity)}>-</div>
+                                            <span>{quantity || 1}</span>
+                                            <div className="inc bb-qtybtn cursor-pointer" onClick={() => handleIncrement(product._id,quantity)}>+</div>
                                         </div>
                                     </div>
                                 </li>

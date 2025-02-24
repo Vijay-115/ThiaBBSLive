@@ -40,6 +40,10 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // ✅ Middleware
 app.use(express.json({ extended: false }));
 
+// Increase the request size limit
+app.use(express.json({ limit: "50mb" })); 
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
+
 // ✅ Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);

@@ -35,9 +35,9 @@ const Sidebar = ({ isSidebarHidden, toggleSidebar }) => {
                         </NavLink>
                     </li>
                     <li>
-                        <NavLink to="/">
+                        <NavLink to="/admin/seller">
                             <i className="bx bxs-group bx-sm" />
-                            <span className="text">Marketing</span>
+                            <span className="text">Seller</span>
                         </NavLink>
                     </li>
                     <li>

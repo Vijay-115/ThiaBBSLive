@@ -13,6 +13,17 @@ export const ProductService = {
     }
   },
 
+  async getProductID(id) {
+      try {
+        const response = await api.get(`${BASE_URL}/${id}`);
+        console.log("Fetched Product:", response.data);
+        return response.data;
+      } catch (error) {
+        console.error("Error in getProductID:", error);
+        throw new Error(error.response?.data?.message || "Failed to fetch product.");
+      }
+  },
+
   async createProduct(product) {
     try {
       const response = await api.post(BASE_URL, product, {

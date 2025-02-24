@@ -18,7 +18,7 @@ const OrderSchema = new mongoose.Schema({
     street: String,
     city: String,
     state: String,
-    zip: String,
+    postalCode: String,
     country: String,
   }, // Shipping address for the order
   status: { type: String, default: 'pending', enum: ['pending', 'shipped', 'delivered', 'canceled'] }, // Order status

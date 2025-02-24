@@ -7,6 +7,8 @@ const { validationResult } = require('express-validator');
 const nodemailer = require("nodemailer");
 const redis = require("redis");
 const crypto = require('crypto');
+const path = require("path");
+const fs = require("fs");
 
 const client = redis.createClient();
 client.connect().catch(console.error);
@@ -27,6 +29,15 @@ exports.register = async (req, res) => {
             return res.status(400).json({ msg: "User already exists" });
         }
 
+        // ✅ Validate Referral Code
+        let referrer = null;
+        if (referredBy) {
+            referrer = await UserDetails.findOne({ referralCode: referredBy });
+            if (!referrer) {
+                return res.status(400).json({ msg: "Invalid referral code" });
+            }
+        }
+
         // ✅ Generate unique referral code
         const referralCode = generateReferralCode();
 
@@ -44,11 +55,15 @@ exports.register = async (req, res) => {
         const userDetails = new UserDetails({
             userId: user._id,
             referralCode,
-            referredBy,
+            referredBy: referrer ? referrer.userId : null, // Save referrer if valid
             phone
         });
 
         await userDetails.save();
+
+        // ✅ Link User to UserDetails
+        user.userdetails = userDetails._id;
+        await user.save();
 
         // ✅ Merge guest cart with registered user cart (if applicable)
         if (req.session.userId) {
@@ -60,19 +75,15 @@ exports.register = async (req, res) => {
         const accessToken = jwt.sign(
             { userId: user._id, role: user.role },
             process.env.JWT_SECRET,
-            { expiresIn: "1h" } // 1-hour expiry
+            { expiresIn: "1h" }
         );
 
         // ✅ Generate Refresh Token (Longer Expiry)
         const refreshToken = jwt.sign(
             { userId: user._id },
             process.env.REFRESH_TOKEN_SECRET,
-            { expiresIn: "7d" } // 7-day expiry
+            { expiresIn: "7d" }
         );
-
-        // ✅ Store refresh token in the database
-        user.refreshToken = refreshToken;
-        await user.save();
 
         // ✅ Send response with tokens and user data
         res.status(201).json({
@@ -90,7 +101,6 @@ exports.register = async (req, res) => {
         res.status(500).json({ msg: "Server error", error: error.message });
     }
 };
-
 
 // Login controller
 exports.login = async (req, res) => {
@@ -290,5 +300,95 @@ exports.checkAuth = async (req, res) => {
         res.status(200).json({ userId: decoded.userId, role: decoded.role });
     } catch (error) {
         res.status(401).json({ message: "Invalid token" });
+    }
+};
+
+// Get User Info
+exports.getUserInfo = async (req, res) => {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+        return res.status(401).json({ message: "No token provided" });
+    }
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const userInfo = await User.findById(decoded.userId)
+        .populate("userdetails");
+        res.status(200).json({ userInfo });
+    } catch (error) {
+        console.error("Error fetching user info:", error);
+        res.status(401).json({ message: "Invalid token" });
+    }
+};
+
+// Update User Profile
+exports.updateProfile = async (req, res) => {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+        return res.status(401).json({ message: "No token provided" });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const userInfo = await User.findById(decoded.userId).populate("userdetails");
+
+        if (!userInfo) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Update user name if provided
+        if (req.body.name) {
+            userInfo.name = req.body.name;
+        }
+
+        // Ensure userDetails exists
+        if (userInfo.userdetails) {
+            let userDetails = await UserDetails.findById(userInfo.userdetails._id);
+            if (userDetails) {
+                // Replace the address instead of pushing a new one
+                if (req.body.address) {
+                    userDetails.addresses = [req.body.address]; // Replace with new address
+                }
+
+                // Handle profile picture upload
+                if (req.files && req.files.profilePic && req.files.profilePic.length > 0) {
+                    console.log("Profile picture uploaded:", req.files.profilePic);
+
+                    const uploadedFile = req.files.profilePic[0]; // Get the uploaded file
+                    const fileExtension = path.extname(uploadedFile.originalname);
+                    const uniqueFileName = `profile_${decoded.userId}_${Date.now()}${fileExtension}`;
+                    const uploadPath = path.join(__dirname, "../uploads", uniqueFileName);
+
+                    // Remove the previous profile picture if it exists
+                    if (userDetails.profilePic) {
+                        const oldImagePath = path.join(__dirname, "../", userDetails.profilePic);
+                        if (fs.existsSync(oldImagePath)) {
+                            fs.unlinkSync(oldImagePath); // Delete old file
+                            console.log("Old profile picture deleted:", userDetails.profilePic);
+                        }
+                    }
+
+                    // Move uploaded file to the uploads directory
+                    fs.renameSync(uploadedFile.path, uploadPath);
+
+                    // Save unique filename to database
+                    userDetails.profilePic = `/uploads/${uniqueFileName}`;
+                } else {
+                    console.log("No new profile picture uploaded", req.body);
+                }
+
+                userDetails.updated_at = new Date(); // Update timestamp
+                await userDetails.save(); // Save changes
+            }
+        }
+
+        await userInfo.save(); // Save updated user info
+
+        // Fetch updated user details
+        const updatedUserInfo = await User.findById(decoded.userId).populate("userdetails");
+
+        res.status(200).json({ message: "Profile updated successfully", userInfo: updatedUserInfo });
+    } catch (error) {
+        console.error("Error updating profile:", error);
+        res.status(500).json({ message: "Failed to update profile" });
     }
 };

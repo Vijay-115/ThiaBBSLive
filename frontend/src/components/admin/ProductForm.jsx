@@ -2,7 +2,6 @@ import React, { useState } from "react";
 
 const ProductForm = ({ product, onSave }) => {
   const [formData, setFormData] = useState({
-    product_id: product ? product.product_id : "",
     name: product ? product.name : "",
     description: product ? product.description : "",
     price: product ? product.price : "",
@@ -80,19 +79,6 @@ const ProductForm = ({ product, onSave }) => {
         {product ? "Edit Product" : "Add Product"}
       </h2>
       <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">Product ID</label>
-          <input
-            type="text"
-            name="product_id"
-            value={formData.product_id}
-            onChange={handleChange}
-            className="mt-1 p-2 w-full border border-gray-300 rounded-md"
-            placeholder="Product ID"
-            required
-          />
-        </div>
-
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700">Name</label>
           <input
