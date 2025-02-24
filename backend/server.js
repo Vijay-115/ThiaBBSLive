@@ -7,6 +7,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const productRoutes = require('./routes/productRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const cartRoutes = require('./routes/cartRoutes');
+const userRoutes = require('./routes/userRoutes');
 const cors = require('cors');
 const path = require('path');
 
@@ -50,6 +51,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/products', productRoutes); // FIXED: Correct API route
 app.use('/api/orders', orderRoutes); // FIXED: Correct API route
 app.use('/api/cart', cartRoutes); // FIXED: Correct API route
+app.use('/api/users', userRoutes); // FIXED: Correct API route
 
 // ✅ Global error handling middleware
 app.use((err, req, res, next) => {

@@ -33,7 +33,7 @@ const auth = async (req, res, next) => {
         next();
     } catch (error) {
         console.error("❌ JWT Verification Error:", error.message);
-        return res.status(400).json({ success: false, message: "Token is not valid" });
+        return res.status(401).json({ success: false, message: "Token is not valid" });
     }
 };
 
