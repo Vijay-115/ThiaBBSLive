@@ -13,55 +13,57 @@ import { UserService } from "../../services/UserService";
 
 const Seller = () => {
 
-    const {
-        isSidebarHidden,
-        toggleSidebar,
-        isSearchFormShown,
-        toggleSearchForm,
-        isDarkMode,
-        toggleDarkMode,
-        isNotificationMenuOpen,
-        toggleNotificationMenu,
-        isProfileMenuOpen,
-        toggleProfileMenu,
-    } = useDashboardLogic();
+  const {
+    isSidebarHidden,
+    toggleSidebar,
+    isSearchFormShown,
+    toggleSearchForm,
+    isDarkMode,
+    toggleDarkMode,
+    isNotificationMenuOpen,
+    toggleNotificationMenu,
+    isProfileMenuOpen,
+    toggleProfileMenu,
+  } = useDashboardLogic();
 
   const [sellers, setSellers] = useState([]);
   const [filteredSellers, setFilteredSellers] = useState([]);
-  const [editSellers, setEditProduct] = useState(null);
+  const [editSeller, setEditSeller] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [isAddEditModalOpen, setIsAddEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [sellerToDelete, setSellerToDelete] = useState(null);
-
   const [searchQuery, setSearchQuery] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: "", direction: "" });
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
+  // Fetch Sellers
+  const fetchUsers = async () => {
+    try {
+      const data = await UserService.getUserRole("seller");
+      setSellers(data);
+      setFilteredSellers(data);
+      console.log("Fetching sellers:", data); // Fixed stale state issue
+    } catch (error) {
+      console.error("Error fetching sellers:", error);
+      setErrorMessage(error.message || "Failed to fetch sellers.");
+    }
+  };
+
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const data = await UserService.getUserRole('seller');
-        setSellers(data);
-        setFilteredSellers(data);
-      } catch (error) {
-        console.error("Error fetching sellers:", error);
-        setErrorMessage(error.message || "Failed to fetch sellers.");
-      }
-    };
     fetchUsers();
   }, []);
 
   useEffect(() => {
     const filterAndSortUsers = () => {
       let filtered = sellers.filter((seller) =>
-        seller.name.toLowerCase().includes(searchQuery.toLowerCase())
+        seller?.name?.toLowerCase().includes(searchQuery.toLowerCase())
       );
-  
+
       // Sorting logic
       if (sortConfig.key) {
-        filtered.sort((a, b) => {
+        const sortedUsers = [...filtered].sort((a, b) => {
           if (a[sortConfig.key] < b[sortConfig.key]) {
             return sortConfig.direction === "ascending" ? -1 : 1;
           }
@@ -70,27 +72,56 @@ const Seller = () => {
           }
           return 0;
         });
+        setFilteredSellers(sortedUsers);
+      } else {
+        setFilteredSellers(filtered);
       }
-      console.log(filtered); // Log the filtered sellers
-      setFilteredSellers(filtered);
     };
-  
-    filterAndSortUsers();
-  }, [searchQuery, sortConfig, sellers]); // Run when these values change
 
-  // Update this in the search input handler:
+    filterAndSortUsers();
+  }, [searchQuery, sortConfig, sellers]); // Optimized dependencies
+
   const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
+    setSearchQuery(e.target.value || ""); // Ensures controlled input
   };
 
+  const handleAddUser = async (sellerData) => {
+    console.log("sellerData", sellerData);
+    try {
+      if (editSeller) {
+        const updatedSeller = await UserService.updateUser(
+          editSeller._id,
+          sellerData
+        );
+        setSellers((prev) =>
+          prev.map((seller) =>
+            seller._id === updatedSeller._id ? updatedSeller : seller
+          )
+        );
+        setEditSeller(null);
+        toast.success("Seller updated successfully!");
+      } else {
+        const newSeller = await UserService.createUser(sellerData);
+        setSellers((prev) => [...prev, newSeller]);
+        toast.success("Seller created successfully!");
+      }
+      setErrorMessage("");
+      setIsAddEditModalOpen(false);
+      fetchUsers();
+    } catch (error) {
+      console.error("Error saving seller:", error);
+      setErrorMessage(
+        error.message || "An error occurred while saving the seller."
+      );
+      toast.error("Failed to save the seller. Please try again.");
+    }
+  };
 
-  const handleDeleteProduct = async () => {
+  const handleDeleteUser = async () => {
     try {
       await UserService.deleteUser(sellerToDelete._id);
       setSellers((prev) =>
-        prev.filter(
-          (seller) => seller._id !== sellerToDelete._id
-        )
+        prev.filter((seller) => seller._id !== sellerToDelete._id)
       );
       setSellerToDelete(null);
       setErrorMessage("");
@@ -101,8 +132,8 @@ const Seller = () => {
     }
   };
 
-  const handleEditProduct = (seller) => {
-    setEditProduct(seller);
+  const handleEditUser = (seller) => {
+    setEditSeller(seller);
     setIsAddEditModalOpen(true);
   };
 
@@ -111,8 +142,8 @@ const Seller = () => {
     setIsDeleteModalOpen(true);
   };
 
-  const openAddProductModal = () => {
-    setEditProduct(null);
+  const openAddUserModal = () => {
+    setEditSeller(null);
     setIsAddEditModalOpen(true);
   };
 
@@ -124,7 +155,7 @@ const Seller = () => {
     setSortConfig({ key, direction });
   };
 
-  const paginatedProducts = filteredSellers.slice(
+  const paginatedUsers = filteredSellers.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
@@ -190,7 +221,7 @@ const Seller = () => {
                             className="modal-content"
                             overlayClassName="modal-overlay"
                         >
-                            <SellerForm seller={editSellers} />
+                            <SellerForm seller={editSeller} onSave={handleAddUser}/>
                         </Modal>
 
                         <Modal
@@ -200,29 +231,29 @@ const Seller = () => {
                             className="modal-content"
                             overlayClassName="modal-overlay"
                         >
-                            <div className="p-4">
-                            <h3 className="text-lg">Are you sure you want to delete this seller?</h3>
-                            <p className="mt-2">This action cannot be undone.</p>
-                            <div className="mt-4">
-                                <button
-                                onClick={handleDeleteProduct}
-                                className="bg-red-500 text-white px-4 py-2 rounded-md mr-2"
-                                >
-                                Yes, Delete
-                                </button>
-                                <button
-                                onClick={() => setIsDeleteModalOpen(false)}
-                                className="bg-gray-500 text-white px-4 py-2 rounded-md"
-                                >
-                                Cancel
-                                </button>
-                            </div>
+                            <div className="p-8 bg-white rounded-lg">
+                              <h3 className="text-lg">Are you sure you want to delete this seller?</h3>
+                              <p className="mt-2">This action cannot be undone.</p>
+                              <div className="mt-4">
+                                  <button
+                                  onClick={handleDeleteUser}
+                                  className="bg-red-500 text-white px-4 py-2 rounded-md mr-2"
+                                  >
+                                  Yes, Delete
+                                  </button>
+                                  <button
+                                  onClick={() => setIsDeleteModalOpen(false)}
+                                  className="bg-gray-500 text-white px-4 py-2 rounded-md"
+                                  >
+                                  Cancel
+                                  </button>
+                              </div>
                             </div>
                         </Modal>
 
                         <div className="mb-4 flex gap-4 justify-between">
                             <button
-                            onClick={openAddProductModal}
+                            onClick={openAddUserModal}
                             className="bg-blue-500 text-white px-4 py-2 rounded-md text-sm"
                             >
                             Add New Seller
@@ -241,77 +272,73 @@ const Seller = () => {
                             <div className="flex flex-wrap w-full mb-[-24px]">
                             <div className="w-full px-[12px] mb-[24px]">
                                 <div className="bb-table border-none border-[1px] md:border-solid border-[#eee] rounded-none md:rounded-[20px] overflow-hidden max-[1399px]:overflow-y-auto aos-init aos-animate" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="400">
-                                {paginatedProducts.length === 0 ? (
+                                {paginatedUsers.length === 0 ? (
                                 <p className="text-gray-500">No sellers available.</p>
                                 ) : (
-                                <table className="w-full table-auto border-collapse">
+                                  <table className="w-full table-auto border-collapse">
                                     <thead className="hidden md:table-header-group">
-                                    <tr className="border-b-[1px] border-solid border-[#eee]">
+                                      <tr className="border-b-[1px] border-solid border-[#eee]">
                                         <th
-                                        className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize"
-                                        onClick={() => handleSort("_id")}
+                                          className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize cursor-pointer"
+                                          onClick={() => handleSort("name")}
                                         >
-                                        Seller ID
+                                          Seller Name
                                         </th>
                                         <th
-                                        className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize"
-                                        onClick={() => handleSort("name")}
+                                          className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize cursor-pointer"
+                                          onClick={() => handleSort("email")}
                                         >
-                                        Name
+                                          Email
                                         </th>
                                         <th
-                                        className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize"
-                                        onClick={() => handleSort("price")}
+                                          className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize cursor-pointer"
+                                          onClick={() => handleSort("userdetails.phone")}
                                         >
-                                        Price
+                                          Phone
                                         </th>
-                                        <th className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize">Actions</th>
-                                    </tr>
+                                        <th className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize">
+                                          Actions
+                                        </th>
+                                      </tr>
                                     </thead>
                                     <tbody>
-                                    {paginatedProducts.map((seller) => (
-                                        <tr key={seller._id} className="border-b-[1px] border-solid border-[#eee]">
-                                        <td data-label="Seller ID" className="p-[12px]">
+                                      {paginatedUsers.map((user) => (
+                                        <tr key={user._id} className="border-b-[1px] border-solid border-[#eee]">
+                                          <td data-label="Seller Name" className="p-[12px]">
                                             <div className="Seller flex justify-end md:justify-normal md:items-center">
-                                                <img src={import.meta.env.VITE_API_URL+''+seller.product_img ?? ''} alt="new-seller-1" className="w-[70px] border-[1px] border-solid border-[#eee] rounded-[10px]"/>
-                                                <div>   
-                                                    <span className="ml-[10px] block font-Poppins text-[14px] font-semibold leading-[24px] tracking-[0.03rem] text-secondary">{seller.name ?? ''}</span>
-                                                    <span className="ml-[10px] block font-Poppins text-[12px] font-normal leading-[16px] tracking-[0.03rem] text-secondary">{seller.description ?? ''}</span>
-                                                    <div className='px-2'>
-                                                    {Array.from({ length: 5 }).map((_, index) => (
-                                                    <i
-                                                        key={index}
-                                                        className={`ri-star-fill float-left text-[15px] mr-[3px] ${
-                                                        index < seller.rating ? 'text-[#e7d52e]' : 'text-[#777]'
-                                                        }`}
-                                                    ></i>
-                                                    ))}
-                                                    </div>
-                                                </div>
+                                              <div>
+                                                <span className="ml-[10px] block font-Poppins text-[14px] font-semibold leading-[24px] tracking-[0.03rem] text-secondary">
+                                                  {user?.name ?? "-"}
+                                                </span>
+                                              </div>
                                             </div>
-                                        </td>
-                                        <td data-label="Name" className="p-[12px]">
-                                            <span className="price font-Poppins text-[15px] font-medium leading-[26px] tracking-[0.02rem] text-secondary">₹{seller.price ?? ''}</span>
-                                        </td>
-                                        <td data-label="Price" className="p-[12px]">{seller.price}</td>
-                                        <td data-label="Action" className="p-[12px]">
+                                          </td>
+                                          <td data-label="Email" className="p-[12px]">
+                                            <span className="price font-Poppins text-[15px] font-medium leading-[26px] tracking-[0.02rem] text-secondary">
+                                              {user?.email ?? "-"}
+                                            </span>
+                                          </td>
+                                          <td data-label="Phone" className="p-[12px]">
+                                            {user?.userdetails?.phone || "-"}
+                                          </td>
+                                          <td data-label="Action" className="p-[12px]">
                                             <button
-                                            className="bg-yellow-500 text-white px-4 py-1 rounded-md"
-                                            onClick={() => handleEditProduct(seller)}
+                                              className="bg-yellow-500 text-white px-4 py-1 rounded-md"
+                                              onClick={() => handleEditUser(user)}
                                             >
-                                            Edit
+                                              Edit
                                             </button>
                                             <button
-                                            className="bg-red-500 text-white px-4 py-1 ml-2 rounded-md"
-                                            onClick={() => openDeleteModal(seller)}
+                                              className="bg-red-500 text-white px-4 py-1 ml-2 rounded-md"
+                                              onClick={() => openDeleteModal(user)}
                                             >
-                                            Delete
+                                              Delete
                                             </button>
-                                        </td>
+                                          </td>
                                         </tr>
-                                    ))}
+                                      ))}
                                     </tbody>
-                                </table>
+                                  </table>
                                 )}
                             </div>
                             </div>

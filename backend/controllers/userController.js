@@ -11,7 +11,7 @@ const generateReferralCode = () => {
 // CREATE: Add a new user
 exports.createUser = async (req, res) => {
     const { name, email, password, phone, role } = req.body;
-
+    console.log('Create Seller Data',req.body);
     try {
         // ✅ Check if user already exists
         let user = await User.findOne({ email });
@@ -63,8 +63,9 @@ exports.createUser = async (req, res) => {
 // READ: Get all users
 exports.getAllUsers = async (req, res) => {
     try {
-        const users = await User.find();
+        const users = await User.find().populate("userdetails");
         res.status(200).json(users);
+        console.log('getAllUsers');
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
@@ -73,7 +74,7 @@ exports.getAllUsers = async (req, res) => {
 // READ: Get a single user by id
 exports.getUserById = async (req, res) => {
     try {
-        const user = await User.findById(req.params.id);  // Query by id
+        const user = await User.findById(req.params.id).populate("userdetails");  // Query by id
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -85,25 +86,37 @@ exports.getUserById = async (req, res) => {
 
 exports.getUserByRole = async (req, res) => {
     try {
-        const role = req.params.role;
-        console.log(role);
-        const user = await User.findOne({ role });  // Query by id
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+        const role = req.query.role; // Get role from query parameter
+        console.log("Requested Role:", role); // Debugging
+
+        if (!role) {
+            return res.status(400).json({ message: 'Role parameter is required' });
         }
-        res.status(200).json(user);
+
+        const users = await User.find({ role: role }).populate("userdetails"); // Ensure role is correctly filtered
+        console.log("Filtered Users:", users); // Log the filtered users
+
+        if (!users.length) {
+            return res.status(404).json({ message: 'No users found with this role' });
+        }
+
+        res.setHeader('Cache-Control', 'no-store'); // Prevent caching
+        return res.status(200).json(users);
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        console.error("Error Fetching Users:", err);
+        return res.status(500).json({ message: 'Server error', error: err.message });
     }
 };
 
+
 // UPDATE: Update a user by id with image upload
 exports.updateUser = async (req, res) => {
+    console.log('updateUser');
     try {
-        const userId = req.params.id;
-
+        const _id = req.params.id;
+        console.log(_id);
         // Fetch the existing user
-        const exisingUser = await User.findOne({ id: userId });
+        const exisingUser = await User.findById({ _id }).populate("userdetails");
         if (!exisingUser) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -113,7 +126,7 @@ exports.updateUser = async (req, res) => {
 
         // Update the user
         const updatedUser = await User.findOneAndUpdate(
-            { id: userId },
+            { _id },
             updatedUserData,
             { new: true } // Return the updated document
         );
@@ -130,14 +143,14 @@ exports.updateUser = async (req, res) => {
 exports.deleteUser = async (req, res) => {
     try {
         // Find the user by id
-        const user = await User.findOne({ id: req.params.id });
+        const user = await User.findOne({ _id: req.params.id });
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
         // Delete the user from the database
-        await User.findOneAndDelete({ id: req.params.id });
+        await User.findOneAndDelete({ _id: req.params.id });
 
         res.status(200).json({ message: 'User and associated images deleted successfully' });
     } catch (err) {

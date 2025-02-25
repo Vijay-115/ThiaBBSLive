@@ -7,8 +7,8 @@ const { auth, adminOnly } = require('../middleware/authMiddleware');
 // Create product with image upload
 router.post("/", auth, uploadFields, userController.createUser);
 // READ: Get all products
-router.get('/', auth, userController.getAllUsers);
-router.get('/:role', auth, userController.getUserByRole);
+router.get('/role', auth, userController.getUserByRole); // Handle role filter first
+router.get('/', auth, userController.getAllUsers); // Get all users
 router.get('/:id', auth, userController.getUserById);
 
 // Update product with image upload

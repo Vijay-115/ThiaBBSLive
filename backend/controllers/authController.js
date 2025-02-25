@@ -9,6 +9,7 @@ const redis = require("redis");
 const crypto = require('crypto');
 const path = require("path");
 const fs = require("fs");
+const axios = require('axios');
 
 const client = redis.createClient();
 client.connect().catch(console.error);
@@ -16,6 +17,25 @@ client.connect().catch(console.error);
 // Function to generate a 7-digit alphanumeric referral code
 const generateReferralCode = () => {
     return crypto.randomBytes(4).toString('hex').toUpperCase().slice(0, 7);
+};
+
+// 📌 Geocode Address using OpenStreetMap (Nominatim API)
+const geocodeAddress = async (address) => {
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
+    try {
+      const response = await axios.get(url);
+      console.log('geocodeAddress',response);
+      if (response.data.length > 0) {
+        return {
+          latitude: response.data[0].lat,
+          longitude: response.data[0].lon,
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error("Geocoding error:", error);
+      return null;
+    }
 };
 
 // Register user
@@ -346,8 +366,16 @@ exports.updateProfile = async (req, res) => {
             if (userDetails) {
                 // Replace the address instead of pushing a new one
                 if (req.body.address) {
-                    userDetails.addresses = [req.body.address]; // Replace with new address
-                }
+                    let address = req.body.address;
+                    let fullAddress = `${address.street},${address.city},${address.state},${address.country},${address.postalCode}`;
+                
+                    // Wait for geocoding response
+                    const location = await geocodeAddress(fullAddress);
+                
+                    userDetails.addresses = req.body.address; // Replace with new address
+                    userDetails.latitude = location?.latitude || null;
+                    userDetails.longitude = location?.longitude || null; // Fix: Assign correct longitude
+                }                
 
                 // Handle profile picture upload
                 if (req.files && req.files.profilePic && req.files.profilePic.length > 0) {

@@ -8,7 +8,6 @@ const AddressSchema = new mongoose.Schema({
     state: { type: String, required: true },
     postalCode: { type: String, required: true },
     country: { type: String, required: true },
-    isDefault: { type: Boolean, default: false } // Marks the default address
 });
 
 // UserDetails Schema
@@ -18,7 +17,9 @@ const UserDetailsSchema = new mongoose.Schema({
     referredBy: { type: ObjectId, ref: 'User' }, // User who referred them
     phone: { type: String, unique: true, required: true }, // User's phone number
 
-    addresses: [AddressSchema], // List of user addresses
+    addresses: AddressSchema, // List of user addresses
+    latitude: { type: Number, default: null },
+    longitude: { type: Number, default: null },
 
     profilePic: { type: String, default: "" }, // Profile picture URL
     dateOfBirth: { type: Date, default: null }, // User's date of birth

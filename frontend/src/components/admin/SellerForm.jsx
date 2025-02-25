@@ -1,42 +1,58 @@
-import React, { useState } from "react";
-import { UserService } from "../../services/UserService";
-import toast from "react-hot-toast";
+import React, { useState, useEffect } from "react";
 
-const SellerForm = ({ seller }) => {
+const SellerForm = ({ seller, onSave }) => {
   const [formData, setFormData] = useState({
-    name: seller ? seller.name : "",
-    email: seller ? seller.email : "",
-    password: seller ? seller.password : "",
-    role: 'seller',
-    phone: seller ? seller?.userdetails?.phone : "",
+    name: "",
+    email: "",
+    password: "",
+    role: "seller",
+    phone: "",
   });
+
+  // Update formData when seller prop changes
+  useEffect(() => {
+    if (seller) {
+      setFormData({
+        name: seller?.name || "",
+        email: seller?.email || "",
+        password: seller?.password || "",
+        role: "seller",
+        phone: seller?.userdetails?.phone || "",
+      });
+    }
+  }, [seller]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: value || "", // Ensuring empty string instead of undefined
     }));
-  }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Submitting User Data:", formData);
-    const data = await UserService.createUser(formData);
+    const submissionData = new FormData();
 
-    if (data) {
-        console.log("Profile updated successfully:", data);
-        toast.success(data.message);
-    } else {
-        console.log("Failed to update profile");
-        toast.error(data.message);
+    if (seller?._id) {
+      submissionData.append("_id", seller._id);
     }
-    // Reset form
+    submissionData.append("name", formData.name);
+    submissionData.append("email", formData.email);
+    submissionData.append("phone", formData.phone);
+    submissionData.append("role", formData.role);
+    submissionData.append("password", formData.password);
+
+    console.log("Submitting User Data:", formData);
+    onSave(submissionData);
+
+    // Reset form after submission
     setFormData({
-      seller_id: "",
       name: "",
       email: "",
       password: "",
+      role: "seller",
+      phone: "",
     });
   };
 
@@ -49,7 +65,7 @@ const SellerForm = ({ seller }) => {
         <form onSubmit={handleSubmit}>
           <div className="flex flex-wrap mx-[-12px]">
             {/* First Name */}
-            <div className="min-[992px]:w-[50%] w-full px-[12px]">
+            <div className="w-full px-[12px]">
               <div className="input-item mb-[24px]">
                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">
                   First Name *
@@ -103,7 +119,7 @@ const SellerForm = ({ seller }) => {
             </div>
 
             {/* Password */}
-            <div className="min-[992px]:w-[50%] w-full px-[12px]">
+            <div className="w-full px-[12px]">
               <div className="input-item mb-[24px]">
                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">
                   Password *
