@@ -26,7 +26,7 @@ export const UserService = {
 
   async getUserRole(role) {
     try {
-      const response = await api.get(`${BASE_URL}?role=${role}`);
+      const response = await api.get(`${BASE_URL}/role?role=${role}`);
       console.log("Fetched Users by Role:", response.data);
       return response.data;
     } catch (error) {
