@@ -62,7 +62,7 @@ const SubCategories = () => {
   useEffect(() => {
     fetchSubCategories();
     fetchCategories();
-  }, []);
+  }, [subCategories]);
 
   useEffect(() => {
     const filterAndSortCategories = () => {

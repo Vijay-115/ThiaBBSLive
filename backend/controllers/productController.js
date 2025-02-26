@@ -5,11 +5,33 @@ const fs = require('fs');
 
 exports.createProduct = async (req, res) => {
     try {
-        const { product_id, name, description, price, stock, SKU, brand, weight, dimensions, tags, category_id, subcategory_id, variantData } = req.body;
+        console.log("createProduct", req.body); // Log full request body
+
+        const { product_id, name, description, price, stock, SKU, brand, weight, dimensions, tags, category_id, subcategory_id, is_variant } = req.body;
+
+        // Parse `variants` field if it exists and is a string
+        let variantData = [];
+        if (req.body.variants) {
+            try {
+                variantData = JSON.parse(req.body.variants); // Convert string to object
+            } catch (error) {
+                return res.status(400).json({ message: "Invalid variants format" });
+            }
+        }
+
+        // Parse `dimensions` if it is sent as a string
+        let parsedDimensions = {};
+        if (dimensions) {
+            try {
+                parsedDimensions = JSON.parse(dimensions);
+            } catch (error) {
+                return res.status(400).json({ message: "Invalid dimensions format" });
+            }
+        }
 
         // Ensure `req.files` contains the uploaded files
-        const productImage = req.files['product_img'] ? `/uploads/${req.files['product_img'][0].filename}` : '';
-        const galleryImages = req.files['gallery_imgs'] ? req.files['gallery_imgs'].map(file => `/uploads/${file.filename}`) : [];
+        const productImage = req.files?.['product_img'] ? `/uploads/${req.files['product_img'][0].filename}` : '';
+        const galleryImages = req.files?.['gallery_imgs'] ? req.files['gallery_imgs'].map(file => `/uploads/${file.filename}`) : [];
 
         // Get the current user's ID from the authenticated request
         const seller_id = req.user ? req.user.userId : null;
@@ -19,8 +41,8 @@ exports.createProduct = async (req, res) => {
 
         let newProduct;
 
-        // If variantData exists, create product without price/stock and handle variants
-        if (variantData && variantData.length > 0) {
+        // Check if variants exist
+        if (is_variant === 'true' && variantData.length > 0) {
             newProduct = new Product({
                 product_id,
                 name,
@@ -28,13 +50,14 @@ exports.createProduct = async (req, res) => {
                 SKU,
                 brand,
                 weight,
-                dimensions,
+                dimensions: parsedDimensions,
                 tags,
                 category_id,
                 subcategory_id,
                 product_img: productImage,
                 gallery_imgs: galleryImages,
                 seller_id,
+                is_variant: true,
             });
 
             await newProduct.save();
@@ -52,7 +75,7 @@ exports.createProduct = async (req, res) => {
 
             await Variant.insertMany(variants);
         } else {
-            // If no variantData, create a standard product with price and stock
+            // If no variants, create a normal product
             newProduct = new Product({
                 product_id,
                 name,
@@ -62,7 +85,7 @@ exports.createProduct = async (req, res) => {
                 SKU,
                 brand,
                 weight,
-                dimensions,
+                dimensions: parsedDimensions,
                 tags,
                 category_id,
                 subcategory_id,

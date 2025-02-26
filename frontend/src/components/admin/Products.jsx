@@ -112,6 +112,7 @@ const Products = () => {
 
   const handleAddProduct = async (productData) => {
     try {
+      console.log('handleAddProduct',productData);
         if (editProduct) {
             const updatedProduct = await ProductService.updateProduct(
                 editProduct.product_id,

@@ -39,16 +39,14 @@ const ProductForm = ({ product, categories, subCategories, onSave }) => {
 
   const handleVariantChange = (e) => {
     const { name, value } = e.target;
-    if (name.includes("attributes.")) {
-      const attrName = name.split(".")[1];
-      setVariantData((prev) => ({
-        ...prev,
-        attributes: { ...prev.attributes, [attrName]: value },
-      }));
-    } else {
-      setVariantData({ ...variantData, [name]: value });
-    }
-  };
+    setVariantData((prev) => {
+      if (name.startsWith("attributes.")) {
+        const attrName = name.split(".")[1];
+        return { ...prev, attributes: { ...prev.attributes, [attrName]: value } };
+      }
+      return { ...prev, [name]: value };
+    });
+  };  
 
   // Add variant to product
   const addVariant = () => {
@@ -56,6 +54,7 @@ const ProductForm = ({ product, categories, subCategories, onSave }) => {
       ...prev,
       variants: [...prev.variants, variantData],
     }));
+    
     setVariantData({
       variant_name: "",
       price: "",
@@ -64,6 +63,10 @@ const ProductForm = ({ product, categories, subCategories, onSave }) => {
       attributes: { color: "", size: "", material: "" },
       variant_img: "",
     });
+    
+    setTimeout(() => {
+      console.log("Updated productData:", productData);
+    }, 100);    
   };
 
   // Remove a variant
@@ -158,16 +161,22 @@ const ProductForm = ({ product, categories, subCategories, onSave }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     const submissionData = new FormData();
+    console.log('variantsJSON', JSON.stringify(productData.variants));
 
     Object.keys(productData).forEach((key) => {
-      if (key === "gallery_imgs") {
-        productData.gallery_imgs.forEach((image) => submissionData.append("gallery_imgs", image));
-      } else if (key === "dimensions") {
-        submissionData.append("dimensions", JSON.stringify(productData.dimensions));
-      } else {
-        submissionData.append(key, productData[key]);
-      }
+        if (key === "gallery_imgs") {
+            productData.gallery_imgs.forEach((image) => submissionData.append("gallery_imgs", image));
+        } else if (key === "dimensions" || key === "variants" || key === "tags") {
+            submissionData.append(key, JSON.stringify(productData[key]));
+        } else {
+            submissionData.append(key, productData[key]);
+        }
     });
+
+    console.log("Submission Data:");
+    for (let [key, value] of submissionData.entries()) {
+        console.log(key, value);
+    }
 
     onSave(submissionData);
   };
@@ -211,37 +220,37 @@ const ProductForm = ({ product, categories, subCategories, onSave }) => {
               <div className="w-full">
                 <div className="input-item">
                   <label className="block text-[14px] font-medium text-secondary mb-[4px]"> Product Name * </label>
-                  <input type="text" name="name" value={productData.name} onChange={handleChange} placeholder="Product Name" required className="w-full p-2 mb-4 border rounded-lg" />
+                  <input type="text" name="name" value={productData.name} onChange={handleChange} placeholder="Product Name"  className="w-full p-2 mb-4 border rounded-lg" />
                 </div>
               </div>
               <div className="w-full">
                 <div className="input-item">
                   <label className="block text-[14px] font-medium text-secondary mb-[4px]"> Description * </label>
-                  <textarea name="description" value={productData.description} onChange={handleChange} placeholder="Description" required className="w-full p-2 mb-4 border rounded-lg" />
+                  <textarea name="description" value={productData.description} onChange={handleChange} placeholder="Description"  className="w-full p-2 mb-4 border rounded-lg" />
                 </div>
               </div>
               <div className="w-full">
                 <div className="input-item">
                   <label className="block text-[14px] font-medium text-secondary mb-[4px]"> Price * </label>
-                  <input type="number" name="price" value={productData.price} onChange={handleChange} placeholder="Price" required className="w-full p-2 mb-4 border rounded-lg" />
+                  <input type="number" name="price" value={productData.price} onChange={handleChange} placeholder="Price"  className="w-full p-2 mb-4 border rounded-lg" />
                 </div>
               </div>
               <div className="w-full">
                 <div className="input-item">
                   <label className="block text-[14px] font-medium text-secondary mb-[4px]"> Stock * </label>
-                  <input type="number" name="stock" value={productData.stock} onChange={handleChange} placeholder="Stock" required className="w-full p-2 mb-4 border rounded-lg" />
+                  <input type="number" name="stock" value={productData.stock} onChange={handleChange} placeholder="Stock"  className="w-full p-2 mb-4 border rounded-lg" />
                 </div>
               </div>
               <div className="w-full">
                 <div className="input-item">
                   <label className="block text-[14px] font-medium text-secondary mb-[4px]"> SKU * </label>
-                  <input type="text" name="SKU" value={productData.SKU} onChange={handleChange} placeholder="SKU" required className="w-full p-2 mb-4 border rounded-lg" />
+                  <input type="text" name="SKU" value={productData.SKU} onChange={handleChange} placeholder="SKU"  className="w-full p-2 mb-4 border rounded-lg" />
                 </div>
               </div>
               <div className="w-full">
                 <div className="input-item">
                   <label className="block text-[14px] font-medium text-secondary mb-[4px]"> Brand * </label>
-                  <input type="text" name="SKU" value={productData.SKU} onChange={handleChange} placeholder="SKU" required className="w-full p-2 mb-4 border rounded-lg" />
+                  <input type="text" name="brand" value={productData.brand} onChange={handleChange} placeholder="SKU"  className="w-full p-2 mb-4 border rounded-lg" />
                 </div>
               </div>
               <div className="w-full">
@@ -367,28 +376,28 @@ const ProductForm = ({ product, categories, subCategories, onSave }) => {
                   <div className="w-full">
                     <div className="input-item">
                       <label className="block text-[14px] font-medium text-secondary mb-[4px]"> Variant Name* </label>
-                      <input type="text" name="variant_name" placeholder="Variant Name" value={variantData.variant_name} onChange={handleVariantChange} required />
+                      <input type="text" name="variant_name" placeholder="Variant Name" value={variantData.variant_name} onChange={handleVariantChange}  />
                     </div>
                   </div>
 
                   <div className="w-full mt-2">
                     <div className="input-item">
                       <label className="block text-[14px] font-medium text-secondary mb-[4px]"> Variant Price* </label>
-                      <input type="number" name="price" placeholder="Variant Price" value={variantData.price} onChange={handleVariantChange} required />
+                      <input type="number" name="price" placeholder="Variant Price" value={variantData.price} onChange={handleVariantChange}  />
                     </div>
                   </div>
                   
                   <div className="w-full mt-2">
                     <div className="input-item">
                       <label className="block text-[14px] font-medium text-secondary mb-[4px]"> Variant Stock* </label>
-                      <input type="number" name="stock" placeholder="Stock" value={variantData.stock} onChange={handleVariantChange} required />
+                      <input type="number" name="stock" placeholder="Stock" value={variantData.stock} onChange={handleVariantChange}  />
                     </div>
                   </div>
                   
                   <div className="w-full mt-2">
                     <div className="input-item">
                       <label className="block text-[14px] font-medium text-secondary mb-[4px]"> Variant SKU* </label>
-                      <input type="text" name="SKU" placeholder="SKU" value={variantData.SKU} onChange={handleVariantChange} required />
+                      <input type="text" name="SKU" placeholder="SKU" value={variantData.SKU} onChange={handleVariantChange}  />
                     </div>
                   </div>
                   
