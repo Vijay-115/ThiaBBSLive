@@ -1,3 +1,6 @@
+const mongoose = require('mongoose');
+const { ObjectId } = mongoose.Schema.Types;
+
 const VariantSchema = new mongoose.Schema({
     product_id: { type: ObjectId, ref: 'Product', required: true }, // Reference to main product
     variant_name: String, // e.g., "Red - Large"

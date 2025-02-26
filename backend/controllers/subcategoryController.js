@@ -23,7 +23,7 @@ exports.createSubcategory = async (req, res) => {
 // READ: Get all subcategories
 exports.getAllSubcategories = async (req, res) => {
     try {
-        const subcategories = await Subcategory.find().populate('category_id');
+        const subcategories = await Subcategory.find().populate('category_id'); // .populate('category_id')
         res.status(200).json(subcategories);
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -52,7 +52,7 @@ exports.updateSubcategory = async (req, res) => {
             req.params.id,
             { name, description, category_id },
             { new: true }
-        );
+        ).populate('category_id');
 
         if (!updatedSubcategory) {
             return res.status(404).json({ message: 'Subcategory not found' });

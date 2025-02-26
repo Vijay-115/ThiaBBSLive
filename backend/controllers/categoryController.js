@@ -3,6 +3,7 @@ const Subcategory = require('../models/Subcategory');
 
 // CREATE: Add a new category
 exports.createCategory = async (req, res) => {
+    console.log('createCategory',req.body);
     try {
         const { name, description } = req.body;
 
@@ -18,7 +19,7 @@ exports.createCategory = async (req, res) => {
 // READ: Get all categories
 exports.getAllCategories = async (req, res) => {
     try {
-        const categories = await Category.find().populate('subcategories');
+        const categories = await Category.find();
         res.status(200).json(categories);
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -28,7 +29,7 @@ exports.getAllCategories = async (req, res) => {
 // READ: Get a single category by ID
 exports.getCategoryById = async (req, res) => {
     try {
-        const category = await Category.findById(req.params.id).populate('subcategories');
+        const category = await Category.findById(req.params.id);
         if (!category) {
             return res.status(404).json({ message: 'Category not found' });
         }

@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const { ObjectId } = mongoose.Schema.Types;
 
 const ProductSchema = new mongoose.Schema({
-    product_id: { type: String, required: true, unique: true }, // Unique product identifier
     name: { type: String, required: true },
     description: String,
     price: { type: Number, required: true }, // Base price (can be overridden by variants)
@@ -23,6 +22,10 @@ const ProductSchema = new mongoose.Schema({
     // Category & Subcategory (Referencing separate collections)
     category_id: { type: ObjectId, ref: 'Category', required: true },
     subcategory_id: { type: ObjectId, ref: 'Subcategory' },
+
+    // Variant 
+    is_variant: {type: Boolean, default: false},
+    variant_id: {type: ObjectId, ref: 'Variant'},
 
     // Seller reference
     seller_id: { type: ObjectId, ref: 'User', required: true },

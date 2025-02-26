@@ -1,11 +1,11 @@
 const Product = require('../models/Product');
+const Variant = require("../models/Variant");
 const path = require('path');
 const fs = require('fs');
 
-// CREATE: Add a new product with image upload
 exports.createProduct = async (req, res) => {
     try {
-        const { product_id, name, description, price, stock, SKU, brand, weight, dimensions, tags, category_id, subcategory_id } = req.body;
+        const { product_id, name, description, price, stock, SKU, brand, weight, dimensions, tags, category_id, subcategory_id, variantData } = req.body;
 
         // Ensure `req.files` contains the uploaded files
         const productImage = req.files['product_img'] ? `/uploads/${req.files['product_img'][0].filename}` : '';
@@ -17,27 +17,63 @@ exports.createProduct = async (req, res) => {
             return res.status(401).json({ message: "Unauthorized: User ID not found" });
         }
 
-        // Create a new product
-        const newProduct = new Product({
-            product_id,
-            name,
-            description,
-            price,
-            stock,
-            SKU,
-            brand,
-            weight,
-            dimensions,
-            tags,
-            category_id,
-            subcategory_id,
-            product_img: productImage,
-            gallery_imgs: galleryImages,
-            seller_id,
-            variants: JSON.parse(variants || '[]') // Parse variants if provided
-        });
+        let newProduct;
 
-        await newProduct.save();
+        // If variantData exists, create product without price/stock and handle variants
+        if (variantData && variantData.length > 0) {
+            newProduct = new Product({
+                product_id,
+                name,
+                description,
+                SKU,
+                brand,
+                weight,
+                dimensions,
+                tags,
+                category_id,
+                subcategory_id,
+                product_img: productImage,
+                gallery_imgs: galleryImages,
+                seller_id,
+            });
+
+            await newProduct.save();
+
+            // Create variants for the product
+            const variants = variantData.map(variant => ({
+                product_id: newProduct._id,
+                variant_name: variant.variant_name,
+                price: variant.price,
+                stock: variant.stock,
+                SKU: variant.SKU,
+                attributes: variant.attributes,
+                variant_img: variant.variant_img || '',
+            }));
+
+            await Variant.insertMany(variants);
+        } else {
+            // If no variantData, create a standard product with price and stock
+            newProduct = new Product({
+                product_id,
+                name,
+                description,
+                price,
+                stock,
+                SKU,
+                brand,
+                weight,
+                dimensions,
+                tags,
+                category_id,
+                subcategory_id,
+                product_img: productImage,
+                gallery_imgs: galleryImages,
+                seller_id,
+            });
+
+            await newProduct.save();
+        }
+
         res.status(201).json(newProduct);
     } catch (err) {
         console.error(err);
