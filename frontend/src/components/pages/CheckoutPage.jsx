@@ -253,14 +253,14 @@ function CheckoutPage() {
                                                 <span className="bb-del-head font-Poppins leading-[26px] tracking-[0.02rem] text-[15px] font-semibold text-secondary">Free Shipping</span>
                                                 <div className="radio-itens">
                                                     <input type="radio" id="rate1" name="rate" className="w-full text-[14px] font-normal text-secondary border-[1px] border-solid border-[#eee] outline-[0] rounded-[10px]" />
-                                                    <label for="rate1" className="relative pl-[26px] cursor-pointer leading-[16px] inline-block text-secondary tracking-[0]">Rate - Rs 0 .00</label>
+                                                    <label htmlFor="rate1" className="relative pl-[26px] cursor-pointer leading-[16px] inline-block text-secondary tracking-[0]">Rate - Rs 0 .00</label>
                                                 </div>
                                             </div>
                                             <div className="inner-del w-[50%] max-[480px]:w-full">
                                                 <span className="bb-del-head font-Poppins leading-[26px] tracking-[0.02rem] text-[15px] font-semibold text-secondary">Flat Rate</span>
                                                 <div className="radio-itens">
                                                     <input type="radio" id="rate2" name="rate" className="w-full text-[14px] font-normal text-secondary border-[1px] border-solid border-[#eee] outline-[0] rounded-[10px]"/>
-                                                    <label for="rate2" className="relative pl-[26px] cursor-pointer leading-[16px] inline-block text-secondary tracking-[0]">Rate - Rs 5.00</label>
+                                                    <label htmlFor="rate2" className="relative pl-[26px] cursor-pointer leading-[16px] inline-block text-secondary tracking-[0]">Rate - Rs 5.00</label>
                                                 </div>
                                             </div>
                                         </div>
@@ -281,7 +281,7 @@ function CheckoutPage() {
                                             <div className="inner-del w-[50%] max-[480px]:w-full">
                                                 <div className="radio-itens">
                                                     <input type="radio" id="Cash1" name="radio-itens" className="w-full p-[10px] text-[14px] font-normal text-secondary border-[1px] border-solid border-[#eee] outline-[0] rounded-[10px]"/>
-                                                    <label for="Cash1" className="relative pl-[26px] cursor-pointer leading-[16px] inline-block text-secondary tracking-[0]">Cash On Delivery</label>
+                                                    <label htmlFor="Cash1" className="relative pl-[26px] cursor-pointer leading-[16px] inline-block text-secondary tracking-[0]">Cash On Delivery</label>
                                                 </div>
                                             </div>
                                         </div>
@@ -317,11 +317,11 @@ function CheckoutPage() {
                                             <div className="checkout-radio flex mb-[10px] max-[480px]:flex-col">
                                                 <div className="radio-itens mr-[20px]">
                                                     <input type="radio" id="address1" name="address" className="w-auto mr-[2px] p-[10px]" />
-                                                    <label for="address1" className="relative font-normal text-[14px] text-secondary pl-[26px] cursor-pointer leading-[16px] inline-block tracking-[0]">I want to use an existing address</label>
+                                                    <label htmlFor="address1" className="relative font-normal text-[14px] text-secondary pl-[26px] cursor-pointer leading-[16px] inline-block tracking-[0]">I want to use an existing address</label>
                                                 </div>
                                                 <div className="radio-itens">
                                                     <input type="radio" id="address2" name="address" className="w-auto mr-[2px] p-[10px]"/>
-                                                    <label for="address2" className="relative font-normal text-[14px] text-secondary pl-[26px] cursor-pointer leading-[16px] inline-block tracking-[0]">I want to use new address</label>
+                                                    <label htmlFor="address2" className="relative font-normal text-[14px] text-secondary pl-[26px] cursor-pointer leading-[16px] inline-block tracking-[0]">I want to use new address</label>
                                                 </div>
                                             </div>
                                             <div className="input-box-form mt-[20px]">

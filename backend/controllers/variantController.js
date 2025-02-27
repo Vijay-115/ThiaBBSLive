@@ -54,7 +54,7 @@ exports.getVariantById = async (req, res) => {
 // READ: Get variants by Product ID
 exports.getVariantsByProductId = async (req, res) => {
     try {
-        const variants = await Variant.find({ product_id: req.params.product_id }).populate('product_id');
+        const variants = await Variant.find({ product_id: req.params.product_id });
         res.status(200).json(variants);
     } catch (err) {
         res.status(500).json({ message: err.message });

@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from "react";
 import Select from "react-select";
 
-const ProductForm = ({ product, categories, subCategories, onSave }) => {
-  console.log("categories", categories);
-  console.log("subCategories", subCategories);
+const ProductForm = ({ product, categories, subCategories, variants, onSave }) => {
 
   const [productData, setProductData] = useState({
-    product_id: product?.product_id || "",
+    _id: product?._id || "",
     name: product?.name || "",
     description: product?.description || "",
     price: product?.price || "",
@@ -19,14 +17,16 @@ const ProductForm = ({ product, categories, subCategories, onSave }) => {
       width: product?.dimensions?.width || "",
       height: product?.dimensions?.height || "",
     },
-    tags: product?.tags || [],
+    tags: Array.isArray(product?.tags) ? product.tags : (product?.tags ? JSON.parse(product.tags) : []),
     category_id: product?.category_id || "",
     subcategory_id: product?.subcategory_id || "",
     product_img: null,
     gallery_imgs: [],
     is_variant: product?.is_variant || false,
-    variants: [],
+    variants: variants || [],
   });
+
+  console.log('productData',productData);
 
   const [variantData, setVariantData] = useState({
     variant_name: "",
@@ -36,45 +36,63 @@ const ProductForm = ({ product, categories, subCategories, onSave }) => {
     attributes: { color: "", size: "", material: "" },
     variant_img: "",
   });
+  const [editIndex, setEditIndex] = useState(null); 
 
   const handleVariantChange = (e) => {
     const { name, value } = e.target;
     setVariantData((prev) => {
-      if (name.startsWith("attributes.")) {
-        const attrName = name.split(".")[1];
-        return { ...prev, attributes: { ...prev.attributes, [attrName]: value } };
-      }
-      return { ...prev, [name]: value };
+        if (name.startsWith("attributes.")) {
+            const attrName = name.split(".")[1];
+            return { ...prev, attributes: { ...prev.attributes, [attrName]: value } };
+        }
+        return { ...prev, [name]: value };
     });
-  };  
+  };
 
-  // Add variant to product
+  // Add or update variant
   const addVariant = () => {
-    setProductData((prev) => ({
-      ...prev,
-      variants: [...prev.variants, variantData],
-    }));
-    
-    setVariantData({
-      variant_name: "",
-      price: "",
-      stock: "",
-      SKU: "",
-      attributes: { color: "", size: "", material: "" },
-      variant_img: "",
-    });
-    
-    setTimeout(() => {
-      console.log("Updated productData:", productData);
-    }, 100);    
+      setProductData((prev) => {
+          const updatedVariants = [...prev.variants];
+
+          if (editIndex !== null) {
+              // If editing, update the variant at the specified index
+              updatedVariants[editIndex] = variantData;
+          } else {
+              // If not editing, add a new variant
+              updatedVariants.push(variantData);
+          }
+
+          return { ...prev, variants: updatedVariants };
+      });
+
+      resetVariantForm();
   };
 
   // Remove a variant
   const removeVariant = (index) => {
-    setProductData((prev) => ({
-      ...prev,
-      variants: prev.variants.filter((_, i) => i !== index),
-    }));
+      setProductData((prev) => ({
+          ...prev,
+          variants: prev.variants.filter((_, i) => i !== index),
+      }));
+  };
+
+  // Edit a variant
+  const editVariant = (index) => {
+      setVariantData(productData.variants[index]); // Load variant data into the form
+      setEditIndex(index); // Set the index to track the variant being edited
+  };
+
+  // Reset variant form
+  const resetVariantForm = () => {
+      setVariantData({
+          variant_name: "",
+          price: "",
+          stock: "",
+          SKU: "",
+          attributes: { color: "", size: "", material: "" },
+          variant_img: "",
+      });
+      setEditIndex(null);
   };
 
 
@@ -364,7 +382,7 @@ const ProductForm = ({ product, categories, subCategories, onSave }) => {
               <div className="w-full">
                 <div className="input-item flex flex-wrap gap-3 items-center">
                   <input type="checkbox" className="w-[15px] h-[15px]" id="is_variant" name="is_variant" checked={productData.is_variant} onChange={handleChange} />
-                  <label for="is_variant" className="block text-[14px] font-medium text-secondary"> This product has variants </label>
+                  <label htmlFor="is_variant" className="block text-[14px] font-medium text-secondary"> This product has variants </label>
                 </div>
               </div>
               
@@ -435,7 +453,7 @@ const ProductForm = ({ product, categories, subCategories, onSave }) => {
                             <tr className="border-b-[1px] border-solid border-[#eee]">
                                 <th
                                 className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize"
-                                onClick={() => handleSort("product_id")}
+                                onClick={() => handleSort("_id")}
                                 >
                                 Variant Name
                                 </th>
@@ -466,11 +484,12 @@ const ProductForm = ({ product, categories, subCategories, onSave }) => {
                                     </div>
                                 </td>
                                 <td data-label="Name" className="p-[12px]">
-                                    <span className="price font-Poppins text-[15px] font-medium leading-[26px] tracking-[0.02rem] text-secondary">₹{variant.stock ?? ''}</span>
+                                    <span className="price font-Poppins text-[15px] font-medium leading-[26px] tracking-[0.02rem] text-secondary">{variant.stock ?? ''}</span>
                                 </td>
-                                <td data-label="Price" className="p-[12px]">{variant.price}</td>
+                                <td data-label="Price" className="p-[12px]">₹{variant.price}</td>
                                 <td data-label="Action" className="p-[12px]">
-                                  <button onClick={() => removeVariant(index)}>Remove</button>
+                                  <button className="text-blue-500 mr-3" type="button" onClick={() => editVariant(index)}>Edit</button>
+                                  <button className="text-red-500 mr-3" type="button" onClick={() => removeVariant(index)}>Remove</button>
                                 </td>
                                 </tr>
                             ))}

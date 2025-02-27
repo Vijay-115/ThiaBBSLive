@@ -29,6 +29,7 @@ const Products = () => {
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
   const [products, setProducts] = useState([]);
+  const [variants, setVariants] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [editProduct, setEditProduct] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
@@ -60,6 +61,30 @@ const Products = () => {
         setErrorMessage(error.message || "Failed to fetch subCategories.");
       }
     };
+
+    
+    const fetchVariantByProduct = async (id) => {
+      if (!id) return;
+      try {
+        const data = await ProductService.getVariantByProductID(id);
+        console.log('Fetched Variants Data:', data);
+        
+        setVariants((prev) => {
+          console.log('Previous Variants:', prev);
+          console.log('Setting New Variants:', data);
+          return data;
+        });
+      } catch (error) {
+        console.error("Error fetching variants:", error);
+        setErrorMessage(error?.message || "Failed to fetch variants.");
+      }
+    };
+    
+    useEffect(() => {
+      console.log('Updated variants:', variants);
+    }, [variants]);
+    
+    
   
     useEffect(() => {
       fetchSubCategories();
@@ -115,12 +140,12 @@ const Products = () => {
       console.log('handleAddProduct',productData);
         if (editProduct) {
             const updatedProduct = await ProductService.updateProduct(
-                editProduct.product_id,
+                editProduct._id,
                 productData
             );
             setProducts((prev) =>
                 prev.map((product) =>
-                    product.product_id === updatedProduct.product_id
+                    product._id === updatedProduct._id
                         ? updatedProduct
                         : product
                 )
@@ -145,10 +170,10 @@ const Products = () => {
 
   const handleDeleteProduct = async () => {
     try {
-      await ProductService.deleteProduct(productToDelete.product_id);
+      await ProductService.deleteProduct(productToDelete._id);
       setProducts((prev) =>
         prev.filter(
-          (product) => product.product_id !== productToDelete.product_id
+          (product) => product._id !== productToDelete._id
         )
       );
       setProductToDelete(null);
@@ -160,10 +185,16 @@ const Products = () => {
     }
   };
 
-  const handleEditProduct = (product) => {
-    setEditProduct(product);
-    setIsAddEditModalOpen(true);
+  const handleEditProduct = async (product) => {
+    if (!product) return;
+    
+    setEditProduct(product); // Set product immediately
+  
+    await fetchVariantByProduct(product._id); // Ensure variants are fetched before opening modal
+  
+    setIsAddEditModalOpen(true); // Open modal after fetching variants
   };
+  
 
   const openDeleteModal = (product) => {
     setProductToDelete(product);
@@ -248,7 +279,7 @@ const Products = () => {
                             className="modal-content"
                             overlayClassName="modal-overlay"
                         >
-                            <ProductForm product={editProduct} categories={categories} subCategories={subCategories} onSave={handleAddProduct} />
+                            <ProductForm product={editProduct} categories={categories} subCategories={subCategories} variants={variants} onSave={handleAddProduct} />
                         </Modal>
 
                         <Modal
@@ -307,7 +338,7 @@ const Products = () => {
                                       <tr className="border-b-[1px] border-solid border-[#eee]">
                                           <th
                                           className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize"
-                                          onClick={() => handleSort("product_id")}
+                                          onClick={() => handleSort("_id")}
                                           >
                                           Product ID
                                           </th>
@@ -328,7 +359,7 @@ const Products = () => {
                                       </thead>
                                       <tbody>
                                       {paginatedProducts.map((product) => (
-                                          <tr key={product.product_id} className="border-b-[1px] border-solid border-[#eee]">
+                                          <tr key={product._id} className="border-b-[1px] border-solid border-[#eee]">
                                           <td data-label="Product ID" className="p-[12px]">
                                               <div className="Product flex justify-end md:justify-normal md:items-center">
                                                   <img src={import.meta.env.VITE_API_URL+''+product.product_img ?? ''} alt="new-product-1" className="w-[70px] border-[1px] border-solid border-[#eee] rounded-[10px]"/>

@@ -6,6 +6,7 @@ const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/adminRoutes');
 const productRoutes = require('./routes/productRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
+const variantRoutes = require('./routes/variantRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const userRoutes = require('./routes/userRoutes');
@@ -51,6 +52,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/products', productRoutes); // FIXED: Correct API route
 app.use('/api', categoryRoutes);
+app.use('/api', variantRoutes);
 app.use('/api/orders', orderRoutes); // FIXED: Correct API route
 app.use('/api/cart', cartRoutes); // FIXED: Correct API route
 app.use('/api/users', userRoutes); // FIXED: Correct API route

@@ -2,6 +2,7 @@ import api from "../utils/api";
 const BASE_PRODUCTS_URL = "/products";
 const BASE_CATEGORIES_URL = "/categories";
 const BASE_SUBCATEGORIES_URL = "/subcategories";
+const BASE_VARIANTS_URL = "/variants";
 
 export const ProductService = {
   // Products
@@ -199,4 +200,38 @@ export const ProductService = {
       throw new Error(error.response?.data?.message || "Failed to delete SubCategory.");
     }
   },
+  // Variants
+  // SubCategories
+  async getVariants() {
+    try {
+      const response = await api.get(BASE_VARIANTS_URL);
+      console.log("Fetched Variant:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error in getVariants:", error);
+      throw new Error(error.response?.data?.message || "Failed to fetch Variant.");
+    }
+  },
+
+  async getVariantID(id) {
+      try {
+        const response = await api.get(`${BASE_VARIANTS_URL}/${id}`);
+        console.log("Fetched Variant:", response.data);
+        return response.data;
+      } catch (error) {
+        console.error("Error in getVariantID:", error);
+        throw new Error(error.response?.data?.message || "Failed to fetch Variant.");
+      }
+  },
+
+  async getVariantByProductID(id) {
+    try {
+      const response = await api.get(`${BASE_VARIANTS_URL}/product/${id}`);
+      console.log("Fetched Variant:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error in VariantByProductID:", error);
+      throw new Error(error.response?.data?.message || "Failed to fetch SubCategory.");
+    }
+},
 };
