@@ -1,8 +1,26 @@
 const Product = require('../models/Product');
 const Variant = require("../models/Variant");
+const User = require("../models/User");
+const UserDetails = require("../models/UserDetails");
 const path = require('path');
 const fs = require('fs');
 const mongoose = require('mongoose');
+
+const haversineDistance = (lat1, lon1, lat2, lon2) => {
+    const toRad = (value) => (value * Math.PI) / 180;
+
+    const R = 6371; // Earth radius in km
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; // Distance in km
+};
 
 exports.createProduct = async (req, res) => {
     try {
@@ -123,6 +141,62 @@ exports.getProductById = async (req, res) => {
         res.status(200).json(product);
     } catch (err) {
         res.status(500).json({ message: err.message });
+    }
+};
+
+exports.getNearbySellerProducts = async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(" ")[1];
+        if (!token) {
+            return res.status(401).json({ message: "No token provided" });
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findById(decoded.userId).populate("userdetails");
+
+        if (!user || !user.userdetails) {
+            return res.status(404).json({ message: "User details not found" });
+        }
+
+        const { latitude, longitude } = user.userdetails;
+
+        if (!latitude || !longitude) {
+            return res.status(400).json({ message: "User location not available" });
+        }
+
+        // Set search radius (e.g., 5 km)
+        const searchRadius = 5;
+
+        // Fetch all sellers (users with role "seller")
+        const sellers = await User.find({ role: "seller" }).populate("userdetails");
+
+        // Filter sellers within the radius
+        const nearbySellers = sellers.filter((seller) => {
+            if (seller.userdetails?.latitude && seller.userdetails?.longitude) {
+                const distance = haversineDistance(
+                    latitude,
+                    longitude,
+                    seller.userdetails.latitude,
+                    seller.userdetails.longitude
+                );
+                return distance <= searchRadius; // Only keep sellers within radius
+            }
+            return false;
+        });
+
+        // Extract seller IDs
+        const sellerIds = nearbySellers.map((seller) => seller._id);
+
+        // Fetch products from nearby sellers
+        const products = await Product.find({ seller_id: { $in: sellerIds } });
+
+        res.status(200).json({
+            message: "Nearby seller products fetched successfully",
+            products,
+        });
+    } catch (error) {
+        console.error("Error fetching nearby seller products:", error);
+        res.status(500).json({ message: "Internal Server Error" });
     }
 };
 

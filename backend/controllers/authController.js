@@ -19,22 +19,25 @@ const generateReferralCode = () => {
     return crypto.randomBytes(4).toString('hex').toUpperCase().slice(0, 7);
 };
 
-// 📌 Geocode Address using OpenStreetMap (Nominatim API)
+// 📌 Geocode Address using Ola Map API
 const geocodeAddress = async (address) => {
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
+    const API_KEY = process.env.OLA_MAP_API_KEY; // Replace with your actual API key
+    const url = `https://api.olamaps.io/places/v1/geocode?address=${encodeURIComponent(address)}&language=English&api_key=${API_KEY}`;
+
     try {
-      const response = await axios.get(url);
-      console.log('geocodeAddress',response);
-      if (response.data.length > 0) {
-        return {
-          latitude: response.data[0].lat,
-          longitude: response.data[0].lon,
-        };
-      }
-      return null;
+        const response = await axios.get(url);
+        console.log("geocodeAddress response:", response.data);
+
+        if (response.data.geocodingResults && response.data.geocodingResults.length > 0) {
+            return {
+                latitude: response.data.geocodingResults[0].geometry.location.lat,
+                longitude: response.data.geocodingResults[0].geometry.location.lng,
+            };
+        }
+        return null;
     } catch (error) {
-      console.error("Geocoding error:", error);
-      return null;
+        console.error("Geocoding error:", error);
+        return null;
     }
 };
 
@@ -371,6 +374,8 @@ exports.updateProfile = async (req, res) => {
                 
                     // Wait for geocoding response
                     const location = await geocodeAddress(fullAddress);
+
+                    console.log('location',location);
                 
                     userDetails.addresses = req.body.address; // Replace with new address
                     userDetails.latitude = location?.latitude || null;
