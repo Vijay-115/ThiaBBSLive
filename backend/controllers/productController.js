@@ -48,6 +48,19 @@ exports.createProduct = async (req, res) => {
             }
         }
 
+        // Ensure tags are always stored as an array
+        let parsedTags = [];
+        if (typeof tags === "string") {
+            try {
+                parsedTags = JSON.parse(tags);
+            } catch (error) {
+                console.error("❌ Error parsing tags:", error);
+                parsedTags = [];
+            }
+        } else if (!Array.isArray(tags)) {
+            parsedTags = [];
+        }
+
         // Ensure `req.files` contains the uploaded files
         const productImage = req.files?.['product_img'] ? `/uploads/${req.files['product_img'][0].filename}` : '';
         const galleryImages = req.files?.['gallery_imgs'] ? req.files['gallery_imgs'].map(file => `/uploads/${file.filename}`) : [];
@@ -69,7 +82,7 @@ exports.createProduct = async (req, res) => {
                 brand,
                 weight,
                 dimensions: parsedDimensions,
-                tags,
+                tags: parsedTags,
                 category_id,
                 subcategory_id,
                 product_img: productImage,
@@ -238,6 +251,18 @@ exports.updateProduct = async (req, res) => {
             }
         }
 
+        // ✅ Ensure tags are stored as an array
+        if (req.body.tags) {
+            try {
+                updatedProductData.tags = Array.isArray(req.body.tags) 
+                    ? req.body.tags 
+                    : JSON.parse(req.body.tags);
+            } catch (error) {
+                console.error("❌ Error parsing tags:", error);
+                updatedProductData.tags = [];
+            }
+        }
+
         // ✅ Update the product details
         const updatedProduct = await Product.findOneAndUpdate(
             { _id: productId },
@@ -318,7 +343,6 @@ exports.updateProduct = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
-
 
 // DELETE: Delete a product by product_id
 exports.deleteProduct = async (req, res) => {

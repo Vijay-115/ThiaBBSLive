@@ -23,7 +23,7 @@ const ProductForm = ({ product, categories, subCategories, variants, onSave }) =
     product_img: null,
     gallery_imgs: [],
     is_variant: product?.is_variant || false,
-    variants: variants || [],
+    variants: variants ?? [],
   });
 
   console.log('productData',productData);
@@ -33,20 +33,14 @@ const ProductForm = ({ product, categories, subCategories, variants, onSave }) =
     price: "",
     stock: "",
     SKU: "",
-    attributes: { color: "", size: "", material: "" },
+    attributes: [],
     variant_img: "",
   });
   const [editIndex, setEditIndex] = useState(null); 
 
   const handleVariantChange = (e) => {
     const { name, value } = e.target;
-    setVariantData((prev) => {
-        if (name.startsWith("attributes.")) {
-            const attrName = name.split(".")[1];
-            return { ...prev, attributes: { ...prev.attributes, [attrName]: value } };
-        }
-        return { ...prev, [name]: value };
-    });
+    setVariantData((prev) => ({ ...prev, [name]: value }));
   };
 
   // Add or update variant
@@ -89,12 +83,34 @@ const ProductForm = ({ product, categories, subCategories, variants, onSave }) =
           price: "",
           stock: "",
           SKU: "",
-          attributes: { color: "", size: "", material: "" },
+          attributes: [],
           variant_img: "",
       });
       setEditIndex(null);
   };
 
+  const handleAttributeChange = (attrIndex, field, value) => {
+    setVariantData((prev) => {
+      const updatedAttributes = [...prev.attributes];
+      updatedAttributes[attrIndex][field] = value;
+      return { ...prev, attributes: updatedAttributes };
+    });
+  };
+  
+  const addAttribute = () => {
+    setVariantData((prev) => ({
+      ...prev,
+      attributes: [...prev.attributes, { key: "", value: "" }],
+    }));
+  };
+  
+  const removeAttribute = (attrIndex) => {
+    setVariantData((prev) => {
+      const updatedAttributes = prev.attributes.filter((_, index) => index !== attrIndex);
+      return { ...prev, attributes: updatedAttributes };
+    });
+  };
+  
 
   const [tagInput, setTagInput] = useState("");
   const [categoriesOptions, setCategoriesOptions] = useState([]);
@@ -388,116 +404,108 @@ const ProductForm = ({ product, categories, subCategories, variants, onSave }) =
               
               {/* Variant Manager Section (Shown only if is_variant is true) */}
               {productData.is_variant && (
-                <div className="variant-manager-sec mt-5">
+                <div className="variant-manager-sec mt-5 w-full">
                   <h3 className="text-xl font-semibold text-center mb-4">Add Variants</h3>
                   
                   <div className="w-full">
-                    <div className="input-item">
-                      <label className="block text-[14px] font-medium text-secondary mb-[4px]"> Variant Name* </label>
-                      <input type="text" name="variant_name" placeholder="Variant Name" value={variantData.variant_name} onChange={handleVariantChange}  />
-                    </div>
-                  </div>
-
-                  <div className="w-full mt-2">
-                    <div className="input-item">
-                      <label className="block text-[14px] font-medium text-secondary mb-[4px]"> Variant Price* </label>
-                      <input type="number" name="price" placeholder="Variant Price" value={variantData.price} onChange={handleVariantChange}  />
-                    </div>
+                    <input type="text" name="variant_name" placeholder="Variant Name" value={variantData.variant_name} onChange={handleVariantChange} />
                   </div>
                   
                   <div className="w-full mt-2">
-                    <div className="input-item">
-                      <label className="block text-[14px] font-medium text-secondary mb-[4px]"> Variant Stock* </label>
-                      <input type="number" name="stock" placeholder="Stock" value={variantData.stock} onChange={handleVariantChange}  />
-                    </div>
+                    <input type="number" name="price" placeholder="Variant Price" value={variantData.price} onChange={handleVariantChange} />
                   </div>
                   
                   <div className="w-full mt-2">
-                    <div className="input-item">
-                      <label className="block text-[14px] font-medium text-secondary mb-[4px]"> Variant SKU* </label>
-                      <input type="text" name="SKU" placeholder="SKU" value={variantData.SKU} onChange={handleVariantChange}  />
-                    </div>
+                    <input type="number" name="stock" placeholder="Stock" value={variantData.stock} onChange={handleVariantChange} />
                   </div>
                   
-                  {/* Variants Attributes */}
-
-                  <div className="flex space-x-2 mb-4  mt-2">
-                    <div className="input-item w-1/3">
-                      <label className="block text-[14px] font-medium text-secondary mb-[4px]"> Color </label>
-                      <input type="text" name="attributes.color" placeholder="Color" value={variantData.attributes.color} onChange={handleVariantChange} />
-                    </div>
-                    <div className="input-item w-1/3">
-                      <label className="block text-[14px] font-medium text-secondary mb-[4px]"> Size </label>
-                      <input type="text" name="attributes.size" placeholder="Size" value={variantData.attributes.size} onChange={handleVariantChange} />
-                    </div>  
-                    <div className="input-item w-1/3">
-                      <label className="block text-[14px] font-medium text-secondary mb-[4px]"> Height </label>
-                      <input type="text" name="attributes.material" placeholder="Material" value={variantData.attributes.material} onChange={handleVariantChange} />
-                    </div>     
-                  </div>
-
-                  <div className="w-full px-[12px]">
-                    <div className="input-button">
-                      <button type="button" className="px-4 py-2 bg-blue-500 text-sm mt-3 text-white w-auto rounded-lg" onClick={addVariant}>Add Variant</button>
-                    </div>
+                  <div className="w-full mt-2">
+                    <input type="text" name="SKU" placeholder="SKU" value={variantData.SKU} onChange={handleVariantChange} />
                   </div>
                   
-
-                  {/* Show added variants */}
-                  {productData.variants.length > 0 && (
-                    <>
-                      <h3 className="text-xl font-semibold text-center mb-4">Variants List</h3>
-                      <div className="bb-table border-none border-[1px] md:border-solid border-[#eee] rounded-none md:rounded-[20px] overflow-hidden max-[1399px]:overflow-y-auto aos-init aos-animate" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="400">
-                        <table className="w-full table-auto border-collapse">
-                            <thead className="hidden md:table-header-group">
-                            <tr className="border-b-[1px] border-solid border-[#eee]">
-                                <th
-                                className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize"
-                                onClick={() => handleSort("_id")}
-                                >
-                                Variant Name
-                                </th>
-                                <th
-                                className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize"
-                                onClick={() => handleSort("name")}
-                                >
-                                Stock
-                                </th>
-                                <th
-                                className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize"
-                                onClick={() => handleSort("price")}
-                                >
-                                Price
-                                </th>
-                                <th className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize">Actions</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {productData.variants.map((variant, index) => (
-                                <tr key={index} className="border-b-[1px] border-solid border-[#eee]">
-                                <td data-label="Product ID" className="p-[12px]">
-                                    <div className="Product flex justify-end md:justify-normal md:items-center">
-                                        <div>   
-                                            <span className="ml-[10px] block font-Poppins text-[14px] font-semibold leading-[24px] tracking-[0.03rem] text-secondary">{variant.variant_name ?? ''}</span>
-                                            <span className="ml-[10px] block font-Poppins text-[12px] font-normal leading-[16px] tracking-[0.03rem] text-secondary">SKU - {variant.SKU ?? ''}</span>
-                                        </div>
+                  {variantData.attributes.map((attr, attrIndex) => (
+                    <div key={attrIndex} className="flex space-x-2 mb-2">
+                      <input
+                        type="text"
+                        placeholder="Attribute Name (e.g., Color)"
+                        value={attr.key}
+                        onChange={(e) => handleAttributeChange(attrIndex, "key", e.target.value)}
+                        className="w-1/2 p-2 border border-gray-300 rounded"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Value (e.g., Red)"
+                        value={attr.value}
+                        onChange={(e) => handleAttributeChange(attrIndex, "value", e.target.value)}
+                        className="w-1/2 p-2 border border-gray-300 rounded"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeAttribute(attrIndex)}
+                        className="px-3 py-1 bg-red-500 text-white rounded"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={addAttribute}
+                    className="px-4 py-2 bg-green-500 text-white rounded mt-2"
+                  >
+                    + Add Attribute
+                  </button>                
+                  
+                  <button type="button" className="px-4 py-2 bg-blue-500 text-white mt-3 rounded-lg" onClick={addVariant}>Add Variant</button>
+                  <div className="bb-table border-none border-[1px] md:border-solid border-[#eee] rounded-none md:rounded-[20px] overflow-hidden max-[1399px]:overflow-y-auto aos-init aos-animate" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="400">
+                    <table className="w-full table-auto border-collapse">
+                        <thead className="hidden md:table-header-group">
+                        <tr className="border-b-[1px] border-solid border-[#eee]">
+                            <th
+                            className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize"
+                            onClick={() => handleSort("_id")}
+                            >
+                            Variant Name
+                            </th>
+                            <th
+                            className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize"
+                            onClick={() => handleSort("name")}
+                            >
+                            Stock
+                            </th>
+                            <th
+                            className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize"
+                            onClick={() => handleSort("price")}
+                            >
+                            Price
+                            </th>
+                            <th className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {productData.variants.map((variant, index) => (
+                            <tr key={index} className="border-b-[1px] border-solid border-[#eee]">
+                            <td data-label="Product ID" className="p-[12px]">
+                                <div className="Product flex justify-end md:justify-normal md:items-center">
+                                    <div>   
+                                        <span className="ml-[10px] block font-Poppins text-[14px] font-semibold leading-[24px] tracking-[0.03rem] text-secondary">{variant.variant_name ?? ''}</span>
+                                        <span className="ml-[10px] block font-Poppins text-[12px] font-normal leading-[16px] tracking-[0.03rem] text-secondary">SKU - {variant.SKU ?? ''}</span>
                                     </div>
-                                </td>
-                                <td data-label="Name" className="p-[12px]">
-                                    <span className="price font-Poppins text-[15px] font-medium leading-[26px] tracking-[0.02rem] text-secondary">{variant.stock ?? ''}</span>
-                                </td>
-                                <td data-label="Price" className="p-[12px]">₹{variant.price}</td>
-                                <td data-label="Action" className="p-[12px]">
-                                  <button className="text-blue-500 mr-3" type="button" onClick={() => editVariant(index)}>Edit</button>
-                                  <button className="text-red-500 mr-3" type="button" onClick={() => removeVariant(index)}>Remove</button>
-                                </td>
-                                </tr>
-                            ))}
-                            </tbody>
-                        </table>
-                      </div>
-                    </>
-                  )}
+                                </div>
+                            </td>
+                            <td data-label="Name" className="p-[12px]">
+                                <span className="price font-Poppins text-[15px] font-medium leading-[26px] tracking-[0.02rem] text-secondary">{variant.stock ?? ''}</span>
+                            </td>
+                            <td data-label="Price" className="p-[12px]">₹{variant.price}</td>
+                            <td data-label="Action" className="p-[12px]">
+                              <button className="text-blue-500 mr-3" type="button" onClick={() => editVariant(index)}>Edit</button>
+                              <button className="text-red-500 mr-3" type="button" onClick={() => removeVariant(index)}>Remove</button>
+                            </td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                  </div>
                 </div>
               )}
 
