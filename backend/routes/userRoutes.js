@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
-const { uploadFields } = require('../middleware/upload');
+const { uploadAny } = require('../middleware/upload');
 const { auth, adminOnly } = require('../middleware/authMiddleware');
 
 // Create product with image upload
-router.post("/", auth, uploadFields, userController.createUser);
+router.post("/", auth, uploadAny, userController.createUser);
 // READ: Get all products
 router.get('/role', auth, userController.getUserByRole); // Handle role filter first
 router.get('/', auth, userController.getAllUsers); // Get all users
@@ -15,7 +15,7 @@ router.get('/:id', auth, userController.getUserById);
 router.put(
     '/:id',
     auth,
-    uploadFields, // Accept up to 5 images
+    uploadAny, // Accept up to 5 images
     userController.updateUser
 );
 

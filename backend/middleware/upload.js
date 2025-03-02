@@ -1,14 +1,20 @@
 const multer = require("multer");
 const path = require("path");
+const fs = require("fs");
+
+const uploadDir = "uploads/";
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
 
 // Set storage configuration
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, "uploads/"); // Ensure this folder exists
+        cb(null, uploadDir);
     },
     filename: (req, file, cb) => {
-        const uniqueName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}${path.extname(file.originalname)}`;
-        cb(null, uniqueName); // Unique file naming
+        const uniqueName = `${Date.now()}-${Math.random().toString(36).slice(2, 11)}${path.extname(file.originalname)}`;
+        cb(null, uniqueName);
     },
 });
 
@@ -29,12 +35,8 @@ const upload = multer({
     fileFilter,
 });
 
-// Define the fields for handling different file types
-const uploadFields = upload.fields([
-    { name: "product_img", maxCount: 1 }, // Single product image
-    { name: "profilePic", maxCount: 1 }, // Single product image
-    { name: "gallery_imgs", maxCount: 5 } // Multiple gallery images (max 5)
-]);
+// Middleware for handling dynamically named fields
+const uploadAny = upload.any();
 
-// Middleware for handling multiple file uploads
-exports.uploadFields = uploadFields; // Export the middleware
+// Export middleware
+exports.uploadAny = uploadAny;

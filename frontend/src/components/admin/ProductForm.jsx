@@ -35,6 +35,7 @@ const ProductForm = ({ product, categories, subCategories, variants, onSave }) =
     SKU: "",
     attributes: [],
     variant_img: "",
+    variant_gallery_imgs:[]
   });
   const [editIndex, setEditIndex] = useState(null); 
 
@@ -45,22 +46,26 @@ const ProductForm = ({ product, categories, subCategories, variants, onSave }) =
 
   // Add or update variant
   const addVariant = () => {
-      setProductData((prev) => {
-          const updatedVariants = [...prev.variants];
+    setProductData((prev) => {
+        const updatedVariants = [...prev.variants];
 
-          if (editIndex !== null) {
-              // If editing, update the variant at the specified index
-              updatedVariants[editIndex] = variantData;
-          } else {
-              // If not editing, add a new variant
-              updatedVariants.push(variantData);
-          }
+        const newVariant = {
+            ...variantData,
+            variant_img: variantData.variant_img || null, // Preserve file reference
+            variant_gallery_imgs: variantData.variant_gallery_imgs ? [...variantData.variant_gallery_imgs] : [], // Preserve files
+        };
 
-          return { ...prev, variants: updatedVariants };
-      });
+        if (editIndex !== null) {
+            updatedVariants[editIndex] = newVariant;
+        } else {
+            updatedVariants.push(newVariant);
+        }
 
-      resetVariantForm();
-  };
+        return { ...prev, variants: updatedVariants };
+    });
+
+    resetVariantForm();
+};
 
   // Remove a variant
   const removeVariant = (index) => {
@@ -72,7 +77,9 @@ const ProductForm = ({ product, categories, subCategories, variants, onSave }) =
 
   // Edit a variant
   const editVariant = (index) => {
+      console.log('productData.variants[index]',productData.variants[index]);
       setVariantData(productData.variants[index]); // Load variant data into the form
+      console.log('editVariant',variantData);
       setEditIndex(index); // Set the index to track the variant being edited
   };
 
@@ -85,14 +92,24 @@ const ProductForm = ({ product, categories, subCategories, variants, onSave }) =
           SKU: "",
           attributes: [],
           variant_img: "",
+          variant_gallery_imgs:[]
       });
       setEditIndex(null);
   };
 
   const handleAttributeChange = (attrIndex, field, value) => {
     setVariantData((prev) => {
-      const updatedAttributes = [...prev.attributes];
-      updatedAttributes[attrIndex][field] = value;
+      // Ensure attributes exist as an array
+      const updatedAttributes = Array.isArray(prev.attributes) ? [...prev.attributes] : [];
+
+      // Ensure the attribute at attrIndex exists, otherwise initialize it
+      if (!updatedAttributes[attrIndex]) {
+        updatedAttributes[attrIndex] = {}; // Initialize as an empty object
+      }
+
+      // Update attribute field
+      updatedAttributes[attrIndex] = { ...updatedAttributes[attrIndex], [field]: value };
+
       return { ...prev, attributes: updatedAttributes };
     });
   };
@@ -174,27 +191,42 @@ const ProductForm = ({ product, categories, subCategories, variants, onSave }) =
     }));
   };
 
-  const handleProductImageChange = (e) => {
+  const handleProductImageChange = (e, type) => {
     if (e.target.files.length > 0) {
-      setProductData((prev) => ({
-        ...prev,
-        product_img: e.target.files[0],
-      }));
+        if (type === 'product') {
+            setProductData((prev) => ({
+                ...prev,
+                product_img: e.target.files[0],
+            }));
+        } else {
+            setVariantData((prev) => ({
+                ...prev,
+                variant_img: e.target.files[0], // Ensure file is stored correctly
+            }));
+        }
     }
   };
 
-  const handleGalleryImagesChange = (e) => {
-    if (e.target.files.length > 0) {
-      setProductData((prev) => ({
-        ...prev,
-        gallery_imgs: Array.from(e.target.files),
-      }));
-    }
+  const handleGalleryImagesChange = (e, type) => {
+      if (e.target.files.length > 0) {
+          if (type === 'product') {
+              setProductData((prev) => ({
+                  ...prev,
+                  gallery_imgs: Array.from(e.target.files),
+              }));
+          } else {
+              setVariantData((prev) => ({
+                  ...prev,
+                  variant_gallery_imgs: Array.from(e.target.files), // Ensure file array is stored
+              }));
+          }
+      }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const submissionData = new FormData();
+
     console.log('variantsJSON', JSON.stringify(productData.variants));
 
     Object.keys(productData).forEach((key) => {
@@ -207,6 +239,21 @@ const ProductForm = ({ product, categories, subCategories, variants, onSave }) =
         }
     });
 
+    // Append each variant separately
+    productData.variants.forEach((variant, index) => {
+
+        // Ensure variant_img is properly appended
+        if (variant.variant_img) {
+          submissionData.append("variant_img_"+index, variant.variant_img);
+        }
+
+        if (variant.variant_gallery_imgs && variant.variant_gallery_imgs.length > 0) {
+            variant.variant_gallery_imgs.forEach((image) => {
+                submissionData.append("variant_gallery_imgs_"+index, image);
+            });
+        }
+    });
+
     console.log("Submission Data:");
     for (let [key, value] of submissionData.entries()) {
         console.log(key, value);
@@ -214,6 +261,7 @@ const ProductForm = ({ product, categories, subCategories, variants, onSave }) =
 
     onSave(submissionData);
   };
+
 
   const handleSelectChange = (selectedOption, actionMeta) => {
     const { name } = actionMeta; // Extract name
@@ -384,13 +432,13 @@ const ProductForm = ({ product, categories, subCategories, variants, onSave }) =
               <div className="w-full mt-3">
                 <div className="input-item">
                   <label className="block text-[14px] font-medium text-secondary mb-[4px]"> Upload Product Image </label>
-                  <input type="file" accept="image/*" onChange={handleProductImageChange} className="w-full p-2 mb-4 border rounded-lg" />
+                  <input type="file" accept="image/*" onChange={(e) => handleProductImageChange(e,'product')} className="w-full p-2 mb-4 border rounded-lg" />
                 </div>
               </div>
               <div className="w-full">
                 <div className="input-item">
                   <label className="block text-[14px] font-medium text-secondary mb-[4px]"> Upload Product Gallery Images </label>
-                  <input type="file" accept="image/*" multiple onChange={handleGalleryImagesChange} className="w-full p-2 mb-4 border rounded-lg" />
+                  <input type="file" accept="image/*" multiple onChange={(e) => handleGalleryImagesChange(e,'product')} className="w-full p-2 mb-4 border rounded-lg" />
                 </div>
               </div>
 
@@ -422,93 +470,136 @@ const ProductForm = ({ product, categories, subCategories, variants, onSave }) =
                   <div className="w-full mt-2">
                     <input type="text" name="SKU" placeholder="SKU" value={variantData.SKU} onChange={handleVariantChange} />
                   </div>
+
+                  <div className="w-full mt-3">
+                    <div className="input-item">
+                      <label className="block text-[14px] font-medium text-secondary mb-[4px]"> Upload Product Image </label>
+                      <input type="file" accept="image/*" onChange={(e) => handleProductImageChange(e,'variant')} className="w-full p-2 mb-4 border rounded-lg" />
+                    </div>
+                  </div>
+                  <div className="w-full">
+                    <div className="input-item">
+                      <label className="block text-[14px] font-medium text-secondary mb-[4px]"> Upload Product Gallery Images </label>
+                      <input type="file" accept="image/*" multiple onChange={(e) => handleGalleryImagesChange(e,'variant')} className="w-full p-2 mb-4 border rounded-lg" />
+                    </div>
+                  </div>
                   
-                  {variantData.attributes.map((attr, attrIndex) => (
-                    <div key={attrIndex} className="flex space-x-2 mb-2">
-                      <input
-                        type="text"
-                        placeholder="Attribute Name (e.g., Color)"
-                        value={attr.key}
-                        onChange={(e) => handleAttributeChange(attrIndex, "key", e.target.value)}
-                        className="w-1/2 p-2 border border-gray-300 rounded"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Value (e.g., Red)"
-                        value={attr.value}
-                        onChange={(e) => handleAttributeChange(attrIndex, "value", e.target.value)}
-                        className="w-1/2 p-2 border border-gray-300 rounded"
-                      />
+                  <div className="variant-attributes-sec my-3">
+                    <fieldset>
+                      <legend className="mb-2">Variant Attributes:</legend>
+
+                      {variantData.attributes && variantData.attributes.length > 0 ? (
+                        variantData.attributes.map((attr, attrIndex) => (
+                          <div key={attrIndex} className="flex space-x-2 mb-2">
+                            <input
+                              type="text"
+                              placeholder="Attribute Name (e.g., Color)"
+                              value={attr.key}
+                              onChange={(e) => handleAttributeChange(attrIndex, "key", e.target.value)}
+                              className="w-1/2 p-2 border border-gray-300 rounded"
+                            />
+                            <input
+                              type="text"
+                              placeholder="Value (e.g., Red)"
+                              value={attr.value}
+                              onChange={(e) => handleAttributeChange(attrIndex, "value", e.target.value)}
+                              className="w-1/2 p-2 border border-gray-300 rounded"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeAttribute(attrIndex)}
+                              className="px-3 py-1 bg-red-500 text-white rounded"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        ))
+                      ) : (
+                        // Show an empty attribute input if there are no attributes
+                        <div className="flex space-x-2 mb-2">
+                          <input
+                            type="text"
+                            placeholder="Attribute Name (e.g., Color)"
+                            value=""
+                            onChange={(e) => handleAttributeChange(0, "key", e.target.value)}
+                            className="w-1/2 p-2 border border-gray-300 rounded"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Value (e.g., Red)"
+                            value=""
+                            onChange={(e) => handleAttributeChange(0, "value", e.target.value)}
+                            className="w-1/2 p-2 border border-gray-300 rounded"
+                          />
+                        </div>
+                      )}
+
                       <button
                         type="button"
-                        onClick={() => removeAttribute(attrIndex)}
-                        className="px-3 py-1 bg-red-500 text-white rounded"
+                        onClick={addAttribute}
+                        className="mt-2 px-3 py-1 bg-green-500 text-white rounded"
                       >
-                        Remove
+                        Add Attribute
                       </button>
-                    </div>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={addAttribute}
-                    className="px-4 py-2 bg-green-500 text-white rounded mt-2"
-                  >
-                    + Add Attribute
-                  </button>                
+                    </fieldset>
+                  </div>                  
                   
-                  <button type="button" className="px-4 py-2 bg-blue-500 text-white mt-3 rounded-lg" onClick={addVariant}>Add Variant</button>
-                  <div className="bb-table border-none border-[1px] md:border-solid border-[#eee] rounded-none md:rounded-[20px] overflow-hidden max-[1399px]:overflow-y-auto aos-init aos-animate" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="400">
-                    <table className="w-full table-auto border-collapse">
-                        <thead className="hidden md:table-header-group">
-                        <tr className="border-b-[1px] border-solid border-[#eee]">
-                            <th
-                            className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize"
-                            onClick={() => handleSort("_id")}
-                            >
-                            Variant Name
-                            </th>
-                            <th
-                            className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize"
-                            onClick={() => handleSort("name")}
-                            >
-                            Stock
-                            </th>
-                            <th
-                            className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize"
-                            onClick={() => handleSort("price")}
-                            >
-                            Price
-                            </th>
-                            <th className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize">Actions</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {productData.variants.map((variant, index) => (
-                            <tr key={index} className="border-b-[1px] border-solid border-[#eee]">
-                            <td data-label="Product ID" className="p-[12px]">
-                                <div className="Product flex justify-end md:justify-normal md:items-center">
-                                    <div>   
-                                        <span className="ml-[10px] block font-Poppins text-[14px] font-semibold leading-[24px] tracking-[0.03rem] text-secondary">{variant.variant_name ?? ''}</span>
-                                        <span className="ml-[10px] block font-Poppins text-[12px] font-normal leading-[16px] tracking-[0.03rem] text-secondary">SKU - {variant.SKU ?? ''}</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td data-label="Name" className="p-[12px]">
-                                <span className="price font-Poppins text-[15px] font-medium leading-[26px] tracking-[0.02rem] text-secondary">{variant.stock ?? ''}</span>
-                            </td>
-                            <td data-label="Price" className="p-[12px]">₹{variant.price}</td>
-                            <td data-label="Action" className="p-[12px]">
-                              <button className="text-blue-500 mr-3" type="button" onClick={() => editVariant(index)}>Edit</button>
-                              <button className="text-red-500 mr-3" type="button" onClick={() => removeVariant(index)}>Remove</button>
-                            </td>
+                  <button type="button" className="px-4 py-2 bg-blue-500 text-white mt-3 rounded-lg mb-5" onClick={addVariant}>{editIndex !== null ? 'Update Variant' : 'Add Variant'}</button>
+                  {
+                    productData.variants.length > 0 && (
+                      <div className="bb-table border-none border-[1px] md:border-solid border-[#eee] rounded-none md:rounded-[20px] overflow-hidden max-[1399px]:overflow-y-auto aos-init aos-animate" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="400">
+                        <table className="w-full table-auto border-collapse">
+                            <thead className="hidden md:table-header-group">
+                            <tr className="border-b-[1px] border-solid border-[#eee]">
+                                <th
+                                className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize"
+                                onClick={() => handleSort("_id")}
+                                >
+                                Variant Name
+                                </th>
+                                <th
+                                className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize"
+                                onClick={() => handleSort("name")}
+                                >
+                                Stock
+                                </th>
+                                <th
+                                className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize"
+                                onClick={() => handleSort("price")}
+                                >
+                                Price
+                                </th>
+                                <th className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize">Actions</th>
                             </tr>
-                        ))}
-                        </tbody>
-                    </table>
-                  </div>
+                            </thead>
+                            <tbody>
+                            {productData.variants.map((variant, index) => (
+                                <tr key={index} className="border-b-[1px] border-solid border-[#eee]">
+                                <td data-label="Product ID" className="p-[12px]">
+                                    <div className="Product flex justify-end md:justify-normal md:items-center">
+                                        <div>   
+                                            <span className="ml-[10px] block font-Poppins text-[14px] font-semibold leading-[24px] tracking-[0.03rem] text-secondary">{variant.variant_name ?? ''}</span>
+                                            <span className="ml-[10px] block font-Poppins text-[12px] font-normal leading-[16px] tracking-[0.03rem] text-secondary">SKU - {variant.SKU ?? ''}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td data-label="Name" className="p-[12px]">
+                                    <span className="price font-Poppins text-[15px] font-medium leading-[26px] tracking-[0.02rem] text-secondary">{variant.stock ?? ''}</span>
+                                </td>
+                                <td data-label="Price" className="p-[12px]">₹{variant.price}</td>
+                                <td data-label="Action" className="p-[12px]">
+                                  <button className="text-blue-500 mr-3" type="button" onClick={() => editVariant(index)}>Edit</button>
+                                  <button className="text-red-500 mr-3" type="button" onClick={() => removeVariant(index)}>Remove</button>
+                                </td>
+                                </tr>
+                            ))}
+                            </tbody>
+                        </table>
+                      </div>
+                    )
+                  }
                 </div>
               )}
-
 
               {/* Place Order Button */}
               <div className="w-full px-[12px]">

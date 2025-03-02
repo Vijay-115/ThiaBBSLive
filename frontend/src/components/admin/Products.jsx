@@ -62,6 +62,16 @@ const Products = () => {
       }
     };
 
+    const fetchProducts = async () => {
+      try {
+        const data = await ProductService.getProducts();
+        setProducts(data);
+        setFilteredProducts(data);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+        setErrorMessage(error.message || "Failed to fetch products.");
+      }
+    };
     
     const fetchVariantByProduct = async (id) => {
       if (!id) return;
@@ -92,18 +102,8 @@ const Products = () => {
     }, []);
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const data = await ProductService.getProducts();
-        setProducts(data);
-        setFilteredProducts(data);
-      } catch (error) {
-        console.error("Error fetching products:", error);
-        setErrorMessage(error.message || "Failed to fetch products.");
-      }
-    };
     fetchProducts();
-  }, []);
+  }, [editProduct]);
 
   useEffect(() => {
     const filterAndSortProducts = () => {
@@ -151,6 +151,7 @@ const Products = () => {
                 )
             );
             setEditProduct(null);
+            // fetchProducts();
             toast.success("Product updated successfully!");
         } else {
             const newProduct = await ProductService.createProduct(productData);
@@ -186,14 +187,19 @@ const Products = () => {
   };
 
   const handleEditProduct = async (product) => {
-    if (!product) return;
-    
-    setEditProduct(product); // Set product immediately
-  
-    await fetchVariantByProduct(product._id); // Ensure variants are fetched before opening modal
-  
-    setIsAddEditModalOpen(true); // Open modal after fetching variants
+      if (!product) return;
+      // Using useEffect will capture when `editProduct` updates
+      fetchVariantByProduct(product._id);
+      console.log('product', product);
+      setEditProduct(product); // Update state asynchronously
+      setIsAddEditModalOpen(true); // Open modal after fetching variants
   };
+
+  // Track when `editProduct` updates
+  useEffect(() => {
+      console.log('Updated editProduct:', editProduct);
+  }, [editProduct]);
+
   
 
   const openDeleteModal = (product) => {
@@ -340,19 +346,7 @@ const Products = () => {
                                           className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize"
                                           onClick={() => handleSort("_id")}
                                           >
-                                          Product ID
-                                          </th>
-                                          <th
-                                          className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize"
-                                          onClick={() => handleSort("name")}
-                                          >
-                                          Name
-                                          </th>
-                                          <th
-                                          className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize"
-                                          onClick={() => handleSort("price")}
-                                          >
-                                          Price
+                                          Products
                                           </th>
                                           <th className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize">Actions</th>
                                       </tr>
@@ -360,7 +354,7 @@ const Products = () => {
                                       <tbody>
                                       {paginatedProducts.map((product) => (
                                           <tr key={product._id} className="border-b-[1px] border-solid border-[#eee]">
-                                          <td data-label="Product ID" className="p-[12px]">
+                                          <td data-label="Products" className="p-[12px]">
                                               <div className="Product flex justify-end md:justify-normal md:items-center">
                                                   <img src={import.meta.env.VITE_API_URL+''+product.product_img ?? ''} alt="new-product-1" className="w-[70px] border-[1px] border-solid border-[#eee] rounded-[10px]"/>
                                                   <div>   
@@ -379,10 +373,6 @@ const Products = () => {
                                                   </div>
                                               </div>
                                           </td>
-                                          <td data-label="Name" className="p-[12px]">
-                                              <span className="price font-Poppins text-[15px] font-medium leading-[26px] tracking-[0.02rem] text-secondary">₹{product.price ?? ''}</span>
-                                          </td>
-                                          <td data-label="Price" className="p-[12px]">{product.price}</td>
                                           <td data-label="Action" className="p-[12px]">
                                               <button
                                               className="bg-yellow-500 text-white px-4 py-1 rounded-md"

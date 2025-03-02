@@ -24,21 +24,20 @@ const haversineDistance = (lat1, lon1, lat2, lon2) => {
 
 exports.createProduct = async (req, res) => {
     try {
-        console.log("createProduct", req.body); // Log full request body
+        console.log("createProduct", req.body);
+        console.log("createProductFiles", req.files);
 
         const { _id, name, description, price, stock, SKU, brand, weight, dimensions, tags, category_id, subcategory_id, is_variant } = req.body;
 
-        // Parse `variants` field if it exists and is a string
         let variantData = [];
         if (req.body.variants) {
             try {
-                variantData = JSON.parse(req.body.variants); // Convert string to object
+                variantData = JSON.parse(req.body.variants);
             } catch (error) {
                 return res.status(400).json({ message: "Invalid variants format" });
             }
         }
 
-        // Parse `dimensions` if it is sent as a string
         let parsedDimensions = {};
         if (dimensions) {
             try {
@@ -48,7 +47,6 @@ exports.createProduct = async (req, res) => {
             }
         }
 
-        // Ensure tags are always stored as an array
         let parsedTags = [];
         if (typeof tags === "string") {
             try {
@@ -61,19 +59,22 @@ exports.createProduct = async (req, res) => {
             parsedTags = [];
         }
 
-        // Ensure `req.files` contains the uploaded files
-        const productImage = req.files?.['product_img'] ? `/uploads/${req.files['product_img'][0].filename}` : '';
-        const galleryImages = req.files?.['gallery_imgs'] ? req.files['gallery_imgs'].map(file => `/uploads/${file.filename}`) : [];
+        const productImage = req.files.find(file => file.fieldname === "product_img") 
+            ? `/uploads/${req.files.find(file => file.fieldname === "product_img").filename}` 
+            : "";
 
-        // Get the current user's ID from the authenticated request
+        const galleryImages = req.files
+            .filter(file => file.fieldname === "gallery_imgs")
+            .map(file => `/uploads/${file.filename}`);
+
         const seller_id = req.user ? req.user.userId : null;
         if (!seller_id) {
             return res.status(401).json({ message: "Unauthorized: User ID not found" });
         }
 
         let newProduct;
+        let variantIds = [];
 
-        // Check if variants exist
         if (is_variant === 'true' && variantData.length > 0) {
             newProduct = new Product({
                 name,
@@ -93,20 +94,36 @@ exports.createProduct = async (req, res) => {
 
             await newProduct.save();
 
-            // Create variants for the product
-            const variants = variantData.map(variant => ({
-                product_id: newProduct._id,
-                variant_name: variant.variant_name,
-                price: variant.price,
-                stock: variant.stock,
-                SKU: variant.SKU,
-                attributes: variant.attributes,
-                variant_img: variant.variant_img || '',
-            }));
+            const variants = await Variant.insertMany(
+                variantData.map((variant, index) => {
+                    const variantImg = req.files.find(file => file.fieldname === `variant_img_${index}`)
+                        ? `/uploads/${req.files.find(file => file.fieldname === `variant_img_${index}`).filename}`
+                        : "";
 
-            await Variant.insertMany(variants);
+                    const variantGalleryImgs = req.files
+                        .filter(file => file.fieldname === `variant_gallery_imgs_${index}`)
+                        .map(file => `/uploads/${file.filename}`);
+
+                    console.log(`Variant ${index} Image Path:`, variantImg);
+                    console.log(`Variant ${index} Gallery Paths:`, variantGalleryImgs);
+
+                    return {
+                        product_id: newProduct._id,
+                        variant_name: variant.variant_name,
+                        price: variant.price,
+                        stock: variant.stock,
+                        SKU: variant.SKU,
+                        attributes: variant.attributes,
+                        variant_img: variantImg,
+                        variant_gallery_imgs: variantGalleryImgs,
+                    };
+                })
+            );
+
+            variantIds = variants.map(variant => variant._id);
+            newProduct.variants = variantIds;
+            await newProduct.save();
         } else {
-            // If no variants, create a normal product
             newProduct = new Product({
                 name,
                 description,
@@ -116,12 +133,14 @@ exports.createProduct = async (req, res) => {
                 brand,
                 weight,
                 dimensions: parsedDimensions,
-                tags,
+                tags: parsedTags,
                 category_id,
                 subcategory_id,
                 product_img: productImage,
                 gallery_imgs: galleryImages,
                 seller_id,
+                is_variant: false,
+                variants: [],
             });
 
             await newProduct.save();
@@ -216,81 +235,96 @@ exports.getNearbySellerProducts = async (req, res) => {
 // UPDATE: Update a product by product_id with image upload
 exports.updateProduct = async (req, res) => {
     try {
-        console.log("🔄 Received Update Request:", req.body);
+        console.log('typeof',typeof req.body.variants);
         
-        const productId = req.params.id;
-        const existingProduct = await Product.findOne({ _id: productId });
+        console.log("updateProduct", req.files);
+        console.log("🔄 Received Update Request:", req.body);
 
+        const productId = req.params.id;
+        const existingProduct = await Product.findById(productId);
         if (!existingProduct) {
             return res.status(404).json({ message: "❌ Product not found" });
         }
 
+        // Ensure variants are parsed properly before updating
+        if (typeof req.body.variants === 'string') {
+            try {
+            req.body.variants = JSON.parse(req.body.variants);
+            } catch (error) {
+            return res.status(400).json({ error: 'Invalid variants format' });
+            }
+        }
+
         let updatedProductData = { ...req.body };
 
+         // Parse dimensions if needed
+         if (req.body.dimensions) {
+            try {
+                updatedProductData.dimensions = JSON.parse(req.body.dimensions);
+            } catch (error) {
+                return res.status(400).json({ message: "Invalid dimensions format" });
+            }
+        }
+
         // ✅ Handle product image update
-        if (req.files && req.files["product_img"]) {
+        if (req.files?.["product_img"]) {
+            if (existingProduct.product_img) removeOldImage(existingProduct.product_img);
             updatedProductData.product_img = `/uploads/${req.files["product_img"][0].filename}`;
         } else {
             updatedProductData.product_img = existingProduct.product_img || "";
         }
 
         // ✅ Handle gallery images update
-        if (req.files && req.files["gallery_imgs"]) {
-            const newGalleryImages = req.files["gallery_imgs"].map(file => `/uploads/${file.filename}`);
-            updatedProductData.gallery_imgs = [...existingProduct.gallery_imgs, ...newGalleryImages];
+        if (req.files?.["gallery_imgs"]) {
+            if (existingProduct.gallery_imgs?.length > 0) {
+                existingProduct.gallery_imgs.forEach(removeOldImage);
+            }
+            updatedProductData.gallery_imgs = req.files["gallery_imgs"].map(file => `/uploads/${file.filename}`);
         } else {
             updatedProductData.gallery_imgs = existingProduct.gallery_imgs || [];
         }
 
-        // ✅ Parse dimensions if needed
-        if (req.body.dimensions) {
-            try {
-                updatedProductData.dimensions = JSON.parse(req.body.dimensions);
-            } catch (error) {
-                return res.status(400).json({ message: "❌ Invalid dimensions format" });
-            }
+        // ✅ Parse JSON fields safely
+        try {
+            if (req.body.dimensions) updatedProductData.dimensions = JSON.parse(req.body.dimensions);
+            if (req.body.tags) updatedProductData.tags = Array.isArray(req.body.tags) ? req.body.tags : JSON.parse(req.body.tags);
+        } catch (error) {
+            return res.status(400).json({ message: "❌ Invalid JSON format" });
         }
 
-        // ✅ Ensure tags are stored as an array
-        if (req.body.tags) {
-            try {
-                updatedProductData.tags = Array.isArray(req.body.tags) 
-                    ? req.body.tags 
-                    : JSON.parse(req.body.tags);
-            } catch (error) {
-                console.error("❌ Error parsing tags:", error);
-                updatedProductData.tags = [];
-            }
-        }
-
-        // ✅ Update the product details
-        const updatedProduct = await Product.findOneAndUpdate(
-            { _id: productId },
-            updatedProductData,
-            { new: true }
-        );
+        // ✅ Update product details
+        const updatedProduct = await Product.findByIdAndUpdate(productId, updatedProductData, { new: true });
         console.log("✅ Product Updated:", updatedProduct);
 
-        // ✅ Handle variants
+        console.log('typeof',typeof req.body.variants)
+
+        // ✅ Handle variants processing
         if (req.body.variants) {
-            let variantData;
-            try {
-                variantData = JSON.parse(req.body.variants);
-            } catch (error) {
-                return res.status(400).json({ message: "❌ Invalid variants format" });
-            }
+            let variantData = req.body.variants;
             console.log("🔍 Parsed Variants Data:", variantData);
 
-            // Fetch existing variants
             const existingVariants = await Variant.find({ product_id: updatedProduct._id });
             const existingVariantIds = existingVariants.map(v => v._id.toString());
-            console.log("📌 Existing Variant IDs:", existingVariantIds);
 
-            // ✅ Process each variant
+            const variantIds = [];
             const bulkOperations = [];
-            for (const variant of variantData) {
-                if (!variant._id) {
-                    variant._id = new mongoose.Types.ObjectId(); // Assign a new ObjectId to new variants
+
+            for (const [index, variant] of variantData.entries()) {
+                if (!variant._id) variant._id = new mongoose.Types.ObjectId();
+                variantIds.push(variant._id);
+
+                let variantImgPath = existingVariants.find(v => v._id.toString() === variant._id)?.variant_img || "";
+                if (req.files.find(file => file.fieldname === `variant_img_${index}`)) {
+                    if (variantImgPath) removeOldImage(variantImgPath);
+                    variantImgPath = `/uploads/${req.files.find(file => file.fieldname === `variant_img_${index}`).filename}`;
+                }
+
+                let variantGalleryPaths = existingVariants.find(v => v._id.toString() === variant._id)?.variant_gallery_imgs || [];
+                if (req.files.find(file => file.fieldname === `variant_gallery_imgs_${index}`)) {
+                    if (variantGalleryPaths.length > 0) variantGalleryPaths.forEach(removeOldImage);
+                    variantGalleryPaths = req.files
+                        .filter(file => file.fieldname === `variant_gallery_imgs_${index}`)
+                        .map(file => `/uploads/${file.filename}`);
                 }
 
                 if (existingVariantIds.includes(variant._id.toString())) {
@@ -304,14 +338,22 @@ exports.updateProduct = async (req, res) => {
                                 stock: variant.stock,
                                 SKU: variant.SKU,
                                 attributes: variant.attributes,
-                                variant_img: variant.variant_img || "",
+                                variant_img: variantImgPath || variant.variant_img,
+                                variant_gallery_imgs: variantGalleryPaths || variant.variant_gallery_imgs,
                             },
                         },
                     });
                 } else {
                     console.log("➕ Creating New Variant:", variant);
                     bulkOperations.push({
-                        insertOne: { document: { ...variant, product_id: updatedProduct._id } },
+                        insertOne: {
+                            document: {
+                                ...variant,
+                                product_id: updatedProduct._id,
+                                variant_img: variantImgPath,
+                                variant_gallery_imgs: variantGalleryPaths,
+                            },
+                        },
                     });
                 }
             }
@@ -322,27 +364,36 @@ exports.updateProduct = async (req, res) => {
                 console.log("✅ BulkWrite Result:", bulkResult);
             }
 
-            // ✅ Fetch all variants after update
-            const allVariantsAfterUpdate = await Variant.find({ product_id: updatedProduct._id });
-            const updatedVariantIds = allVariantsAfterUpdate.map(v => v._id.toString());
+            // ✅ Update the product with new variant IDs
+            updatedProduct.variants = variantIds;
+            await updatedProduct.save();
 
-            console.log("✅ Final Variant IDs After Insert:", updatedVariantIds);
-
-            // ✅ Delete variants that are no longer in the updated list
+            // ✅ Delete removed variants
             const deleteResult = await Variant.deleteMany({
                 product_id: updatedProduct._id,
-                _id: { $nin: updatedVariantIds },
+                _id: { $nin: variantIds },
             });
             console.log("🗑️ Deleted Variants Result:", deleteResult);
         }
 
         res.status(200).json({ message: "✅ Product updated successfully", product: updatedProduct });
-
     } catch (err) {
         console.error("❌ Error:", err);
-        res.status(500).json({ message: err.message });
+        res.status(500).json({ message: "❌ Internal Server Error", error: err.message });
     }
 };
+
+// ✅ Utility function to remove old images from the server
+function removeOldImage(imagePath) {
+    if (!imagePath) return;
+    const fullPath = path.join(__dirname, "..", imagePath);
+    if (fs.existsSync(fullPath)) {
+        fs.unlink(fullPath, err => {
+            if (err) console.error("❌ Error deleting file:", fullPath, err);
+            else console.log("🗑️ Deleted old image:", fullPath);
+        });
+    }
+}
 
 // DELETE: Delete a product by product_id
 exports.deleteProduct = async (req, res) => {

@@ -17,20 +17,36 @@ function CheckoutPage() {
     }, [dispatch]);
     const navigate = useNavigate();
     const cartItems = useSelector((state) => state.cart.items);
-    const cartTotal = Object.values(cartItems).reduce(
-        (total, item) => total + (item.quantity * item.product.price || 0),
-        0
-      ).toFixed(2);
+    const [cartTotal,setCartTotal] = useState(0);
     const deliveryCharge = 0;
     const { loading, order, error } = useSelector((state) => state.order);
 
     const [orderData, setOrderData] = useState({
         userId: "", // Dynamic user ID
-        products: cartItems,
+        orderItems: cartItems,
         totalAmount: cartTotal,
         shippingAddress: { street: "", city: "", state: "", postalCode: "", country: "" },
         paymentMethod: "COD",
     });
+
+    useEffect(() => {
+        setOrderData((prev) => ({
+            ...prev,
+            orderItems: cartItems.map((item) => ({
+                product: item.product._id,
+                variant: item.variant ? item.variant._id : null, // Add variant if available
+                quantity: item.quantity,
+                price: item.variant ? item.variant.price : item.product.price,
+            })),
+            totalAmount: Object.values(cartItems)
+                .reduce((total, item) => total + (item.quantity * (item.variant ? item.variant.price : item.product.price) || 0), 0)
+                .toFixed(2),
+        }));
+        setCartTotal(orderData.totalAmount);
+    }, [cartItems]);    
+    
+    console.log('cartItems',cartItems);
+    console.log('orderData',orderData);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -48,7 +64,7 @@ function CheckoutPage() {
         if (userInfo) {
             setOrderData(prev => ({
                 ...prev,
-                shippingAddress: userInfo?.userdetails?.addresses?.[0] || {
+                shippingAddress: userInfo?.userdetails?.addresses || {
                     street: "",
                     city: "",
                     state: "",
@@ -90,7 +106,7 @@ function CheckoutPage() {
                 if (response.payload?.success) {
                     Object.values(cartItems).forEach((item) => {
                         console.log(item);
-                        dispatch(removeFromCart(item.product._id));  // ✅ Fix: Dispatch for each item
+                        dispatch(removeFromCart({ productId: item.product._id, variantId: item.variant ? item.variant._id : null }));  // ✅ Fix: Dispatch for each item
                     });    
                     toast.success("Order placed successfully!");
                     navigate("/");

@@ -23,12 +23,12 @@ const ProductSchema = new mongoose.Schema({
     category_id: { type: ObjectId, ref: 'Category', required: true },
     subcategory_id: { type: ObjectId, ref: 'Subcategory' },
 
-    // Variant 
-    is_variant: {type: Boolean, default: false},
-    variant_id: {type: ObjectId, ref: 'Variant'},
+    // Variants - Store multiple variant IDs
+    is_variant: { type: Boolean, default: false },
+    variants: [{ type: ObjectId, ref: 'Variant' }], // Array of Variant IDs
 
     // Review
-    is_review: {type: Boolean, default: false},
+    is_review: { type: Boolean, default: false },
 
     // Seller reference
     seller_id: { type: ObjectId, ref: 'User', required: true },

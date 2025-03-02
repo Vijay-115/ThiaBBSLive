@@ -7,12 +7,9 @@ const VariantSchema = new mongoose.Schema({
     price: { type: Number, required: true }, // Variant-specific price
     stock: { type: Number, default: 0 }, // Stock for this variant
     SKU: { type: String, unique: true, required: true }, // Unique identifier
-    attributes: {
-        color: String,
-        size: String,
-        material: String
-    }, // Store variant-specific attributes
+    attributes: { type: Array, default: [] }, // Ensure attributes is always an array
     variant_img: String, // Image for variant
+    variant_gallery_imgs: [String],
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now }
 });
