@@ -1,19 +1,17 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../utils/api';
 
-const BASE_URL = "/orders"; // No need for full URL since `api.js` sets `baseURL`
+const BASE_URL = "/orders"; 
 
 // ✅ Place Order
 export const placeOrder = createAsyncThunk(
   "order/placeOrder",
   async (orderData, { rejectWithValue }) => {
     try {
-      const response = await api.post(BASE_URL, orderData, {
-        headers: { "Content-Type": "application/json" },
-      });
+      const response = await api.post(BASE_URL, orderData);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Failed to place order.");
+      return rejectWithValue(error?.response?.data?.message || error.message || "Failed to place order.");
     }
   }
 );
@@ -24,9 +22,9 @@ export const getAllOrders = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.get(BASE_URL);
-      return response.data;
+      return response.data.orders.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Failed to fetch orders.");
+      return rejectWithValue(error?.response?.data?.message || error.message || "Failed to fetch orders.");
     }
   }
 );
@@ -39,7 +37,7 @@ export const getOrderById = createAsyncThunk(
       const response = await api.get(`${BASE_URL}/${orderId}`);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Failed to fetch order.");
+      return rejectWithValue(error?.response?.data?.message || error.message || "Failed to fetch order.");
     }
   }
 );
@@ -50,9 +48,9 @@ export const getOrdersByStatus = createAsyncThunk(
   async (status, { rejectWithValue }) => {
     try {
       const response = await api.get(`${BASE_URL}/status/${status}`);
-      return response.data;
+      return response.data.orders.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Failed to fetch orders by status.");
+      return rejectWithValue(error?.response?.data?.message || error.message || "Failed to fetch orders by status.");
     }
   }
 );
@@ -62,12 +60,10 @@ export const updateOrder = createAsyncThunk(
   "order/updateOrder",
   async ({ orderId, orderData }, { rejectWithValue }) => {
     try {
-      const response = await api.put(`${BASE_URL}/${orderId}`, orderData, {
-        headers: { "Content-Type": "application/json" },
-      });
+      const response = await api.put(`${BASE_URL}/${orderId}`, orderData);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Failed to update order.");
+      return rejectWithValue(error?.response?.data?.message || error.message || "Failed to update order.");
     }
   }
 );
@@ -80,7 +76,7 @@ export const deleteOrder = createAsyncThunk(
       const response = await api.delete(`${BASE_URL}/${orderId}`);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Failed to delete order.");
+      return rejectWithValue(error?.response?.data?.message || error.message || "Failed to delete order.");
     }
   }
 );
@@ -94,7 +90,11 @@ const orderSlice = createSlice({
     loading: false,
     error: null,
   },
-  reducers: {},
+  reducers: {
+    resetOrder: (state) => {
+      state.order = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       // 📌 Place Order
@@ -118,7 +118,7 @@ const orderSlice = createSlice({
       })
       .addCase(getAllOrders.fulfilled, (state, action) => {
         state.loading = false;
-        state.orders = action.payload.orders;
+        state.orders = action.payload;
       })
       .addCase(getAllOrders.rejected, (state, action) => {
         state.loading = false;
@@ -146,7 +146,7 @@ const orderSlice = createSlice({
       })
       .addCase(getOrdersByStatus.fulfilled, (state, action) => {
         state.loading = false;
-        state.orders = action.payload.orders;
+        state.orders = action.payload;
       })
       .addCase(getOrdersByStatus.rejected, (state, action) => {
         state.loading = false;
@@ -173,8 +173,10 @@ const orderSlice = createSlice({
         state.error = null;
       })
       .addCase(deleteOrder.fulfilled, (state, action) => {
+        if (action.payload.success) {
+          state.orders = state.orders.filter(order => order._id !== action.meta.arg);
+        }
         state.loading = false;
-        state.orders = state.orders.filter(order => order._id !== action.meta.arg);
       })
       .addCase(deleteOrder.rejected, (state, action) => {
         state.loading = false;
@@ -183,4 +185,5 @@ const orderSlice = createSlice({
   },
 });
 
+export const { resetOrder } = orderSlice.actions;
 export default orderSlice.reducer;

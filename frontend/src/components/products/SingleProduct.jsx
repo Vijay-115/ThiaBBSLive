@@ -11,6 +11,31 @@ import { ProductService } from '../../services/ProductService';
 function SingleProduct() {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
+  const [variants, setVariants] = useState([]);
+  const [tabs, setTabs] = useState(["detail", "information"]);
+  const [productData, setProductData] = useState({
+    _id: product?._id || "",
+    name: product?.name || "",
+    description: product?.description || "",
+    price: product?.price || "",
+    stock: product?.stock || "",
+    SKU: product?.SKU || "",
+    brand: product?.brand || "",
+    weight: product?.weight || "",
+    dimensions: {
+      length: product?.dimensions?.length || "",
+      width: product?.dimensions?.width || "",
+      height: product?.dimensions?.height || "",
+    },
+    tags: Array.isArray(product?.tags) ? product?.tags : (product?.tags ? JSON.parse(product?.tags) : []),
+    category_id: product?.category_id || "",
+    subcategory_id: product?.subcategory_id || "",
+    product_img: null,
+    gallery_imgs: [],
+    is_variant: product?.is_variant || false,
+    variant_name: '',
+    variant_id:''
+  });
   const [activeTab, setActiveTab] = useState("detail");
   const [weight, setWeight] = useState("250g");
   const [quantities, setQuantities] = useState(1); // To manage quantities for each product
@@ -40,10 +65,10 @@ function SingleProduct() {
     // Handle adding to cart
     const handleAddToCart = () => {
       const initialQuantity = quantities || 1;
-      dispatch(addToCart({ productId: product._id, quantity: initialQuantity }));
+      dispatch(addToCart({ productId: productData?._id, variantId:productData?.variant_id, quantity: initialQuantity }));
       setQuantities(1);
       // Display toast notification
-      toast.success(`${product.name} added to cart!`);
+      toast.success(`${productData?.name} added to cart!`);
     };
 
   // Fetch product from API
@@ -53,17 +78,81 @@ function SingleProduct() {
         const data = await ProductService.getProductID(id);
         console.log(data.name);
         setProduct(data);
+        if(product.is_review === true){setTabs((prev) => [...prev, "reviews"]);}
       } catch (error) {
         console.error("Error fetching product:", error);
       }
     };
-
     fetchProduct(id);
     window.scrollTo({
       top: 0, // Scroll to the top
       behavior: 'smooth', // Enables smooth scrolling
     });
   }, [id]);
+
+  const fetchVariantByProduct = async (id) => {
+    if (!id) return;
+    try {
+      const data = await ProductService.getVariantByProductID(id);
+      console.log('Fetched Variants Data:', data);
+      
+      setVariants((prev) => {
+        console.log('Previous Variants:', prev);
+        console.log('Setting New Variants:', data);
+        return data;
+      });
+
+      if (variants && variants.length > 0) {
+        setProductData((prev) => ({
+          ...prev,
+          price: variants[0]?.price || "",
+          stock: variants[0]?.stock || "",
+          SKU: variants[0]?.SKU || "",
+          variant_name: variants[0]?.variant_name || "",
+          variant_id: variants[0]?._id || ""
+        }));
+      }      
+
+    } catch (error) {
+      console.error("Error fetching variants:", error);
+      setErrorMessage(error?.message || "Failed to fetch variants.");
+    }
+  };
+
+  useEffect(() => {
+    if (!product) return;
+  
+    setProductData((prev) => ({
+      ...prev,
+      ...product, // Spread product directly into productData
+    }));
+  
+    fetchVariantByProduct(product?._id);
+  
+    // Use a separate `useEffect` to log updated state
+  }, [product]);
+  
+  // This logs the updated state after it changes
+  useEffect(() => {
+    console.log('Updated productData:', productData);
+  }, [productData]);
+  
+
+  // Handle input change
+  const handleVariantChange = (variant) => {
+    if (variant) {
+      setProductData((prev) => ({
+        ...prev,
+        price: variant.price,
+        stock: variant.stock,
+        SKU: variant.SKU,
+        description: variant.description,
+        variant_name: variant.variant_name,
+        variant_id: variant._id
+      }));
+      console.log('handleVariantChange',productData);
+    }
+  };
 
   if (!product) {
     return <div>Loading...</div>;
@@ -139,9 +228,9 @@ function SingleProduct() {
           <div className="bb-inner-tabs border-[1px] border-solid border-[#eee] p-[15px] rounded-[20px]">
               <div className="bb-reviews">
                   {
-                    product.reviews && 
-                    product.reviews.length > 0 &&
-                    product.reviews.map((review,index)=>(                      
+                    productData?.reviews && 
+                    productData?.reviews.length > 0 &&
+                    productData?.reviews.map((review,index)=>(                      
                       <div key={index} className="reviews-bb-box flex mb-[24px] max-[575px]:flex-col">
                           <div className="inner-image mr-[12px] max-[575px]:mr-[0] max-[575px]:mb-[12px]">
                               <img src={`/img/review/${index % 2 !== 0 ? '1' : '2'}.jpg`} alt="img-1" className="w-[50px] h-[50px] max-w-[50px] rounded-[10px]"/>
@@ -208,7 +297,7 @@ function SingleProduct() {
                 {/* Left Section: Image Slider */}
                 <div className="min-[992px]:w-[41.66%] w-full px-[12px] mb-[24px]">
                   <div className="single-pro-slider sticky top-[0] p-[15px] border-[1px] border-solid border-[#eee] rounded-[24px] max-[991px]:max-w-[500px] max-[991px]:m-auto">
-                    <SingleProductGallery images={product.gallery_imgs ?? []} />
+                    <SingleProductGallery images={productData?.gallery_imgs ?? []} />
                   </div>
                 </div>
 
@@ -217,7 +306,7 @@ function SingleProduct() {
                   <div className="bb-single-pro-contact">
                     <div className="bb-sub-title mb-[10px]">
                       <h4 className="font-quicksand text-[22px] tracking-[0.03rem] font-bold leading-[1.2] text-secondary">
-                        {product.name}
+                        {productData?.name}
                       </h4>
                     </div>
                     <div className="bb-single-rating mb-[8px]">
@@ -227,16 +316,16 @@ function SingleProduct() {
                           <i
                             key={index}
                             className={`ri-star-fill float-left text-[15px] mr-[3px] ${
-                              index < product.rating ? 'text-[#e7d52e]' : 'text-[#777]'
+                              index < productData?.rating ? 'text-[#e7d52e]' : 'text-[#777]'
                             }`}
                           ></i>
                         ))
                       }
-                      <span className="bb-pro-rating mr-[10px]"> / {product.rating}</span> 
+                      <span className="bb-pro-rating mr-[10px]"> / {productData?.rating}</span> 
                       </div>
                     </div>
                     <p className="font-Poppins text-[15px] font-light leading-[28px] tracking-[0.03rem]">
-                      {product.description}
+                      {productData?.description}
                     </p>
 
                     {/* Price Section */}
@@ -244,14 +333,14 @@ function SingleProduct() {
                       <div className="bb-single-price py-[15px]">
                         <div className="price mb-[8px]">
                           <h5 className="font-quicksand leading-[1.2] tracking-[0.03rem] text-[20px] font-extrabold text-secondary">
-                            ₹ {product.price}
+                            ₹ {productData?.price}
                           </h5>
                         </div>
                         <div className="mrp">
                           <p className="font-Poppins text-[16px] font-light text-secondary leading-[28px] tracking-[0.03rem]">
                             M.R.P.:{" "}
                             <span className="text-[15px] line-through">
-                              ₹ {product.price + 2}
+                              ₹ {productData?.price + 2}
                             </span>
                           </p>
                         </div>
@@ -259,11 +348,11 @@ function SingleProduct() {
                       <div className="bb-single-price py-[15px]">
                         <div className="sku mb-[8px]">
                           <h5 className="font-quicksand text-[18px] font-extrabold leading-[1.2] tracking-[0.03rem] text-secondary">
-                            SKU#: {product.sku ?? ''}
+                            SKU#: {productData?.SKU ?? ''}
                           </h5>
                         </div>
                         <div className="stock">
-                          {product.stock > 0 ? (
+                          {productData?.stock > 0 ? (
                             <span className="text-[18px] text-primary">
                               In stock
                             </span>
@@ -277,10 +366,10 @@ function SingleProduct() {
                     </div>
 
                     {/* Product Features */}
-                    {product.dimensions && (
+                    {productData?.dimensions && (
                       <div className="bb-single-list mb-[30px]">
                         <ul className="my-[-8px] pl-[18px]">
-                          {Object.entries(product.dimensions).map(
+                          {Object.entries(productData?.dimensions).map(
                             ([key, value]) => (
                               <li
                                 key={key}
@@ -296,33 +385,32 @@ function SingleProduct() {
                         </ul>
                       </div>
                     )}
-                    <div className="bb-single-pro-weight mb-[24px]">
-                      <div className="pro-title mb-[12px]">
-                          <h4 className="font-quicksand leading-[1.2] tracking-[0.03rem] text-[16px] font-bold uppercase text-secondary">Weight</h4>
-                      </div>
-                      <div className="bb-pro-variation-contant">
-                          <ul className="flex flex-wrap m-[-2px]">
-                              <li onClick={()=> setWeight('250g')} className={`my-[10px] mx-[2px] py-[2px] px-[15px] border-[1px] border-solid ${weight === '250g' ? 'border-primary bg-primary text-white' : 'border-[#eee]'} rounded-[10px] cursor-pointer`}>
-                                  <span className={`font-Poppins ${weight === '250g' ? 'text-white' : 'text-secondary '} font-light text-[14px] leading-[28px] tracking-[0.03rem]`}>250g</span>
-                              </li>
-                              <li onClick={()=> setWeight('500g')} className={`my-[10px] mx-[2px] py-[2px] px-[15px] border-[1px] border-solid ${weight === '500g' ? 'border-primary bg-primary text-white' : 'border-[#eee]'} rounded-[10px] cursor-pointer`}>
-                                  <span className={`font-Poppins ${weight === '500g' ? 'text-white' : 'text-secondary '} font-light text-[14px] leading-[28px] tracking-[0.03rem]`}>500g</span>
-                              </li>
-                              <li onClick={()=> setWeight('1kg')} className={`my-[10px] mx-[2px] py-[2px] px-[15px] border-[1px] border-solid ${weight === '1kg' ? 'border-primary bg-primary text-white' : 'border-[#eee]'} rounded-[10px] cursor-pointer`}>
-                                  <span className={`font-Poppins ${weight === '1kg' ? 'text-white' : 'text-secondary '} font-light text-[14px] leading-[28px] tracking-[0.03rem]`}>1kg</span>
-                              </li>
-                              <li onClick={()=> setWeight('2kg')} className={`my-[10px] mx-[2px] py-[2px] px-[15px] border-[1px] border-solid ${weight === '2kg' ? 'border-primary bg-primary text-white' : 'border-[#eee]'} rounded-[10px] cursor-pointer`}>
-                                  <span className={`font-Poppins ${weight === '2kg' ? 'text-white' : 'text-secondary '} font-light text-[14px] leading-[28px] tracking-[0.03rem]`}>2kg</span>
-                              </li>
-                          </ul>
-                      </div>
-                    </div>
+                    {
+                      variants && variants.length > 0 && (
+                        <div className="bb-single-pro-weight mb-[24px]">
+                          <div className="pro-title mb-[12px]">
+                              <h4 className="font-quicksand leading-[1.2] tracking-[0.03rem] text-[16px] font-bold uppercase text-secondary">Variant</h4>
+                          </div>
+                          <div className="bb-pro-variation-contant">
+                              <ul className="flex flex-wrap m-[-2px]">
+                                  {
+                                    variants.map((variant) => (
+                                      <li onClick={()=> handleVariantChange(variant)} className={`my-[10px] mx-[2px] py-[2px] px-[15px] border-[1px] border-solid ${productData?.variant_id === variant._id ? 'border-primary bg-primary text-white' : 'border-[#eee]'} rounded-[10px] cursor-pointer`}>
+                                          <span className={`font-Poppins ${productData?.variant_id === variant._id ? 'text-white' : 'text-secondary '} font-light text-[14px] leading-[28px] tracking-[0.03rem]`}>{variant.variant_name}</span>
+                                      </li>
+                                    ))
+                                  }
+                              </ul>
+                          </div>
+                        </div>
+                      )
+                    }
                     {/* Cart */}
                     <div className="product-cart flex flex-row max-w-[250px]">
                       <div className="product-cart-qtysec flex flex-row w-[75%] md:w-[50%]">
                         <button
                           className="w-1/3"
-                          onClick={() => handleIncrement(product.id)}
+                          onClick={() => handleIncrement(productData?.id)}
                         >
                           +
                         </button>
@@ -330,11 +418,11 @@ function SingleProduct() {
                           className="w-1/3 appearance-none p-0 text-center"
                           type="text"
                           value={quantities || 1}
-                          onChange={(e) => handleInputChange(e.target.value,product.id)}
+                          onChange={(e) => handleInputChange(e.target.value,productData?.id)}
                         />
                         <button
                           className="w-1/3"
-                          onClick={() => handleDecrement(product.id)}
+                          onClick={() => handleDecrement(productData?.id)}
                         >
                           -
                         </button>
@@ -352,7 +440,7 @@ function SingleProduct() {
                     <div className="bb-single-pro-tab mt-6">
                       <div className="bb-pro-tab mb-[24px]">
                         <ul className="bb-pro-tab-nav flex flex-wrap mx-[-20px] max-[991px]:justify-center">
-                          {["detail", "information", "reviews"].map((tab) => (
+                          {tabs.map((tab) => (
                             <li
                               key={tab}
                               className={`nav-item relative leading-[28px] ${
@@ -380,7 +468,7 @@ function SingleProduct() {
           </div>
         </div>
       </div>
-      <div className="mt-6"><ProductList heading="Related Product" type="Grid" category={product.category}/></div>
+      <div className="mt-6"><ProductList heading="Related Product" type="Grid" category={productData?.category}/></div>
     </section>
   );
 }

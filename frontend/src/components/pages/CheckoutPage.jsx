@@ -17,20 +17,36 @@ function CheckoutPage() {
     }, [dispatch]);
     const navigate = useNavigate();
     const cartItems = useSelector((state) => state.cart.items);
-    const cartTotal = Object.values(cartItems).reduce(
-        (total, item) => total + (item.quantity * item.product.price || 0),
-        0
-      ).toFixed(2);
+    const [cartTotal,setCartTotal] = useState(0);
     const deliveryCharge = 0;
     const { loading, order, error } = useSelector((state) => state.order);
 
     const [orderData, setOrderData] = useState({
         userId: "", // Dynamic user ID
-        products: cartItems,
+        orderItems: cartItems,
         totalAmount: cartTotal,
         shippingAddress: { street: "", city: "", state: "", postalCode: "", country: "" },
         paymentMethod: "COD",
     });
+
+    useEffect(() => {
+        setOrderData((prev) => ({
+            ...prev,
+            orderItems: cartItems.map((item) => ({
+                product: item.product._id,
+                variant: item.variant ? item.variant._id : null, // Add variant if available
+                quantity: item.quantity,
+                price: item.variant ? item.variant.price : item.product.price,
+            })),
+            totalAmount: Object.values(cartItems)
+                .reduce((total, item) => total + (item.quantity * (item.variant ? item.variant.price : item.product.price) || 0), 0)
+                .toFixed(2),
+        }));
+        setCartTotal(orderData.totalAmount);
+    }, [cartItems]);    
+    
+    console.log('cartItems',cartItems);
+    console.log('orderData',orderData);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -48,7 +64,7 @@ function CheckoutPage() {
         if (userInfo) {
             setOrderData(prev => ({
                 ...prev,
-                shippingAddress: userInfo?.userdetails?.addresses?.[0] || {
+                shippingAddress: userInfo?.userdetails?.addresses || {
                     street: "",
                     city: "",
                     state: "",
@@ -90,7 +106,7 @@ function CheckoutPage() {
                 if (response.payload?.success) {
                     Object.values(cartItems).forEach((item) => {
                         console.log(item);
-                        dispatch(removeFromCart(item.product._id));  // ✅ Fix: Dispatch for each item
+                        dispatch(removeFromCart({ productId: item.product._id, variantId: item.variant ? item.variant._id : null }));  // ✅ Fix: Dispatch for each item
                     });    
                     toast.success("Order placed successfully!");
                     navigate("/");
@@ -253,14 +269,14 @@ function CheckoutPage() {
                                                 <span className="bb-del-head font-Poppins leading-[26px] tracking-[0.02rem] text-[15px] font-semibold text-secondary">Free Shipping</span>
                                                 <div className="radio-itens">
                                                     <input type="radio" id="rate1" name="rate" className="w-full text-[14px] font-normal text-secondary border-[1px] border-solid border-[#eee] outline-[0] rounded-[10px]" />
-                                                    <label for="rate1" className="relative pl-[26px] cursor-pointer leading-[16px] inline-block text-secondary tracking-[0]">Rate - Rs 0 .00</label>
+                                                    <label htmlFor="rate1" className="relative pl-[26px] cursor-pointer leading-[16px] inline-block text-secondary tracking-[0]">Rate - Rs 0 .00</label>
                                                 </div>
                                             </div>
                                             <div className="inner-del w-[50%] max-[480px]:w-full">
                                                 <span className="bb-del-head font-Poppins leading-[26px] tracking-[0.02rem] text-[15px] font-semibold text-secondary">Flat Rate</span>
                                                 <div className="radio-itens">
                                                     <input type="radio" id="rate2" name="rate" className="w-full text-[14px] font-normal text-secondary border-[1px] border-solid border-[#eee] outline-[0] rounded-[10px]"/>
-                                                    <label for="rate2" className="relative pl-[26px] cursor-pointer leading-[16px] inline-block text-secondary tracking-[0]">Rate - Rs 5.00</label>
+                                                    <label htmlFor="rate2" className="relative pl-[26px] cursor-pointer leading-[16px] inline-block text-secondary tracking-[0]">Rate - Rs 5.00</label>
                                                 </div>
                                             </div>
                                         </div>
@@ -281,7 +297,7 @@ function CheckoutPage() {
                                             <div className="inner-del w-[50%] max-[480px]:w-full">
                                                 <div className="radio-itens">
                                                     <input type="radio" id="Cash1" name="radio-itens" className="w-full p-[10px] text-[14px] font-normal text-secondary border-[1px] border-solid border-[#eee] outline-[0] rounded-[10px]"/>
-                                                    <label for="Cash1" className="relative pl-[26px] cursor-pointer leading-[16px] inline-block text-secondary tracking-[0]">Cash On Delivery</label>
+                                                    <label htmlFor="Cash1" className="relative pl-[26px] cursor-pointer leading-[16px] inline-block text-secondary tracking-[0]">Cash On Delivery</label>
                                                 </div>
                                             </div>
                                         </div>
@@ -317,11 +333,11 @@ function CheckoutPage() {
                                             <div className="checkout-radio flex mb-[10px] max-[480px]:flex-col">
                                                 <div className="radio-itens mr-[20px]">
                                                     <input type="radio" id="address1" name="address" className="w-auto mr-[2px] p-[10px]" />
-                                                    <label for="address1" className="relative font-normal text-[14px] text-secondary pl-[26px] cursor-pointer leading-[16px] inline-block tracking-[0]">I want to use an existing address</label>
+                                                    <label htmlFor="address1" className="relative font-normal text-[14px] text-secondary pl-[26px] cursor-pointer leading-[16px] inline-block tracking-[0]">I want to use an existing address</label>
                                                 </div>
                                                 <div className="radio-itens">
                                                     <input type="radio" id="address2" name="address" className="w-auto mr-[2px] p-[10px]"/>
-                                                    <label for="address2" className="relative font-normal text-[14px] text-secondary pl-[26px] cursor-pointer leading-[16px] inline-block tracking-[0]">I want to use new address</label>
+                                                    <label htmlFor="address2" className="relative font-normal text-[14px] text-secondary pl-[26px] cursor-pointer leading-[16px] inline-block tracking-[0]">I want to use new address</label>
                                                 </div>
                                             </div>
                                             <div className="input-box-form mt-[20px]">
