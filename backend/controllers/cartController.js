@@ -5,45 +5,59 @@ const Product = require("../models/Product");
 // ✅ Get all cart items for a user
 exports.getCartItems = async (req, res) => {
     try {
-        const userId = req.user ? req.user.userId : null;
-        const cartItems = await Cart.find({ user: userId }).populate("product");
+        let userId = req.user ? req.user.userId : req.session.userId;
+
+        if (!userId) {
+            return res.status(400).json({ message: "No user or session found" });
+        }
+
+        const cartItems = await Cart.find({ user: userId }).populate("product variant");
         res.status(200).json(cartItems);
     } catch (error) {
+        console.error("Error fetching cart items:", error);
         res.status(500).json({ message: "Error fetching cart items", error });
     }
 };
 
-// ✅ Add a product to the cart
+// ✅ Add a product to the cart (Supports variantId)
 exports.addToCart = async (req, res) => {
     try {
-        const { productId, quantity } = req.body;
-        console.log("Received Data:", req.body); // ✅ Debugging
+        const { productId, variantId = null, quantity } = req.body;
+        console.log("Received Data:", req.body);
 
         if (!productId) {
             return res.status(400).json({ message: "Product ID is required" });
         }
 
-        const userId = req.user ? req.user.userId : null;
-        let product = await Product.findById(productId);
+        let userId = req.user ? req.user.userId : null;
 
+        if (!userId) {
+            if (!req.session.userId) {
+                req.session.userId = new mongoose.Types.ObjectId().toString();
+            }
+            userId = req.session.userId;
+        }
+
+        let product = await Product.findById(productId);
         if (!product) {
             return res.status(404).json({ message: "Product not found" });
         }
 
-        let cartItem = await Cart.findOne({ user: userId, product: productId });
+        let cartItem = await Cart.findOne({ user: userId, product: productId, variant: variantId });
 
         if (cartItem) {
             cartItem.quantity += quantity;
             await cartItem.save();
         } else {
-            cartItem = new Cart({ 
-                user: userId, 
-                product: productId, 
+            cartItem = new Cart({
+                user: userId,
+                product: productId,
+                variant: variantId,
                 quantity,
-                cart_id: new mongoose.Types.ObjectId().toString() // ✅ Fix: Generate unique cart_id
+                cart_id: new mongoose.Types.ObjectId().toString(),
             });
 
-            console.log("Saving Cart Item:", cartItem); // ✅ Debugging
+            console.log("Saving Cart Item:", cartItem);
             await cartItem.save();
         }
 
@@ -54,13 +68,17 @@ exports.addToCart = async (req, res) => {
     }
 };
 
-// ✅ Update cart item quantity
+// ✅ Update cart item quantity (Supports variantId)
 exports.updateQuantity = async (req, res) => {
     try {
-        const { productId, quantity } = req.body;
-        const userId = req.user ? req.user.userId : null;
+        const { productId, variantId = null, quantity } = req.body;
+        let userId = req.user ? req.user.userId : req.session.userId;
 
-        let cartItem = await Cart.findOne({ user: userId, product: productId });
+        if (!userId) {
+            return res.status(400).json({ message: "No user or session found" });
+        }
+
+        let cartItem = await Cart.findOne({ user: userId, product: productId, variant: variantId });
 
         if (!cartItem) return res.status(404).json({ message: "Cart item not found" });
 
@@ -73,13 +91,24 @@ exports.updateQuantity = async (req, res) => {
     }
 };
 
-// ✅ Remove a product from the cart
+// ✅ Remove a product from the cart (Supports variantId)
 exports.removeFromCart = async (req, res) => {
     try {
-        const { productId } = req.params;
-        const userId = req.user ? req.user.userId : null;
+        console.log("removeFromCart Params:", req.params); // Debugging
+        console.log("removeFromCart Body:", req.body); // Debugging
+        
+        const { productId } = req.params; // Get productId from URL params
+        const { variantId = null } = req.body; // Get variantId from request body
+        let userId = req.user ? req.user.userId : req.session.userId;
 
-        await Cart.findOneAndDelete({ user: userId, product: productId });
+        if (!userId) {
+            return res.status(400).json({ message: "No user or session found" });
+        }
+
+        const query = { user: userId, product: productId };
+        if (variantId) query.variant = variantId;
+
+        await Cart.findOneAndDelete(query);
 
         res.status(200).json({ message: "Removed from cart" });
     } catch (error) {

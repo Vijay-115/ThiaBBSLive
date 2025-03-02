@@ -23,6 +23,18 @@ const Sidebar = ({ isSidebarHidden, toggleSidebar }) => {
                         </NavLink>
                     </li>
                     <li>
+                        <NavLink to="/admin/products/categories">
+                            <i className="bx bxs-shopping-bag-alt bx-sm" />
+                            <span className="text">Categories</span>
+                        </NavLink>
+                    </li>
+                    <li>
+                        <NavLink to="/admin/products/subcategories">
+                            <i className="bx bxs-shopping-bag-alt bx-sm" />
+                            <span className="text">SubCategories</span>
+                        </NavLink>
+                    </li>
+                    <li>
                         <NavLink to="/">
                             <i className="bx bxs-doughnut-chart bx-sm" />
                             <span className="text">Customers</span>
@@ -35,9 +47,9 @@ const Sidebar = ({ isSidebarHidden, toggleSidebar }) => {
                         </NavLink>
                     </li>
                     <li>
-                        <NavLink to="/">
+                        <NavLink to="/admin/seller">
                             <i className="bx bxs-group bx-sm" />
-                            <span className="text">Marketing</span>
+                            <span className="text">Seller</span>
                         </NavLink>
                     </li>
                     <li>

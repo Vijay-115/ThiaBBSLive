@@ -1,29 +1,79 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { placeOrder } from '../../slice/orderSlice';
 import Select from "react-select";
+import { GetCountries, GetState, GetCity } from "react-country-state-city";
 import toast from "react-hot-toast";
-import { removeFromCart } from '../../slice/cartSlice';
+import { fetchCartItems, removeFromCart } from '../../slice/cartSlice';
+import { getUserInfo } from '../../services/authService';
+import Button from '../layout/Button';
 
 function CheckoutPage() {
     const dispatch = useDispatch();
+    const [userInfo, setUserInfo] = useState(null);
+    useEffect(() => {
+        dispatch(fetchCartItems());
+    }, [dispatch]);
     const navigate = useNavigate();
     const cartItems = useSelector((state) => state.cart.items);
-    const cartTotal = Object.values(cartItems).reduce(
-        (total, item) => total + (item.quantity * item.product.price || 0),
-        0
-      ).toFixed(2);
+    const [cartTotal,setCartTotal] = useState(0);
     const deliveryCharge = 0;
     const { loading, order, error } = useSelector((state) => state.order);
 
     const [orderData, setOrderData] = useState({
         userId: "", // Dynamic user ID
-        products: cartItems,
+        orderItems: cartItems,
         totalAmount: cartTotal,
-        shippingAddress: { street: "", city: "", state: "", zip: "", country: "" },
+        shippingAddress: { street: "", city: "", state: "", postalCode: "", country: "" },
         paymentMethod: "COD",
     });
+
+    useEffect(() => {
+        setOrderData((prev) => ({
+            ...prev,
+            orderItems: cartItems.map((item) => ({
+                product: item.product._id,
+                variant: item.variant ? item.variant._id : null, // Add variant if available
+                quantity: item.quantity,
+                price: item.variant ? item.variant.price : item.product.price,
+            })),
+            totalAmount: Object.values(cartItems)
+                .reduce((total, item) => total + (item.quantity * (item.variant ? item.variant.price : item.product.price) || 0), 0)
+                .toFixed(2),
+        }));
+        setCartTotal(orderData.totalAmount);
+    }, [cartItems]);    
+    
+    console.log('cartItems',cartItems);
+    console.log('orderData',orderData);
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const user = await getUserInfo();
+                setUserInfo(user.userInfo);
+            } catch (error) {
+                console.error("Error fetching user info:", error);
+            }
+        };
+        fetchUser();
+    }, []);
+
+    useEffect(() => {
+        if (userInfo) {
+            setOrderData(prev => ({
+                ...prev,
+                shippingAddress: userInfo?.userdetails?.addresses || {
+                    street: "",
+                    city: "",
+                    state: "",
+                    postalCode: "",
+                    country: "",
+                },
+            }));     
+        }
+    }, [userInfo]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -35,9 +85,13 @@ function CheckoutPage() {
     };
 
     const handleSelectChange = (selectedOption, { name }) => {
+        console.log(selectedOption);
         setOrderData((prevData) => ({
             ...prevData,
-            shippingAddress: { ...prevData.shippingAddress, [name]: selectedOption.value },
+            shippingAddress: { 
+                ...prevData.shippingAddress, 
+                [name]: selectedOption.label // Store label instead of value
+            },
         }));
         console.log(orderData);
     };
@@ -52,7 +106,7 @@ function CheckoutPage() {
                 if (response.payload?.success) {
                     Object.values(cartItems).forEach((item) => {
                         console.log(item);
-                        dispatch(removeFromCart(item.product._id));  // ✅ Fix: Dispatch for each item
+                        dispatch(removeFromCart({ productId: item.product._id, variantId: item.variant ? item.variant._id : null }));  // ✅ Fix: Dispatch for each item
                     });    
                     toast.success("Order placed successfully!");
                     navigate("/");
@@ -66,27 +120,51 @@ function CheckoutPage() {
             });
     };
     
+    const [countries, setCountries] = useState([]);
+    const [states, setStates] = useState([]);
+    const [cities, setCities] = useState([]);
 
-    const cityOptions = [
-        { value: "city1", label: "City 1" },
-        { value: "city2", label: "City 2" },
-        { value: "city3", label: "City 3" },
-        { value: "city4", label: "City 4" },
-    ];
+    useEffect(() => {
+        const fetchCountries = async () => {
+            const countryList = await GetCountries();
+            if (Array.isArray(countryList)) {
+                setCountries(countryList.map(country => ({ value: country.id, label: country.name })));
+            }
+        };
+        fetchCountries();
+    }, []);
 
-    const countryOptions = [
-        { value: "country1", label: "Country 1" },
-        { value: "country2", label: "Country 2" },
-        { value: "country3", label: "Country 3" },
-        { value: "country4", label: "Country 4" },
-    ];
+    useEffect(() => {
+        const fetchStates = async () => {
+            const selectedCountry = countries.find(c => c.label === orderData.shippingAddress.country);
+            if (selectedCountry) {
+                const stateList = await GetState(selectedCountry.value);
+                if (Array.isArray(stateList)) {
+                    setStates(stateList.map(state => ({ value: state.id, label: state.name })));
+                } else {
+                    setStates([]);
+                }
+            }
+        };
+        if (orderData.shippingAddress.country) fetchStates();
+    }, [orderData.shippingAddress.country, countries]);
 
-    const regionOptions = [
-        { value: "region1", label: "Region/State 1" },
-        { value: "region2", label: "Region/State 2" },
-        { value: "region3", label: "Region/State 3" },
-        { value: "region4", label: "Region/State 4" },
-    ];
+    useEffect(() => {
+        const fetchCities = async () => {
+            const selectedCountry = countries.find(c => c.label === orderData.shippingAddress.country);
+            const selectedState = states.find(s => s.label === orderData.shippingAddress.state);
+            
+            if (selectedCountry && selectedState) {
+                const cityList = await GetCity(selectedCountry.value, selectedState.value);
+                if (Array.isArray(cityList)) {
+                    setCities(cityList.map(city => ({ value: city.id, label: city.name })));
+                } else {
+                    setCities([]);
+                }
+            }
+        };
+        if (orderData.shippingAddress.state) fetchCities();
+    }, [orderData.shippingAddress.state, states]);
 
     useEffect(() => {
         console.log("cartTotal:", cartTotal); // Debugging
@@ -122,11 +200,11 @@ function CheckoutPage() {
                                         <ul className="mb-[20px]">
                                             <li className="flex justify-between leading-[28px] mb-[8px]">
                                                 <span className="left-item font-Poppins leading-[28px] tracking-[0.03rem] text-[14px] font-medium text-secondary">sub-total</span>
-                                                <span className="font-Poppins leading-[28px] tracking-[0.03rem] text-[14px] font-medium text-secondary">$56</span>
+                                                <span className="font-Poppins leading-[28px] tracking-[0.03rem] text-[14px] font-medium text-secondary">Rs  {cartTotal ?? 0}</span>
                                             </li>
                                             <li className="flex justify-between leading-[28px] mb-[8px]">
                                                 <span className="left-item font-Poppins leading-[28px] tracking-[0.03rem] text-[14px] font-medium text-secondary">Delivery Charges</span>
-                                                <span className="font-Poppins leading-[28px] tracking-[0.03rem] text-[14px] font-medium text-secondary">$56</span>
+                                                <span className="font-Poppins leading-[28px] tracking-[0.03rem] text-[14px] font-medium text-secondary">Rs 0</span>
                                             </li>
                                             <li className="flex justify-between leading-[28px] mb-[8px]">
                                                 <span className="left-item font-Poppins leading-[28px] tracking-[0.03rem] text-[14px] font-medium text-secondary">Coupon Discount</span>
@@ -138,7 +216,7 @@ function CheckoutPage() {
                                                 <div className="coupon-down-box w-full">
                                                     <form method="post" className="relative">
                                                         <input className="bb-coupon w-full p-[10px] text-[14px] font-normal text-secondary border-[1px] border-solid border-[#eee] outline-[0] rounded-[10px]" type="text" placeholder="Enter Your coupon Code" name="bb-coupon" required=""/>
-                                                        <button className="bb-btn-2 transition-all duration-[0.3s] ease-in-out my-[8px] mr-[8px] flex justify-center items-center absolute right-[0] top-[0] bottom-[0] font-Poppins leading-[28px] tracking-[0.03rem] py-[2px] px-[12px] text-[13px] font-normal text-[#fff] bg-[#6c7fd8] rounded-[10px] border-[1px] border-solid border-[#6c7fd8] hover:bg-transparent hover:border-[#3d4750] hover:text-secondary" type="submit">Apply</button>
+                                                        <button className="bb-btn-2 transition-all duration-[0.3s] ease-in-out my-[8px] mr-[8px] flex justify-center items-center absolute right-[0] top-[0] bottom-[0] font-Poppins leading-[28px] tracking-[0.03rem] py-[2px] px-[12px] text-[13px] font-normal border-primary text-white bg-primary hover:bg-transparent hover:text-secondary rounded-[10px] border-[1px] border-solid" type="submit">Apply</button>
                                                     </form>
                                                 </div>
                                             </li>                                    
@@ -191,14 +269,14 @@ function CheckoutPage() {
                                                 <span className="bb-del-head font-Poppins leading-[26px] tracking-[0.02rem] text-[15px] font-semibold text-secondary">Free Shipping</span>
                                                 <div className="radio-itens">
                                                     <input type="radio" id="rate1" name="rate" className="w-full text-[14px] font-normal text-secondary border-[1px] border-solid border-[#eee] outline-[0] rounded-[10px]" />
-                                                    <label for="rate1" className="relative pl-[26px] cursor-pointer leading-[16px] inline-block text-secondary tracking-[0]">Rate - $0 .00</label>
+                                                    <label htmlFor="rate1" className="relative pl-[26px] cursor-pointer leading-[16px] inline-block text-secondary tracking-[0]">Rate - Rs 0 .00</label>
                                                 </div>
                                             </div>
                                             <div className="inner-del w-[50%] max-[480px]:w-full">
                                                 <span className="bb-del-head font-Poppins leading-[26px] tracking-[0.02rem] text-[15px] font-semibold text-secondary">Flat Rate</span>
                                                 <div className="radio-itens">
                                                     <input type="radio" id="rate2" name="rate" className="w-full text-[14px] font-normal text-secondary border-[1px] border-solid border-[#eee] outline-[0] rounded-[10px]"/>
-                                                    <label for="rate2" className="relative pl-[26px] cursor-pointer leading-[16px] inline-block text-secondary tracking-[0]">Rate - $5.00</label>
+                                                    <label htmlFor="rate2" className="relative pl-[26px] cursor-pointer leading-[16px] inline-block text-secondary tracking-[0]">Rate - Rs 5.00</label>
                                                 </div>
                                             </div>
                                         </div>
@@ -219,7 +297,7 @@ function CheckoutPage() {
                                             <div className="inner-del w-[50%] max-[480px]:w-full">
                                                 <div className="radio-itens">
                                                     <input type="radio" id="Cash1" name="radio-itens" className="w-full p-[10px] text-[14px] font-normal text-secondary border-[1px] border-solid border-[#eee] outline-[0] rounded-[10px]"/>
-                                                    <label for="Cash1" className="relative pl-[26px] cursor-pointer leading-[16px] inline-block text-secondary tracking-[0]">Cash On Delivery</label>
+                                                    <label htmlFor="Cash1" className="relative pl-[26px] cursor-pointer leading-[16px] inline-block text-secondary tracking-[0]">Cash On Delivery</label>
                                                 </div>
                                             </div>
                                         </div>
@@ -233,132 +311,133 @@ function CheckoutPage() {
                         </div>
                         <div className="min-[992px]:w-[66.66%] w-full px-[12px] mb-[24px]">
                             <div className="bb-checkout-contact border-[1px] border-solid border-[#eee] p-[20px] rounded-[20px] aos-init aos-animate" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="400">
-                                <div className="main-title mb-[20px]">
-                                    <h4 className="font-quicksand tracking-[0.03rem] leading-[1.2] text-[20px] font-bold text-secondary">New Customer</h4>
-                                </div>
-                                <label className="inner-title font-Poppins leading-[26px] tracking-[0.02rem] mb-[6px] text-[16px] inline-block font-medium text-secondary">Checkout Options</label>
-                                <div className="checkout-radio flex mb-[10px] max-[480px]:flex-col">
-                                    <div className="radio-itens mr-[20px]">
-                                        <input type="radio" id="del1" name="account" className="w-auto mr-[2px] p-[10px] text-[14px] font-normal text-secondary border-[1px] border-solid border-[#eee] outline-[0] rounded-[10px]" />
-                                        <label for="del1" className="text-[14px] font-normal text-secondary relative pl-[26px] cursor-pointer leading-[16px] inline-block tracking-[0]">Register Account</label>
-                                    </div>
-                                    <div className="radio-itens">
-                                        <input type="radio" id="del2" name="account" className="w-auto mr-[2px] p-[10px] text-[14px] font-normal text-secondary border-[1px] border-solid border-[#eee] outline-[0] rounded-[10px]"/>
-                                        <label for="del2" className="text-[14px] font-normal text-secondary relative pl-[26px] cursor-pointer leading-[16px] inline-block tracking-[0]">Guest Account</label>
-                                    </div>
-                                </div>
-                                <p className="font-Poppins leading-[28px] tracking-[0.03rem] mb-[16px] text-[14px] font-light text-secondary">By creating an account you will be able to shop faster, be up to date on an order's status,
-                                    and keep track of the orders you have previously made.</p>
-                                <div className="inner-button mb-[20px]">
-                                    <a href="" className="bb-btn-2 inline-block items-center justify-center check-btn transition-all duration-[0.3s] ease-in-out font-Poppins leading-[28px] tracking-[0.03rem] py-[4px] px-[25px] text-[14px] font-normal text-[#fff] bg-[#6c7fd8] rounded-[10px] border-[1px] border-solid border-[#6c7fd8] hover:bg-transparent hover:border-[#3d4750] hover:text-secondary">Continue</a>
-                                </div>
-                                <div className="main-title mb-[20px]">
-                                    <h4 className="font-quicksand tracking-[0.03rem] leading-[1.2] text-[20px] font-bold text-secondary">Billing Details</h4>
-                                </div>
-                                <div className="checkout-radio flex mb-[10px] max-[480px]:flex-col">
-                                    <div className="radio-itens mr-[20px]">
-                                        <input type="radio" id="address1" name="address" className="w-auto mr-[2px] p-[10px]" />
-                                        <label for="address1" className="relative font-normal text-[14px] text-secondary pl-[26px] cursor-pointer leading-[16px] inline-block tracking-[0]">I want to use an existing address</label>
-                                    </div>
-                                    <div className="radio-itens">
-                                        <input type="radio" id="address2" name="address" className="w-auto mr-[2px] p-[10px]"/>
-                                        <label for="address2" className="relative font-normal text-[14px] text-secondary pl-[26px] cursor-pointer leading-[16px] inline-block tracking-[0]">I want to use new address</label>
-                                    </div>
-                                </div>
-                                <div className="input-box-form mt-[20px]">
-                                    <form onSubmit={handleSubmit}>
-                                        <div className="flex flex-wrap mx-[-12px]">
-                                            {/* First Name */}
-                                            <div className="min-[992px]:w-[50%] w-full px-[12px]">
-                                                <div className="input-item mb-[24px]">
-                                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">First Name *</label>
-                                                    <input type="text" name="firstName" placeholder="Enter your First Name" className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" required />
+                                {
+                                    !userInfo ? (
+                                        <>
+                                            <div className="main-title mb-[20px]">
+                                                <h4 className ="font-quicksand tracking-[0.03rem] leading-[1.2] text-[20px] font-bold text-secondary">Before placing order please log in</h4>
+                                                <p className="font-Poppins leading-[28px] mt-3 tracking-[0.03rem] mb-[16px] text-[14px] font-light text-secondary">By creating an account you will be able to shop faster, be up to date on an order's status,
+                                                    and keep track of the orders you have previously made.</p>
+                                                <div className='flex flex-row gap-2'>
+                                                    <Button link="/register" name='Register'/>
+                                                    <Button link="/login" name='Login'/>
                                                 </div>
                                             </div>
+                                        </>
+                                    ) :
+                                    (
+                                        <> 
+                                            <div className="main-title mb-[20px]">
+                                                <h4 className="font-quicksand tracking-[0.03rem] leading-[1.2] text-[20px] font-bold text-secondary">Billing Details</h4>
+                                            </div>
+                                            <div className="checkout-radio flex mb-[10px] max-[480px]:flex-col">
+                                                <div className="radio-itens mr-[20px]">
+                                                    <input type="radio" id="address1" name="address" className="w-auto mr-[2px] p-[10px]" />
+                                                    <label htmlFor="address1" className="relative font-normal text-[14px] text-secondary pl-[26px] cursor-pointer leading-[16px] inline-block tracking-[0]">I want to use an existing address</label>
+                                                </div>
+                                                <div className="radio-itens">
+                                                    <input type="radio" id="address2" name="address" className="w-auto mr-[2px] p-[10px]"/>
+                                                    <label htmlFor="address2" className="relative font-normal text-[14px] text-secondary pl-[26px] cursor-pointer leading-[16px] inline-block tracking-[0]">I want to use new address</label>
+                                                </div>
+                                            </div>
+                                            <div className="input-box-form mt-[20px]">
+                                                <form onSubmit={handleSubmit}>
+                                                    <div className="flex flex-wrap mx-[-12px]">
+                                                        {/* First Name */}
+                                                        <div className="min-[992px]:w-[50%] w-full px-[12px]">
+                                                            <div className="input-item mb-[24px]">
+                                                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">First Name *</label>
+                                                                <input type="text" name="firstName" placeholder="Enter your First Name" className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" value={userInfo.name ?? ''} required />
+                                                            </div>
+                                                        </div>
 
-                                            {/* Last Name */}
-                                            <div className="min-[992px]:w-[50%] w-full px-[12px]">
-                                                <div className="input-item mb-[24px]">
-                                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">Last Name *</label>
-                                                    <input type="text" name="lastName" placeholder="Enter your Last Name" className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" required />
-                                                </div>
-                                            </div>
+                                                        {/* Last Name */}
+                                                        <div className="min-[992px]:w-[50%] w-full px-[12px]">
+                                                            <div className="input-item mb-[24px]">
+                                                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Last Name *</label>
+                                                                <input type="text" name="lastName" placeholder="Enter your Last Name" className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" required />
+                                                            </div>
+                                                        </div>
 
-                                            {/* Address */}
-                                            <div className="w-full px-[12px]">
-                                                <div className="input-item mb-[24px]">
-                                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">Address *</label>
-                                                    <input type="text" name="street" onChange={handleChange} value={orderData.shippingAddress.street} placeholder="Address Line 1" className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" required />
-                                                </div>
-                                            </div>
+                                                        {/* Address */}
+                                                        <div className="w-full px-[12px]">
+                                                            <div className="input-item mb-[24px]">
+                                                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Address *</label>
+                                                                <input type="text" name="street" onChange={handleChange} value={orderData.shippingAddress.street} placeholder="Address Line 1" className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" required />
+                                                            </div>
+                                                        </div>                                            
 
-                                            {/* City Dropdown */}
-                                            <div className="min-[992px]:w-[50%] w-full px-[12px]">
-                                                <div className="input-item mb-[24px]">
-                                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">City *</label>
-                                                    <Select
-                                                        options={cityOptions}
-                                                        value={cityOptions.find(option => option.value === orderData.shippingAddress.city)}
-                                                        onChange={handleSelectChange}
-                                                        placeholder="Select City"
-                                                        isSearchable
-                                                        className="w-full"
-                                                        name="city"
-                                                    />
-                                                </div>
-                                            </div>
+                                                        {/* Country Dropdown */}
+                                                        <div className="min-[992px]:w-[50%] w-full px-[12px]">
+                                                            <div className="input-item mb-[24px]">
+                                                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Country *</label>
+                                                                <Select
+                                                                    options={countries}
+                                                                    value={countries.find(option => option.label === orderData.shippingAddress.country) || null}
+                                                                    onChange={handleSelectChange}
+                                                                    placeholder="Select Country"
+                                                                    isSearchable
+                                                                    className="w-full"
+                                                                    name="country"
+                                                                />
+                                                            </div>
+                                                        </div>
 
-                                            {/* Post Code */}
-                                            <div className="min-[992px]:w-[50%] w-full px-[12px]">
-                                                <div className="input-item mb-[24px]">
-                                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">Post Code *</label>
-                                                    <input type="text" name="zip" onChange={handleChange} value={orderData.shippingAddress.zip} placeholder="Post Code" className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" required />
-                                                </div>
-                                            </div>
+                                                        
+                                                        {/* Region/State Dropdown */}
+                                                        <div className="min-[992px]:w-[50%] w-full px-[12px]">
+                                                            <div className="input-item mb-[24px]">
+                                                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">State *</label>
+                                                                <Select
+                                                                    options={states}
+                                                                    value={states.find(option => option.label === orderData.shippingAddress.state) || null}
+                                                                    onChange={handleSelectChange}
+                                                                    placeholder="Select Region/State"
+                                                                    isSearchable
+                                                                    className="w-full"
+                                                                    name="state"
+                                                                />
+                                                            </div>
+                                                        </div>
 
-                                            {/* Country Dropdown */}
-                                            <div className="min-[992px]:w-[50%] w-full px-[12px]">
-                                                <div className="input-item mb-[24px]">
-                                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">Country *</label>
-                                                    <Select
-                                                        options={countryOptions}
-                                                        value={countryOptions.find(option => option.value === orderData.shippingAddress.country)}
-                                                        onChange={handleSelectChange}
-                                                        placeholder="Select Country"
-                                                        isSearchable
-                                                        className="w-full"
-                                                        name="country"
-                                                    />
-                                                </div>
-                                            </div>
+                                                        {/* City Dropdown */}
+                                                        <div className="min-[992px]:w-[50%] w-full px-[12px]">
+                                                            <div className="input-item mb-[24px]">
+                                                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">City *</label>
+                                                                <Select
+                                                                    options={cities}
+                                                                    value={cities.find(option => option.label === orderData.shippingAddress.city) || null}
+                                                                    onChange={handleSelectChange}
+                                                                    placeholder="Select City"
+                                                                    isSearchable
+                                                                    className="w-full"
+                                                                    name="city"
+                                                                />
+                                                            </div>
+                                                        </div>
 
-                                            {/* Region/State Dropdown */}
-                                            <div className="min-[992px]:w-[50%] w-full px-[12px]">
-                                                <div className="input-item mb-[24px]">
-                                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">Region/State *</label>
-                                                    <Select
-                                                        options={regionOptions}
-                                                        value={regionOptions.find(option => option.value === orderData.shippingAddress.state)}
-                                                        onChange={handleSelectChange}
-                                                        placeholder="Select Region/State"
-                                                        isSearchable
-                                                        className="w-full"
-                                                        name="state"
-                                                    />
-                                                </div>
-                                            </div>
+                                                        {/* Post Code */}
+                                                        <div className="min-[992px]:w-[50%] w-full px-[12px]">
+                                                            <div className="input-item mb-[24px]">
+                                                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Post Code *</label>
+                                                                <input type="text" name="postalCode" onChange={handleChange} value={orderData.shippingAddress.postalCode} placeholder="Post Code" className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" required />
+                                                            </div>
+                                                        </div>
 
-                                            {/* Place Order Button */}
-                                            <div className="w-full px-[12px]">
-                                                <div className="input-button">
-                                                    <button type="submit" className="bb-btn-2 inline-block py-[10px] px-[25px] text-[14px] font-medium text-white bg-[#6c7fd8] rounded-[10px] hover:bg-transparent hover:border-[#3d4750] hover:text-secondary border">
-                                                        Place Order
-                                                    </button>
-                                                </div>
+                                                        {/* Place Order Button */}
+                                                        <div className="w-full px-[12px]">
+                                                            <div className="input-button">
+                                                                <button type="submit" className="bb-btn-2 inline-block py-[10px] px-[25px] text-[14px] font-medium text-white bg-[#6c7fd8] rounded-[10px] hover:bg-transparent hover:border-[#3d4750] hover:text-secondary border">
+                                                                    Place Order
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </form>
                                             </div>
-                                        </div>
-                                    </form>
-                                </div>
+                                        </>
+                                    )
+                                }
                             </div>
                         </div>
                     </div>

@@ -5,21 +5,11 @@ const bcrypt = require('bcryptjs');
 const { ObjectId } = mongoose.Schema.Types;
 
 const UserSchema = new mongoose.Schema({
-    // user_id: { type: String, required: true, unique: true }, // Unique identifier for the user
-    role: { type: String, enum: ['user', 'admin'], default: 'user' },
+    role: { type: String, enum: ['user', 'admin', 'seller'], default: 'user' },
     name: String, // User's full name
     email: { type: String, unique: true }, // User's email (unique)
     password: String, // Encrypted user password
-    phone: String, // User's phone number
-    address: [
-        {
-        street: String,
-        city: String,
-        state: String,
-        zip: String,
-        country: String,
-        },
-    ], // Array of saved addresses
+    userdetails: { type: ObjectId, ref: 'UserDetails' },
     created_at: { type: Date, default: Date.now }, // Account creation date
     updated_at: { type: Date, default: Date.now }, // Last updated date
 });

@@ -22,7 +22,11 @@ import ProductsListPage from './components/pages/admin/ProductsListPage';
 import ProtectedRoute from './components/ProtectedRoute';  
 import AdminDashboard from './components/admin/Dashboard'; 
 import Products from './components/admin/Products'; 
+import Categories from './components/admin/Categories'; 
+import SubCategories from './components/admin/SubCategories'; 
 import Orders from './components/admin/Orders';  
+import MyAccount from './components/auth/MyAccount';
+import Seller from './components/admin/Seller';
 
 const AdminRoutes = () => (     
   <ProtectedRoute requiredRole="admin">         
@@ -70,10 +74,14 @@ function App() {
         <Route path="/checkout" element={<CheckoutPage />} />                 
         <Route path="/wishlist" element={<WishlistPage />} />                 
         <Route path="/adminproduct" element={<ProductsListPage />} />                 
+        <Route path="/my-account" element={<MyAccount />} />                 
         <Route path="/admin" element={<AdminRoutes />}>                     
           <Route path="dashboard" element={<AdminDashboard />} />                     
           <Route path="products" element={<Products />} />                     
+          <Route path="products/categories" element={<Categories />} />    
+          <Route path="products/subcategories" element={<SubCategories />} /> 
           <Route path="orders" element={<Orders />} />                 
+          <Route path="seller" element={<Seller />} />                 
         </Route>             
       </Routes>              
       {shouldRenderHeaderFooter && <FooterTop />}             

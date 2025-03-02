@@ -24,7 +24,7 @@ function ProductlistItem({ type, product, filter }) {
       [product._id]: newQuantity,
     }));
 
-    dispatch(updateQuantity({ productId: product._id, quantity: newQuantity }));
+    // dispatch(updateQuantity({ productId: product._id, quantity: newQuantity }));
   };
 
   // Handle decrement
@@ -36,7 +36,7 @@ function ProductlistItem({ type, product, filter }) {
       [product._id]: newQuantity,
     }));
 
-    dispatch(updateQuantity({ productId: product._id, quantity: newQuantity }));
+    // dispatch(updateQuantity({ productId: product._id, quantity: newQuantity }));
   };
 
   // Handle input change
@@ -49,7 +49,7 @@ function ProductlistItem({ type, product, filter }) {
         [product._id]: newQuantity,
       }));
 
-      dispatch(updateQuantity({ productId: product._id, quantity: newQuantity }));
+      // dispatch(updateQuantity({ productId: product._id, quantity: newQuantity }));
     }
   };
 

@@ -39,15 +39,13 @@ const Login = () => {
         try {
             const response = await login(loginData.lemail, loginData.lpassword);
             if (response) {
-                const { user, accessToken, refreshToken } = response;
+                const { user } = response;
                 const { role, name, email } = user;
     
                 // Save user data and token to local storage
                 localStorage.setItem("userRole", role);
                 localStorage.setItem("userName", name);
                 localStorage.setItem("userEmail", email);
-                localStorage.setItem("token", accessToken);
-                localStorage.setItem("refreshToken", refreshToken);
     
                 toast.success("Login successful");
                 setLoginData({ lemail: "", lpassword: "" });

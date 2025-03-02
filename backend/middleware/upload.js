@@ -1,24 +1,42 @@
 const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
+
+const uploadDir = "uploads/";
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
 
 // Set storage configuration
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, "uploads/"); // Ensure this folder exists
+        cb(null, uploadDir);
     },
     filename: (req, file, cb) => {
-        const uniqueName = `${Date.now()}-${file.originalname}`;
-        cb(null, uniqueName); // Naming convention for each file
+        const uniqueName = `${Date.now()}-${Math.random().toString(36).slice(2, 11)}${path.extname(file.originalname)}`;
+        cb(null, uniqueName);
     },
 });
 
-// Define the upload middleware for specific fields
-const upload = multer({ storage });
+// File filter to allow only images
+const fileFilter = (req, file, cb) => {
+    const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
+    if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+    } else {
+        cb(new Error("Invalid file type. Only JPG, JPEG, and PNG are allowed!"), false);
+    }
+};
 
-// Define the fields you want to handle (one for a single image and another for multiple images)
-const uploadFields = upload.fields([
-    { name: 'product_img', maxCount: 1 }, // Single product image
-    { name: 'gallery_imgs', maxCount: 5 } // Multiple gallery images (limit to 5)
-]);
+// Define multer upload with size limits (5MB per file)
+const upload = multer({
+    storage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    fileFilter,
+});
 
-// Middleware for handling multiple file uploads
-exports.uploadFields = uploadFields; // Export the middleware so you can use it in your routes
+// Middleware for handling dynamically named fields
+const uploadAny = upload.any();
+
+// Export middleware
+exports.uploadAny = uploadAny;

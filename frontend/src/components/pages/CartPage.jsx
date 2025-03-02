@@ -1,19 +1,26 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from "react-redux";
-import { updateQuantity, removeFromCart } from '../../slice/cartSlice';
+import { updateQuantity, removeFromCart, fetchCartItems } from '../../slice/cartSlice';
 import { Link, useLocation } from 'react-router-dom';
 
 function CartPage() {
     const dispatch = useDispatch();
+
+    useEffect(() => {
+        dispatch(fetchCartItems());
+    }, [dispatch]);
+
     const cartItems = useSelector((state) => state.cart.items);
+
     const cartTotal = Object.values(cartItems).reduce(
-        (total, item) => total + (item.quantity * item.product.price || 0),
+        (total, item) => total + (item.quantity * (item.variant ? item.variant.price : item.product.price) || 0),
         0
       ).toFixed(2);
     const deliveryCharge = 0;
 
     useEffect(() => {
         console.log("cartTotal:", cartTotal); // Debugging
+        console.log("cartItem:", cartItems); // Debugging
     }, [cartItems]);
 
     const location = useLocation();
@@ -25,23 +32,25 @@ function CartPage() {
 
 
     // Handle increment
-    const handleIncrement = (prodId) => {
-        const currentQuantity = cartItems[prodId]?.quantity || 1;
+    const handleIncrement = (prodId,variantId,qty) => {
+        const currentQuantity = qty || 1;
         const newQuantity = currentQuantity + 1;
-        dispatch(updateQuantity({ productId: prodId, quantity: newQuantity }));
+        dispatch(updateQuantity({ productId: prodId, variantId, quantity: newQuantity }));
     };
 
     // Handle decrement
-    const handleDecrement = (prodId) => {
-        const currentQuantity = cartItems[prodId]?.quantity || 1;
+    const handleDecrement = (prodId,variantId,qty) => {
+        const currentQuantity = qty || 1;
         const newQuantity = Math.max(currentQuantity - 1, 1);
         if (newQuantity > 0) {
-            dispatch(updateQuantity({ productId: prodId, quantity: newQuantity }));
+            dispatch(updateQuantity({ productId: prodId, variantId, quantity: newQuantity }));
         }
     };
 
-    const handleRemovecart = (prodId) => {
-        dispatch(removeFromCart(prodId)); // Pass only the productId
+    const handleRemovecart = (productId, variantId) => {
+        console.log("Removing:", productId, variantId);
+        dispatch(removeFromCart({ productId, variantId })); // ✅ Pass as an object
+        dispatch(fetchCartItems());
     };
 
     useEffect(() => {
@@ -115,7 +124,7 @@ function CartPage() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                    {Object.values(cartItems).map(({ product, quantity }) => (
+                                    {Object.values(cartItems).map(({ index , product, variant, quantity }) => (
                                         <tr key={product._id} className="border-b-[1px] border-solid border-[#eee]">
                                             <td className="p-[12px]">
                                                 <div className="Product-cart flex items-center">
@@ -124,21 +133,21 @@ function CartPage() {
                                                 </div>
                                             </td>
                                             <td className="p-[12px]">
-                                                <span className="price font-Poppins text-[15px] font-medium leading-[26px] tracking-[0.02rem] text-secondary">₹{product.price}</span>
+                                                <span className="price font-Poppins text-[15px] font-medium leading-[26px] tracking-[0.02rem] text-secondary">₹{variant ? variant.price : product.price}</span>
                                             </td>
                                             <td className="p-[12px]">
                                                 <div className="qty-plus-minus w-[85px] h-[45px] py-[7px] border-[1px] border-solid border-[#eee] overflow-hidden relative flex items-center justify-between bg-[#fff] px-2 rounded-[10px]">
-                                                    <div className="dec bb-qtybtn" onClick={()=> handleDecrement(product._id)}>-</div>
-                                                    <span>{cartItems[product._id]?.quantity || 1}</span>
-                                                    <div className="inc bb-qtybtn" onClick={()=> handleIncrement(product._id)}>+</div>
+                                                    <div className="dec bb-qtybtn" onClick={()=> handleDecrement(product._id,(variant ? variant._id : null),quantity)}>-</div>
+                                                    <span>{quantity || 1}</span>
+                                                    <div className="inc bb-qtybtn" onClick={()=> handleIncrement(product._id,(variant ? variant._id : null),quantity)}>+</div>
                                                 </div>
                                             </td>
                                             <td className="p-[12px]">
-                                                <span className="price font-Poppins text-[15px] font-medium leading-[26px] tracking-[0.02rem] text-secondary">₹{(product.price * quantity)}</span>
+                                                <span className="price font-Poppins text-[15px] font-medium leading-[26px] tracking-[0.02rem] text-secondary">₹{((variant ? variant.price : product.price) * quantity)}</span>
                                             </td>
                                             <td className="p-[12px]">
                                                 <div className="pro-remove">
-                                                    <button onClick={()=>handleRemovecart(product._id)}>
+                                                    <button onClick={()=>handleRemovecart(product._id,(variant ? variant._id : null))}>
                                                         <i className="ri-delete-bin-line transition-all duration-[0.3s] ease-in-out text-[20px] text-secondary hover:text-[#ff0000]"></i>
                                                     </button>
                                                 </div>

@@ -1,36 +1,40 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from "react-redux";
-import { updateQuantity, removeFromCart } from '../../slice/cartSlice';
+import { updateQuantity, removeFromCart, fetchCartItems } from '../../slice/cartSlice';
 
 function CartPopup({ cartPopup, setCartPopup }) {
     const dispatch = useDispatch();
+    useEffect(() => {
+        dispatch(fetchCartItems());
+    }, [dispatch, cartPopup]);
     const navigate = useNavigate();  // Initialize useNavigate hook
     const cartItems = useSelector((state) => state.cart.items);
     const cartTotal = Object.values(cartItems).reduce(
-        (total, item) => total + (item.quantity * item.product.price || 0),
+        (total, item) => total + (item.quantity * item.variant ? item.variant.price : item.product.price || 0),
         0
     ).toFixed(2);
     const deliveryCharge = 0;
 
     // Handle increment
-    const handleIncrement = (prodId) => {
-        const currentQuantity = cartItems[prodId]?.quantity || 1;
+    const handleIncrement = (prodId,variantId,quantity) => {
+        const currentQuantity = quantity || 1;
         const newQuantity = currentQuantity + 1;
-        dispatch(updateQuantity({ productId: prodId, quantity: newQuantity }));
+        dispatch(updateQuantity({ productId: prodId, variantId, quantity: newQuantity }));
     };
 
     // Handle decrement
-    const handleDecrement = (prodId) => {
-        const currentQuantity = cartItems[prodId]?.quantity || 1;
+    const handleDecrement = (prodId,variantId,quantity) => {
+        const currentQuantity = quantity || 1;
         const newQuantity = Math.max(currentQuantity - 1, 1);
         if (newQuantity > 0) {
-            dispatch(updateQuantity({ productId: prodId, quantity: newQuantity }));
+            dispatch(updateQuantity({ productId: prodId, variantId, quantity: newQuantity }));
         }
     };
 
-    const handleRemovecart = (prodId) => {
-        dispatch(removeFromCart(prodId)); // Pass only the productId
+    const handleRemovecart = (prodId,variantId) => {
+        dispatch(removeFromCart({productId: prodId,variantId})); // Pass only the productId
+        dispatch(fetchCartItems());
     };
 
     return (
@@ -47,19 +51,19 @@ function CartPopup({ cartPopup, setCartPopup }) {
                         <div className="bb-cart-box item h-full flex flex-col max-[767px]:justify-start">
                             <ul className="bb-cart-items mb-[-24px]">
                             {cartItems && Object.keys(cartItems).length > 0 ? (
-                                Object.values(cartItems).map(({ product, quantity }) => (
+                                Object.values(cartItems).map(({ product, variant, quantity }) => (
                                 <li key={product._id} className="cart-sidebar-list mb-[24px] p-[10px] flex bg-[#f8f8fb] rounded-[20px] border-[1px] border-solid border-[#eee] relative max-[575px]:p-[10px]">
                                     <button onClick={() => handleRemovecart(product._id)} className="cart-remove-item transition-all duration-[0.3s] ease-in-out bg-secondary w-[20px] h-[20px] text-[#fff] absolute top-[-3px] right-[-3px] rounded-[50%] flex items-center justify-center opacity-[0.5] text-[15px]"><i className="ri-close-line"></i></button>
                                     <img src={import.meta.env.VITE_API_URL+''+product.product_img ?? ''} alt="product-img-1" className="w-[85px] rounded-[10px] border-[1px] border-solid border-[#eee] max-[575px]:w-[50px]"/>
                                     <div className="bb-cart-contact pl-[15px] relative grow-[1] shrink-[0] basis-[70%] overflow-hidden">
                                         <Link to={`/product/${product._id}`} className="bb-cart-sub-title w-full mb-[8px] font-Poppins tracking-[0.03rem] text-secondary whitespace-nowrap overflow-hidden text-ellipsis block text-[14px] leading-[18px] font-medium">{product.name}</Link>
                                         <span className="cart-price mb-[8px] text-[16px] leading-[18px] block font-Poppins text-secondary font-light tracking-[0.03rem]">
-                                            <span className="new-price px-[3px] text-[14px] leading-[14px] text-secondary font-bold">₹{product.price}</span>
+                                            <span className="new-price px-[3px] text-[14px] leading-[14px] text-secondary font-bold">₹{variant ? variant.price : product.price}</span>
                                         </span>
                                         <div className="qty-plus-minus w-[85px] h-[45px] py-[0px] border-[1px] border-solid border-[#eee] overflow-hidden relative flex items-center justify-between bg-[#fff] rounded-[10px] px-3">
-                                            <div className="dec bb-qtybtn cursor-pointer" onClick={() => handleDecrement(product._id)}>-</div>
-                                            <span>{cartItems[product._id]?.quantity || 1}</span>
-                                            <div className="inc bb-qtybtn cursor-pointer" onClick={() => handleIncrement(product._id)}>+</div>
+                                            <div className="dec bb-qtybtn cursor-pointer" onClick={() => handleDecrement(product._id,(variant ? variant._id : null),quantity)}>-</div>
+                                            <span>{quantity || 1}</span>
+                                            <div className="inc bb-qtybtn cursor-pointer" onClick={() => handleIncrement(product._id,(variant ? variant._id : null),quantity)}>+</div>
                                         </div>
                                     </div>
                                 </li>

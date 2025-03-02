@@ -64,7 +64,7 @@ function SingleProductGallery({ images }) {
             {images.map((img, index) => (
               <div key={index}>
                 <img
-                  src={img}
+                  src={import.meta.env.VITE_API_URL+''+img}
                   alt={`product-${index + 1}`}
                   className="w-full h-auto max-h-[500px] object-contain"
                   style={zoomStyle.backgroundImage ? { visibility: "hidden" } : {}}
@@ -85,7 +85,7 @@ function SingleProductGallery({ images }) {
               onClick={() => handleThumbnailClick(index)}
             >
               <img
-                src={img}
+                src={import.meta.env.VITE_API_URL+''+img}
                 alt={`thumbnail-${index + 1}`}
                 className="rounded-lg mx-auto max-h-[100px] object-contain cursor-pointer"
               />

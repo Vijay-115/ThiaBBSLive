@@ -3,7 +3,12 @@ import api from "../utils/api"; // Import the centralized Axios instance
 // Register function
 export const register = async (userData) => {
     try {
-        await api.post("/auth/register", userData);
+        const response = await api.post("/auth/register", userData);
+        if (response.data.accessToken && response.data.refreshToken) {
+            localStorage.setItem("token", response.data.accessToken);
+            localStorage.setItem("refreshToken", response.data.refreshToken);
+        }
+        return response.data;
     } catch (error) {
         throw new Error(error.response?.data?.msg || "Registration failed");
     }
@@ -13,8 +18,9 @@ export const register = async (userData) => {
 export const login = async (email, password) => {
     try {
         const response = await api.post("/auth/login", { email, password });
-        if (response.data.token) {
-            localStorage.setItem("token", response.data.token);
+        if (response.data.accessToken && response.data.refreshToken) {
+            localStorage.setItem("token", response.data.accessToken);
+            localStorage.setItem("refreshToken", response.data.refreshToken);
         }
         return response.data;
     } catch (error) {
@@ -60,6 +66,33 @@ export const isAuthenticated = async () => {
         return response.data; // Returns userId and role if valid
     } catch (error) {
         localStorage.removeItem("token");
+        return false;
+    }
+};
+
+// Check if user is authenticated
+export const getUserInfo = async () => {
+    try {
+        const response = await api.get("/auth/user-info");
+        return response.data; // Returns userId and role if valid
+        console.log(response.data);
+    } catch (error) {
+        console.log(response.data);
+        return false;
+    }
+};
+
+// Check if user is authenticated
+export const updateProfile = async (userData) => {
+    try {
+        const response = await api.put("/auth/update-profile", userData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+        });
+        return response.data; // Returns updated user data
+    } catch (error) {
+        console.error("Update Profile Error:", error.response?.data || error.message);
         return false;
     }
 };

@@ -22,7 +22,11 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => response,
     async (error) => {
-        if (error.response?.status === 401 || error.response?.status === 400) {
+        const originalRequest = error.config;
+        
+        if (error.response?.status === 401 && !originalRequest._retry) {
+            originalRequest._retry = true; // Prevent infinite loop
+            
             const refreshToken = localStorage.getItem("refreshToken");
 
             if (refreshToken) {
@@ -34,16 +38,22 @@ api.interceptors.response.use(
                         localStorage.setItem("token", res.data.accessToken);
 
                         // Retry the original request with the new token
-                        error.config.headers["Authorization"] = `Bearer ${res.data.accessToken}`;
-                        return api(error.config);
+                        originalRequest.headers["Authorization"] = `Bearer ${res.data.accessToken}`;
+                        return api(originalRequest);
                     }
                 } catch (refreshError) {
                     console.error("Token refresh failed:", refreshError);
-                    localStorage.clear(); // Logout user on failure
+                    
+                    // Only clear token-related data instead of everything
+                    localStorage.removeItem("token");
+                    localStorage.removeItem("refreshToken");
+
                     window.location.href = "/login"; // Redirect to login
                 }
             }
+            localStorage.clear();
         }
+
         return Promise.reject(error);
     }
 );
