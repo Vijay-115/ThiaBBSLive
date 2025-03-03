@@ -98,12 +98,12 @@ const SubCategoryForm = ({ categories, subcategory, onSave }) => {
             <div className="w-full px-[12px]">
               <div className="input-item mb-[24px]">
                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">
-                  SubCategory Name *
+                  Sub Category Name *
                 </label>
                 <input
                   type="text"
                   name="name"
-                  placeholder="Enter your SubCategory Name"
+                  placeholder="Enter your Sub Category Name"
                   className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]"
                   value={formData.name}
                   onChange={handleChange}

@@ -34,7 +34,7 @@ function MyAccount() {
             setUserData(prev => ({
                 ...prev,
                 name: userInfo.name || "",
-                address: userInfo?.userdetails?.addresses?.[0] || {
+                address: userInfo?.userdetails?.addresses || {
                     street: "",
                     city: "",
                     state: "",
@@ -44,7 +44,7 @@ function MyAccount() {
                 profilePic : userInfo?.userdetails?.profilePic || '', 
             }));     
             setImagePreview(userInfo?.userdetails?.profilePic ? import.meta.env.VITE_API_URL+''+userInfo?.userdetails?.profilePic:'');       
-            // console.log('postalCode',userData.address);
+            // console.log('userInfo',userData);
         }
     }, [userInfo]);
 
@@ -90,24 +90,37 @@ function MyAccount() {
         if (userData.address.state) fetchCities();
     }, [userData.address.state, states]);
 
-    const handleSelectChange = (selectedOption, { name }) => {
-        setUserData(prevData => ({
-            ...prevData,
-            address: { 
-                ...prevData.address, 
-                [name]: selectedOption.label 
-            }
-        }));
-    };
-
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setUserData((prevData) => ({
-            ...prevData,
-            address: { ...prevData.address, [name]: value },
-        }));
-        console.log(userData);
+        
+        setUserData((prevData) => {
+            const updatedData = {
+                ...prevData,
+                [name]: value,  // For firstName, lastName, and other fields
+                address: { 
+                    ...prevData?.address, 
+                    [name]: value // For address fields like street, postalCode
+                }
+            };
+            console.log(updatedData); // Logs the correct updated state
+            return updatedData;
+        });
     };
+    
+    const handleSelectChange = (selectedOption, { name }) => {
+        setUserData((prevData) => {
+            const updatedData = {
+                ...prevData,
+                address: { 
+                    ...prevData?.address, 
+                    [name]: selectedOption?.label || '' // Prevents issues if null
+                }
+            };
+            console.log(updatedData); // Logs the correct updated state
+            return updatedData;
+        });
+    };
+    
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -156,10 +169,7 @@ function MyAccount() {
                                 <label htmlFor="imageUpload"></label>
                             </div>
                             <div className="avatar-preview">
-                                <div
-                                id="imagePreview"
-                                style={{ backgroundImage: `url(${imagePreview})` }}
-                                ></div>
+                                <div id="imagePreview" style={{ backgroundImage: `url(${imagePreview})` }}></div>
                             </div>
                         </div>
                     </div>
@@ -168,7 +178,15 @@ function MyAccount() {
                         <div className="min-[992px]:w-[50%] w-full px-[12px]">
                             <div className="input-item mb-[24px]">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">First Name *</label>
-                                <input type="text" name="firstName" placeholder="Enter your First Name" className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" value={userData.name} required />
+                                <input 
+                                    type="text" 
+                                    name="firstName" 
+                                    placeholder="Enter your First Name" 
+                                    className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" 
+                                    value={userData?.name || ''} 
+                                    onChange={handleChange} 
+                                    required 
+                                />
                             </div>
                         </div>
 
@@ -176,7 +194,15 @@ function MyAccount() {
                         <div className="min-[992px]:w-[50%] w-full px-[12px]">
                             <div className="input-item mb-[24px]">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Last Name *</label>
-                                <input type="text" name="lastName" placeholder="Enter your Last Name" className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" required />
+                                <input 
+                                    type="text" 
+                                    name="lastName" 
+                                    placeholder="Enter your Last Name" 
+                                    className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" 
+                                    value={userData?.lastName || ''} 
+                                    onChange={handleChange} 
+                                    required 
+                                />
                             </div>
                         </div>
 
@@ -184,7 +210,7 @@ function MyAccount() {
                         <div className="w-full px-[12px]">
                             <div className="input-item mb-[24px]">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Address *</label>
-                                <input type="text" name="street" onChange={handleChange} value={userData.address.street} placeholder="Address Line 1" className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" required />
+                                <input type="text" name="street" onChange={handleChange} value={userData?.address?.street || ""} placeholder="Address Line 1" className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" required />
                             </div>
                         </div>                                            
 
@@ -194,8 +220,8 @@ function MyAccount() {
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Country *</label>
                                 <Select
                                     options={countries}
-                                    value={countries.find(option => option.label === userData.address.country) || null}
-                                    onChange={handleSelectChange}
+                                    value={countries.find(option => option.label === userData?.address?.country) || null}
+                                    onChange={(option, action) => handleSelectChange(option, { name: "country" })}
                                     placeholder="Select Country"
                                     isSearchable
                                     className="w-full"
@@ -211,8 +237,8 @@ function MyAccount() {
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">State *</label>
                                 <Select
                                     options={states}
-                                    value={states.find(option => option.label === userData.address.state) || null}
-                                    onChange={handleSelectChange}
+                                    value={states.find(option => option.label === userData?.address?.state) || null}
+                                    onChange={(option, action) => handleSelectChange(option, { name: "state" })}
                                     placeholder="Select Region/State"
                                     isSearchable
                                     className="w-full"
@@ -227,8 +253,8 @@ function MyAccount() {
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">City *</label>
                                 <Select
                                     options={cities}
-                                    value={cities.find(option => option.label === userData.address.city) || null}
-                                    onChange={handleSelectChange}
+                                    value={cities.find(option => option.label === userData?.address?.city) || null}
+                                    onChange={(option, action) => handleSelectChange(option, { name: "city" })}
                                     placeholder="Select City"
                                     isSearchable
                                     className="w-full"
@@ -241,7 +267,7 @@ function MyAccount() {
                         <div className="min-[992px]:w-[50%] w-full px-[12px]">
                             <div className="input-item mb-[24px]">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Post Code *</label>
-                                <input type="text" name="postalCode" onChange={handleChange} value={userData.address.postalCode ?? ''} placeholder="Post Code" className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" required />
+                                <input type="text" name="postalCode" onChange={handleChange} value={userData?.address?.postalCode ?? ''} placeholder="Post Code" className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" required />
                             </div>
                         </div>
 
