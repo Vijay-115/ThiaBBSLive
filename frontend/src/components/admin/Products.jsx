@@ -360,6 +360,17 @@ const Products = () => {
                                                   <div>   
                                                       <span className="ml-[10px] block font-Poppins text-[14px] font-semibold leading-[24px] tracking-[0.03rem] text-secondary">{product.name ?? ''}</span>
                                                       <span className="ml-[10px] block font-Poppins text-[12px] font-normal leading-[16px] tracking-[0.03rem] text-secondary">{product.description ?? ''}</span>
+                                                      { product.category_id && (
+                                                        <span className="ml-[10px] block font-Poppins text-[12px] font-normal leading-[16px] tracking-[0.03rem] text-secondary">Category: {product.category_id.name ?? ''}</span>
+                                                      )}
+                                                      { product.subcategory_id && (
+                                                        <span className="ml-[10px] block font-Poppins text-[12px] font-normal leading-[16px] tracking-[0.03rem] text-secondary">Sub Category: {product.subcategory_id.name ?? ''}</span>
+                                                      )}
+                                                      { product.variants && product.variants.length > 0  (
+                                                        product.variants.map((variant) => (
+                                                          <span className="ml-[10px] block font-Poppins text-[12px] font-normal leading-[16px] tracking-[0.03rem] text-secondary">Sub Category: {variant.variant_name ?? ''}</span>
+                                                        ))
+                                                      )}
                                                       <div className='px-2'>
                                                       {Array.from({ length: 5 }).map((_, index) => (
                                                       <i
