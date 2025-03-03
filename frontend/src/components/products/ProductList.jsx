@@ -57,7 +57,7 @@ function ProductList({ heading,type,category,filter  }) {
   // Slider Settings
   const settings = {
     dots: false,
-    infinite: true,
+    infinite: false,
     speed: 500,
     slidesToShow: 5,
     slidesToScroll: 1,
