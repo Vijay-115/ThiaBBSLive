@@ -34,7 +34,8 @@ function SingleProduct() {
     gallery_imgs: [],
     is_variant: product?.is_variant || false,
     variant_name: '',
-    variant_id:''
+    variant_id:'',
+    variants: product?.variants || [],
   });
   const [activeTab, setActiveTab] = useState("detail");
   const [weight, setWeight] = useState("250g");
@@ -90,35 +91,6 @@ function SingleProduct() {
     });
   }, [id]);
 
-  const fetchVariantByProduct = async (id) => {
-    if (!id) return;
-    try {
-      const data = await ProductService.getVariantByProductID(id);
-      console.log('Fetched Variants Data:', data);
-      
-      setVariants((prev) => {
-        console.log('Previous Variants:', prev);
-        console.log('Setting New Variants:', data);
-        return data;
-      });
-
-      if (variants && variants.length > 0) {
-        setProductData((prev) => ({
-          ...prev,
-          price: variants[0]?.price || "",
-          stock: variants[0]?.stock || "",
-          SKU: variants[0]?.SKU || "",
-          variant_name: variants[0]?.variant_name || "",
-          variant_id: variants[0]?._id || ""
-        }));
-      }      
-
-    } catch (error) {
-      console.error("Error fetching variants:", error);
-      setErrorMessage(error?.message || "Failed to fetch variants.");
-    }
-  };
-
   useEffect(() => {
     if (!product) return;
   
@@ -127,7 +99,16 @@ function SingleProduct() {
       ...product, // Spread product directly into productData
     }));
   
-    fetchVariantByProduct(product?._id);
+    if (product.variants && product.variants.length > 0) {
+      setProductData((prev) => ({
+        ...prev,
+        price: product.variants[0]?.price || "",
+        stock: product.variants[0]?.stock || "",
+        SKU: product.variants[0]?.SKU || "",
+        variant_name: product.variants[0]?.variant_name || "",
+        variant_id: product.variants[0]?._id || ""
+      }));
+    }
   
     // Use a separate `useEffect` to log updated state
   }, [product]);
@@ -146,6 +127,8 @@ function SingleProduct() {
         price: variant.price,
         stock: variant.stock,
         SKU: variant.SKU,
+        product_img: variant.variant_img,
+        gallery_imgs: variant.variant_gallery_imgs,
         description: variant.description,
         variant_name: variant.variant_name,
         variant_id: variant._id
@@ -386,7 +369,7 @@ function SingleProduct() {
                       </div>
                     )}
                     {
-                      variants && variants.length > 0 && (
+                      product.variants && product.variants.length > 0 && (
                         <div className="bb-single-pro-weight mb-[24px]">
                           <div className="pro-title mb-[12px]">
                               <h4 className="font-quicksand leading-[1.2] tracking-[0.03rem] text-[16px] font-bold uppercase text-secondary">Variant</h4>
@@ -394,7 +377,7 @@ function SingleProduct() {
                           <div className="bb-pro-variation-contant">
                               <ul className="flex flex-wrap m-[-2px]">
                                   {
-                                    variants.map((variant) => (
+                                    product.variants.map((variant) => (
                                       <li onClick={()=> handleVariantChange(variant)} className={`my-[10px] mx-[2px] py-[2px] px-[15px] border-[1px] border-solid ${productData?.variant_id === variant._id ? 'border-primary bg-primary text-white' : 'border-[#eee]'} rounded-[10px] cursor-pointer`}>
                                           <span className={`font-Poppins ${productData?.variant_id === variant._id ? 'text-white' : 'text-secondary '} font-light text-[14px] leading-[28px] tracking-[0.03rem]`}>{variant.variant_name}</span>
                                       </li>

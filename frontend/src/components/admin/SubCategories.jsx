@@ -10,20 +10,18 @@ import SubCategoryForm from "./SubCategoryForm";
 import toast from "react-hot-toast";
 
 const SubCategories = () => {
-
-    const {
-        isSidebarHidden,
-        toggleSidebar,
-        isSearchFormShown,
-        toggleSearchForm,
-        isDarkMode,
-        toggleDarkMode,
-        isNotificationMenuOpen,
-        toggleNotificationMenu,
-        isProfileMenuOpen,
-        toggleProfileMenu,
-    } = useDashboardLogic();
-
+  const {
+      isSidebarHidden,
+      toggleSidebar,
+      isSearchFormShown,
+      toggleSearchForm,
+      isDarkMode,
+      toggleDarkMode,
+      isNotificationMenuOpen,
+      toggleNotificationMenu,
+      isProfileMenuOpen,
+      toggleProfileMenu,
+  } = useDashboardLogic();
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
   const [filteredCategories, setFilteredCategories] = useState([]);
@@ -62,32 +60,32 @@ const SubCategories = () => {
   useEffect(() => {
     fetchSubCategories();
     fetchCategories();
+  }, []); // Runs only once
+  
+  useEffect(() => {
+    setFilteredCategories(subCategories); // Updates only when subCategories change
   }, [subCategories]);
-
+  
   useEffect(() => {
     const filterAndSortCategories = () => {
       let filtered = subCategories.filter((subcategory) =>
         subcategory.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
   
-      // Sorting logic
       if (sortConfig.key) {
-        filtered.sort((a, b) => {
-          if (a[sortConfig.key] < b[sortConfig.key]) {
-            return sortConfig.direction === "ascending" ? -1 : 1;
-          }
-          if (a[sortConfig.key] > b[sortConfig.key]) {
-            return sortConfig.direction === "ascending" ? 1 : -1;
-          }
-          return 0;
-        });
+        filtered.sort((a, b) => 
+          sortConfig.direction === "ascending" 
+            ? a[sortConfig.key].localeCompare(b[sortConfig.key]) 
+            : b[sortConfig.key].localeCompare(a[sortConfig.key])
+        );
       }
-      console.log(filtered); // Log the filtered subCategories
+  
       setFilteredCategories(filtered);
     };
   
     filterAndSortCategories();
-  }, [searchQuery, sortConfig, subCategories]); // Run when these values change
+  }, [searchQuery, sortConfig]); // No `subCategories` to avoid re-fetching
+    
 
   // Update this in the search input handler:
   const handleSearchChange = (e) => {
@@ -201,7 +199,7 @@ const SubCategories = () => {
                     <main>
                         <div className="head-title">
                             <div className="left">
-                                <h1>Categories</h1>
+                                <h1>Sub Categories</h1>
                                 <ul className="breadcrumb">
                                     <li>
                                         <NavLink className="active" to="/admin/dashboard">Dashboard</NavLink>
@@ -210,7 +208,7 @@ const SubCategories = () => {
                                         <i className="bx bx-chevron-right" />
                                     </li>
                                     <li>
-                                        <a> Categories </a>
+                                        <a> Sub Categories </a>
                                     </li>
                                 </ul>
                             </div>
@@ -268,7 +266,7 @@ const SubCategories = () => {
                             onClick={openAddCategoryModal}
                             className="bg-blue-500 text-white px-4 py-2 rounded-md text-sm"
                             >
-                            Add New Category
+                            Add Sub Category
                             </button>
                             <input
                             type="text"
@@ -280,7 +278,7 @@ const SubCategories = () => {
                         </div>
 
                         <div className="mt-8">
-                            <h2 className="text-2xl font-semibold mb-4">Category List</h2>
+                            <h2 className="text-2xl font-semibold mb-4">Sub Category List</h2>
                             <div className="flex flex-wrap w-full mb-[-24px]">
                             <div className="w-full px-[12px] mb-[24px]">
                                 <div className="bb-table border-none border-[1px] md:border-solid border-[#eee] rounded-none md:rounded-[20px] overflow-hidden max-[1399px]:overflow-y-auto aos-init aos-animate" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="400">
