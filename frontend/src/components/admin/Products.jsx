@@ -71,30 +71,7 @@ const Products = () => {
         console.error("Error fetching products:", error);
         setErrorMessage(error.message || "Failed to fetch products.");
       }
-    };
-    
-    const fetchVariantByProduct = async (id) => {
-      if (!id) return;
-      try {
-        const data = await ProductService.getVariantByProductID(id);
-        console.log('Fetched Variants Data:', data);
-        
-        setVariants((prev) => {
-          console.log('Previous Variants:', prev);
-          console.log('Setting New Variants:', data);
-          return data;
-        });
-      } catch (error) {
-        console.error("Error fetching variants:", error);
-        setErrorMessage(error?.message || "Failed to fetch variants.");
-      }
-    };
-    
-    useEffect(() => {
-      console.log('Updated variants:', variants);
-    }, [variants]);
-    
-    
+    };    
   
     useEffect(() => {
       fetchSubCategories();
@@ -189,7 +166,6 @@ const Products = () => {
   const handleEditProduct = async (product) => {
       if (!product) return;
       // Using useEffect will capture when `editProduct` updates
-      fetchVariantByProduct(product._id);
       console.log('product', product);
       setEditProduct(product); // Update state asynchronously
       setIsAddEditModalOpen(true); // Open modal after fetching variants
@@ -285,7 +261,7 @@ const Products = () => {
                             className="modal-content"
                             overlayClassName="modal-overlay"
                         >
-                            <ProductForm product={editProduct} categories={categories} subCategories={subCategories} variants={variants} onSave={handleAddProduct} />
+                            <ProductForm product={editProduct} categories={categories} subCategories={subCategories} onSave={handleAddProduct} />
                         </Modal>
 
                         <Modal
@@ -360,16 +336,41 @@ const Products = () => {
                                                   <div>   
                                                       <span className="ml-[10px] block font-Poppins text-[14px] font-semibold leading-[24px] tracking-[0.03rem] text-secondary">{product.name ?? ''}</span>
                                                       <span className="ml-[10px] block font-Poppins text-[12px] font-normal leading-[16px] tracking-[0.03rem] text-secondary">{product.description ?? ''}</span>
-                                                      <div className='px-2'>
-                                                      {Array.from({ length: 5 }).map((_, index) => (
-                                                      <i
-                                                          key={index}
-                                                          className={`ri-star-fill float-left text-[15px] mr-[3px] ${
-                                                          index < product.rating ? 'text-[#e7d52e]' : 'text-[#777]'
-                                                          }`}
-                                                      ></i>
-                                                      ))}
-                                                      </div>
+                                                      { product.category_id && (
+                                                        <span className="ml-[10px] block font-Poppins text-[12px] font-normal leading-[16px] tracking-[0.03rem] text-secondary">Category: {product.category_id.name ?? ''}</span>
+                                                      )}
+                                                      { product.subcategory_id && (
+                                                        <span className="ml-[10px] block font-Poppins text-[12px] font-normal leading-[16px] tracking-[0.03rem] text-secondary">Sub Category: {product.subcategory_id.name ?? ''}</span>
+                                                      )}
+                                                      { product.variants && product.variants.length > 0 && (() => {
+                                                          let names = '';
+                                                          
+                                                          product.variants.forEach((variant, index) => {
+                                                              if (index === 0) {
+                                                                  names = variant.variant_name;
+                                                              } else {
+                                                                  names += ', ' + variant.variant_name;
+                                                              }
+                                                          });
+
+                                                          return (
+                                                              <span className="ml-[10px] block font-Poppins text-[12px] font-normal leading-[16px] tracking-[0.03rem] text-secondary">
+                                                                  Variants: {names}
+                                                              </span>
+                                                          );
+                                                      })()}
+                                                      { product.is_review === true && (
+                                                        <div className='px-2'>
+                                                        {Array.from({ length: 5 }).map((_, index) => (
+                                                        <i
+                                                            key={index}
+                                                            className={`ri-star-fill float-left text-[15px] mr-[3px] ${
+                                                            index < product.rating ? 'text-[#e7d52e]' : 'text-[#777]'
+                                                            }`}
+                                                        ></i>
+                                                        ))}
+                                                        </div>
+                                                      )}
                                                   </div>
                                               </div>
                                           </td>

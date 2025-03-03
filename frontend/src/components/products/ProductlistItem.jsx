@@ -114,7 +114,14 @@ function ProductlistItem({ type, product, filter }) {
           {product.name}
         </h5>
       </Link>
+      { product.is_variant !== true ? (
       <div className="product-price text-secondary text-sm font-bold">Rs {product.price}</div>
+      ) :
+      (
+        <div className="product-price text-secondary text-xs font-bold">Price Start Rs {product.variants[0].price}</div>
+      )
+      }
+      { product.is_review === true && (
       <div className="product-rating text-secondary text-xs font-medium mb-1">
       {
         Array.from({ length: 5 }).map((_, index) => (
@@ -128,6 +135,8 @@ function ProductlistItem({ type, product, filter }) {
       }
        / {product.rating || "N/A"}
       </div>
+      )}
+      { product.is_variant !== true ? (
       <div className="product-cart flex flex-row">
         <div className="product-cart-qtysec flex flex-row w-[75%] md:w-[50%]">
           <button className="w-1/3" onClick={handleIncrement}>
@@ -166,6 +175,26 @@ function ProductlistItem({ type, product, filter }) {
           )}
         </div>
       </div>
+      ):
+      (
+        <Link to={`/product/${product._id}`} className="no-underline text-black">
+        <h5
+          style={{
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            display: "-webkit-box",
+            WebkitLineClamp: 1,
+            WebkitBoxOrient: "vertical",
+            fontSize: "14px",
+            color: "#fff",
+          }}
+          className="w-max flex bg-primary p-[4px] mt-2 px-4 rounded-md"
+        >
+          Select Options
+        </h5>
+      </Link>
+      )
+      }
     </div>
   );
 }

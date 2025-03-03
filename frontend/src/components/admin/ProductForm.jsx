@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Select from "react-select";
 
-const ProductForm = ({ product, categories, subCategories, variants, onSave }) => {
+const ProductForm = ({ product, categories, subCategories, onSave }) => {
 
   const [productData, setProductData] = useState({
     _id: product?._id || "",
@@ -18,12 +18,12 @@ const ProductForm = ({ product, categories, subCategories, variants, onSave }) =
       height: product?.dimensions?.height || "",
     },
     tags: Array.isArray(product?.tags) ? product.tags : (product?.tags ? JSON.parse(product.tags) : []),
-    category_id: product?.category_id || "",
-    subcategory_id: product?.subcategory_id || "",
+    category_id: product?.category_id?._id || "",
+    subcategory_id: product?.subcategory_id?._id || "",
     product_img: null,
     gallery_imgs: [],
     is_variant: product?.is_variant || false,
-    variants: variants ?? [],
+    variants: product.variants ?? [],
   });
 
   console.log('productData',productData);
