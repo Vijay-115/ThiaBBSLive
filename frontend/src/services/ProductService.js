@@ -28,6 +28,44 @@ export const ProductService = {
       }
   },
 
+  async getProductCategoryID(id) {
+    try {
+      const response = await api.get(`${BASE_PRODUCTS_URL}/category/${id}`);
+      console.log("Fetched Product:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error in getProductID:", error);
+      throw new Error(error.response?.data?.message || "Failed to fetch product.");
+    }
+  },
+
+  async getProductFilter(filters) {
+    try {
+      const queryParams = new URLSearchParams();
+
+      if (filters.categories.length) {
+        queryParams.append("categories", filters.categories.join(","));
+      }
+      if (filters.colors.length) {
+        queryParams.append("colors", filters.colors.join(","));
+      }
+      if (filters.tags.length) {
+        queryParams.append("tags", filters.tags.join(","));
+      }
+      if (filters.priceRange) {
+        queryParams.append("minPrice", filters.priceRange.min);
+        queryParams.append("maxPrice", filters.priceRange.max);
+      }
+  
+      const response = await api.get(`${BASE_PRODUCTS_URL}/filter?${queryParams.toString()}`);
+      console.log("Filtered Products:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      throw new Error(error.response?.data?.message || "Failed to fetch products.");
+    }
+  },
+
   async createProduct(product) {
     try {
       const response = await api.post(BASE_PRODUCTS_URL, product, {

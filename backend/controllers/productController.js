@@ -176,6 +176,78 @@ exports.getProductById = async (req, res) => {
     }
 };
 
+// READ: Get products by category_id
+exports.getProductsByCategoryId = async (req, res) => {
+    try {
+        const { categoryId } = req.params; // Get category ID from request params
+
+        const products = await Product.find({
+            $or: [
+              { category_id: categoryId }, 
+              { subcategory_id: categoryId }
+            ]
+          }).populate('category_id subcategory_id variants seller_id');
+
+        if (!products || products.length === 0) {
+            return res.status(404).json({ message: 'No products found for this category' });
+        }
+
+        res.status(200).json(products);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+// READ: Get products by filters
+exports.getProductByFilter = async (req, res) => {
+    try {
+        const { categories, colors, tags, minPrice, maxPrice } = req.query;
+
+        let filterConditions = {};
+
+        // Filter by categories
+        if (categories) {
+            const categoryArray = categories.split(",").map(id => id.trim());
+            filterConditions.category_id = { $in: categoryArray };
+        }
+
+        // Filter by colors
+        if (colors) {
+            const colorArray = colors.split(",").map(color => color.trim());
+            filterConditions.color = { $in: colorArray };
+        }
+
+        // Filter by tags
+        if (tags) {
+            const tagArray = tags.split(",").map(tag => tag.trim());
+            filterConditions.tags = { $in: tagArray };
+        }
+
+        // Filter by price range
+        if (minPrice || maxPrice) {
+            filterConditions.price = {};
+            if (minPrice) filterConditions.price.$gte = parseFloat(minPrice);
+            if (maxPrice) filterConditions.price.$lte = parseFloat(maxPrice);
+        }
+
+        console.log('Filter Conditions:', filterConditions);
+
+        // Fetch filtered products
+        const products = await Product.find(filterConditions)
+            .populate("category_id subcategory_id variants seller_id");
+
+        if (!products.length) {
+            return res.status(404).json({ message: "No products found matching the filters." });
+        }
+
+        res.status(200).json(products);
+    } catch (err) {
+        console.error("Error fetching products:", err);
+        res.status(500).json({ message: err.message });
+    }
+};
+
+
 exports.getNearbySellerProducts = async (req, res) => {
     try {
         const token = req.headers.authorization?.split(" ")[1];

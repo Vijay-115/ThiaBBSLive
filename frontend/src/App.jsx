@@ -10,6 +10,7 @@ import HomePage from './components/pages/HomePage';
 import FooterTop from './components/layout/FooterTop'; 
 import SingleProductPage from './components/pages/SingleProductPage'; 
 import ProductsCategoryPage from './components/pages/ProductsCategoryPage'; 
+import ProductsSubCategoryPage from './components/pages/ProductsSubCategoryPage'; 
 import CartPage from './components/pages/CartPage';  
 import Login from './components/auth/Login'; 
 import Register from './components/auth/Register'; 
@@ -66,6 +67,7 @@ function App() {
         <Route path="/" element={<HomePage />} />                 
         <Route path="/product/:id" element={<SingleProductPage />} />                 
         <Route path="/product/category/:category" element={<ProductsCategoryPage />} />                 
+        <Route path="/product/subcategory/:subcategory" element={<ProductsSubCategoryPage />} />                 
         <Route path="/cart" element={<CartPage />} />                 
         <Route path="/login" element={<Login />} />                 
         <Route path="/register" element={<Register />} />                 
