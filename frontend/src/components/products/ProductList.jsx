@@ -21,22 +21,25 @@ const CustomNextArrow = ({ onClick }) => (
 
 function ProductList({ heading, type, category, subcategory, filter, filters }) {
   const [products, setProducts] = useState([]); // Ensure products is always an array
-
+  console.log(type, category, subcategory, filter, filters);
   // Fetch products from API
   useEffect(() => {
     const fetchProducts = async () => {
       try {
           let data = [];
   
-          if (filters?.filter) {
+          if (filters?.filter  && filters !== undefined) {
               console.log("Fetching products with filters:", filters);
               data = await ProductService.getProductFilter(filters);
-          } else if(category !== null) {
+          } else if(category !== null && category !== undefined) {
               console.log("Fetching products by Category ID:", category);
               data = await ProductService.getProductCategoryID(category);
-          } else if(subcategory !== null) {
+          } else if(subcategory !== null && subcategory !== undefined) {
               console.log("Fetching products by Category ID:", subcategory);
               data = await ProductService.getProductSubCategoryID(subcategory);
+          }else{
+            console.log("Fetching all products");
+            data = await ProductService.getProducts();
           }
   
           console.log("API Response:", data);
@@ -54,7 +57,7 @@ function ProductList({ heading, type, category, subcategory, filter, filters }) 
       }
     };
     fetchProducts();
-  }, [category, filters]); // Added filters to the dependency array
+  }, [category, subcategory, filters]); // Added filters to the dependency array
 
   // Slider Settings
   const settings = {
@@ -74,10 +77,10 @@ function ProductList({ heading, type, category, subcategory, filter, filters }) 
   };
 
   return (
-    <div className="pb-6 md:pb-12 mt-10 md:mt-5 relative">
-      <h3 className="font-quicksand font-bold text-lg md:text-2xl absolute -top-[45px] left-[15px] capitalize">
-        {heading}
-      </h3>
+    <div className="pb-6 md:pb-12 mt-10 md:mt-0 relative">
+      {heading && (
+        <h3 className="font-quicksand font-bold text-lg md:text-2xl absolute -top-[45px] left-[15px] capitalize">{heading}</h3>
+      )}
       {type === "Slider" ? (
         <Slider {...settings}>
           {products?.map((product) => (

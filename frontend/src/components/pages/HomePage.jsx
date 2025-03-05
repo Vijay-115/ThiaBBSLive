@@ -16,10 +16,12 @@ function HomePage() {
     <>
         
             {/* Page Content */}
-            <div className="homepahe bbscontainer">                
+            <div className="homepage bbscontainer">                
               <HeroSection/>
               <SectionCategory/>
-              <ProductList heading="Grocery Items" type="Slider" category='groceries'/>
+              <div className='home'>
+                <ProductList heading="Grocery Items" type="Slider" />
+              </div>
               <BannerOne/>
               <Services/>
             </div>

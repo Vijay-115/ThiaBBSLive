@@ -68,6 +68,9 @@ export const ProductService = {
       if (filters.categories.length) {
         queryParams.append("categories", filters.categories.join(","));
       }
+      if (filters.subcategories.length) {
+        queryParams.append("subcategories", filters.subcategories.join(","));
+      }
       if (filters.colors.length) {
         queryParams.append("colors", filters.colors.join(","));
       }

@@ -227,7 +227,7 @@ exports.getProductsBySubCategoryId = async (req, res) => {
 // READ: Get products by filters
 exports.getProductByFilter = async (req, res) => {
     try {
-        const { categories, colors, tags, minPrice, maxPrice } = req.query;
+        const { categories, subcategories, colors, tags, minPrice, maxPrice } = req.query;
 
         let filterConditions = {};
 
@@ -235,6 +235,12 @@ exports.getProductByFilter = async (req, res) => {
         if (categories) {
             const categoryArray = categories.split(",").map(id => id.trim());
             filterConditions.category_id = { $in: categoryArray };
+        }
+
+        // Filter by subcategories
+        if (subcategories) {
+            const subcategoryArray = subcategories.split(",").map(id => id.trim());
+            filterConditions.subcategory_id = { $in: subcategoryArray };
         }
 
         // Filter by colors

@@ -48,6 +48,17 @@ function ProductFilter({filters, setFilters}) {
     }));
   };
 
+  // **Update state when category is selected**
+  const handleSubCategoryChange = (subcategoryId) => {
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      filter: true,
+      subcategories: prevFilters.subcategories.includes(subcategoryId)
+        ? prevFilters.subcategories.filter((id) => id !== subcategoryId)
+        : [...prevFilters.subcategories, subcategoryId],
+    }));
+  };
+
   // **Update state when color is selected**
   const handleColorSelect = (color) => {
     setFilters((prevFilters) => ({
@@ -157,13 +168,13 @@ function ProductFilter({filters, setFilters}) {
                   <label className="bb-sidebar-block-item relative flex items-center cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={filters?.categories?.includes(subcategory._id)}
-                      onChange={() => handleCategoryChange(subcategory._id)}
+                      checked={filters?.subcategories?.includes(subcategory._id)}
+                      onChange={() => handleSubCategoryChange(subcategory._id)}
                       className="hidden" // Hide the default checkbox style
                     />
                     <span className="checked flex-shrink-0 h-[18px] w-[18px] bg-[#fff] border-[1px] border-solid border-[#eee] rounded-[5px] overflow-hidden mr-[12px] flex items-center justify-center">
                       <svg
-                        className={`${filters?.categories?.includes(subcategory._id) ? '' : 'hidden'} w-[12px] h-[12px] text-[#424e82]`}
+                        className={`${filters?.subcategories?.includes(subcategory._id) ? '' : 'hidden'} w-[12px] h-[12px] text-[#424e82]`}
                         fill="currentColor"
                         viewBox="0 0 16 16"
                       >
