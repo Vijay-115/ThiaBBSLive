@@ -70,12 +70,21 @@ exports.getWishlist = async (req, res) => {
         }
 
         // Find the wishlist by user_id
-        let wishlist = await Wishlist.findOne({ user_id: userId }).populate('products.product_id', 'name price'); // Populate product details
+        let wishlist = await Wishlist.findOne({ user_id: userId })
+        .populate({
+            path: 'products.product_id',
+            populate: [
+            { path: 'category_id' }, // Correct field name for Category
+            { path: 'subcategory_id' }, // Correct field name for Subcategory
+            { path: 'variants' } // This is fine since you have `variants` in schema
+            ]
+        });
+
 
         if (!wishlist) {
             return res.status(404).json({ message: "Wishlist not found" });
         }
-
+        console.log('wishlist',wishlist);
         res.status(200).json(wishlist);
     } catch (error) {
         console.error("Error retrieving wishlist:", error);

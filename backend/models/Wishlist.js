@@ -8,7 +8,7 @@ const WishlistSchema = new mongoose.Schema({
     user_id: ObjectId, // ID of the user owning the wishlist (reference to Users collection)
     products: [
       {
-        product_id: ObjectId, // Product ID (reference to Products collection)
+        product_id: { type: ObjectId, ref: 'Product', required: true }, // Product ID (reference to Products collection)
       },
     ], // List of product IDs in the wishlist
     created_at: { type: Date, default: Date.now }, // Wishlist creation date
