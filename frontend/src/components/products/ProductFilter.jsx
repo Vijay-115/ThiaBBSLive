@@ -6,6 +6,7 @@ import { ProductService } from "../../services/ProductService";
 function ProductFilter({filters, setFilters}) {
   const dispatch = useDispatch();
   const [categories, setCategories] = useState([]);
+  const [tags, setTags] = useState([]);
   const [mobileFilter, setMobileFilter] = useState(false);
 
   // Fetch categories from API
@@ -20,6 +21,21 @@ function ProductFilter({filters, setFilters}) {
     };
     fetchCategories();
   }, []);
+
+  // Fetch categories from API
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const data = await ProductService.getProductTags();
+        setTags(data.tags);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+    fetchTags();
+  }, []);
+
+  console.log('tags',tags);
 
   // **Update state when category is selected**
   const handleCategoryChange = (categoryId) => {
@@ -102,10 +118,10 @@ function ProductFilter({filters, setFilters}) {
       >
         {/* **Category Section** */}
         <div className="bb-sidebar-block p-[20px] border-b-[1px] border-solid border-[#eee]">
-          <h3 className="text-[18px] font-bold">Category</h3>
+          <h3 className="text-[18px] font-bold mb-2">Category</h3>
           <ul>
             {categories?.map((category) => (
-                <li key={category?._id} className="relative block mb-[14px]">
+                <li key={category?._id} className="relative block mb-[8px]">
                 <label className="bb-sidebar-block-item relative flex items-center cursor-pointer">
                     <input
                     type="checkbox"
@@ -131,29 +147,39 @@ function ProductFilter({filters, setFilters}) {
             </ul>
         </div>
 
-        {/* **Color Section** */}
+        {/* **SubCategory Section** */}
         <div className="bb-sidebar-block p-[20px] border-b-[1px] border-solid border-[#eee]">
-          <h3 className="text-[18px] font-bold">Color</h3>
-          <ul className="flex">
-            {["#c4d6f9", "#ff748b"].map((color) => (
-              <li
-                key={color}
-                className="p-[2px] rounded-[20px] cursor-pointer mr-[5px] w-[26px] h-[26px]"
-              >
-                <span
-                  className="w-[22px] h-[22px] block rounded-[20px]"
-                  style={{
-                    backgroundColor: color,
-                    border: filters?.colors?.includes(color)
-                      ? "2px solid #6c7fd8"
-                      : "none",
-                  }}
-                  onClick={() => handleColorSelect(color)}
-                ></span>
-              </li>
-            ))}
+          <h3 className="text-[18px] font-bold mb-2">Sub Category</h3>
+          <ul>
+            {categories?.map((category) =>
+              category?.subcategories?.map((subcategory) => (
+                <li key={subcategory._id} className="relative block mb-[8px]">
+                  <label className="bb-sidebar-block-item relative flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={filters?.categories?.includes(subcategory._id)}
+                      onChange={() => handleCategoryChange(subcategory._id)}
+                      className="hidden" // Hide the default checkbox style
+                    />
+                    <span className="checked flex-shrink-0 h-[18px] w-[18px] bg-[#fff] border-[1px] border-solid border-[#eee] rounded-[5px] overflow-hidden mr-[12px] flex items-center justify-center">
+                      <svg
+                        className={`${filters?.categories?.includes(subcategory._id) ? '' : 'hidden'} w-[12px] h-[12px] text-[#424e82]`}
+                        fill="currentColor"
+                        viewBox="0 0 16 16"
+                      >
+                        <path d="M13.485 3.657l-7.071 7.071-3.182-3.182-.707.707 3.889 3.889 7.778-7.778z" />
+                      </svg>
+                    </span>
+                    <span className="text-[#777] text-[14px] leading-[20px] font-normal capitalize">
+                      {subcategory?.name}
+                    </span>
+                  </label>
+                </li>
+              ))
+            )}
           </ul>
         </div>
+
 
         {/* **Price Range Section** */}
         <div className="bb-sidebar-block p-[20px] border-b-[1px] border-solid border-[#eee]">
@@ -171,7 +197,7 @@ function ProductFilter({filters, setFilters}) {
         <div className="bb-sidebar-block p-[20px]">
           <h3 className="text-[18px] font-bold">Tags</h3>
           <ul className="flex flex-wrap">
-            {["Clothes", "Fruits"].map((tag) => (
+            {tags?.map((tag) => (
               <li
                 key={tag}
                 className={`p-[5px] border rounded-[10px] cursor-pointer m-[5px] ${

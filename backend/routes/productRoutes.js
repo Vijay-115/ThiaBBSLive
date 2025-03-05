@@ -11,7 +11,9 @@ router.get('/', productController.getAllProducts);
 
 // READ: Get a single product by ID
 router.get("/filter", productController.getProductByFilter);
+router.get("/tags", productController.getAllProductTags);
 router.get('/category/:categoryId', productController.getProductsByCategoryId);
+router.get('/subcategory/:subcategoryId', productController.getProductsBySubCategoryId);
 router.get('/:id', productController.getProductById);
 
 // Update product with image upload

@@ -163,6 +163,19 @@ exports.getAllProducts = async (req, res) => {
     }
 };
 
+exports.getAllProductTags = async (req, res) => {
+    try {
+        const products = await Product.find({}, 'tags'); // Get only the tags field
+
+        // Flatten and filter unique tags
+        const uniqueTags = [...new Set(products.flatMap(product => product.tags))];
+
+        res.status(200).json({ tags: uniqueTags });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
 // READ: Get a single product by product_id
 exports.getProductById = async (req, res) => {
     try {
@@ -181,12 +194,7 @@ exports.getProductsByCategoryId = async (req, res) => {
     try {
         const { categoryId } = req.params; // Get category ID from request params
 
-        const products = await Product.find({
-            $or: [
-              { category_id: categoryId }, 
-              { subcategory_id: categoryId }
-            ]
-          }).populate('category_id subcategory_id variants seller_id');
+        const products = await Product.find({ category_id: categoryId }).populate('category_id subcategory_id variants seller_id');
 
         if (!products || products.length === 0) {
             return res.status(404).json({ message: 'No products found for this category' });
@@ -197,6 +205,24 @@ exports.getProductsByCategoryId = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
+
+// READ: Get products by category_id
+exports.getProductsBySubCategoryId = async (req, res) => {
+    try {
+        const { subcategoryId } = req.params; // Get category ID from request params
+
+        const products = await Product.find({ subcategory_id: subcategoryId }).populate('category_id subcategory_id variants seller_id');
+
+        if (!products || products.length === 0) {
+            return res.status(404).json({ message: 'No products found for this subcategory' });
+        }
+
+        res.status(200).json(products);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
 
 // READ: Get products by filters
 exports.getProductByFilter = async (req, res) => {

@@ -39,6 +39,28 @@ export const ProductService = {
     }
   },
 
+  async getProductSubCategoryID(id) {
+    try {
+      const response = await api.get(`${BASE_PRODUCTS_URL}/subcategory/${id}`);
+      console.log("Fetched SubCategory Product:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error in getProductSubCategoryID:", error);
+      throw new Error(error.response?.data?.message || "Failed to fetch product.");
+    }
+  },
+
+  async getProductTags() {
+    try {
+      const response = await api.get(`${BASE_PRODUCTS_URL}/tags`);
+      console.log("Fetched Product Based Tags:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error in getProductID:", error);
+      throw new Error(error.response?.data?.message || "Failed to fetch product.");
+    }
+  },
+
   async getProductFilter(filters) {
     try {
       const queryParams = new URLSearchParams();

@@ -19,7 +19,7 @@ const CustomNextArrow = ({ onClick }) => (
   </button>
 );
 
-function ProductList({ heading, type, category, filter, filters }) {
+function ProductList({ heading, type, category, subcategory, filter, filters }) {
   const [products, setProducts] = useState([]); // Ensure products is always an array
 
   // Fetch products from API
@@ -31,9 +31,12 @@ function ProductList({ heading, type, category, filter, filters }) {
           if (filters?.filter) {
               console.log("Fetching products with filters:", filters);
               data = await ProductService.getProductFilter(filters);
-          } else {
+          } else if(category !== null) {
               console.log("Fetching products by Category ID:", category);
               data = await ProductService.getProductCategoryID(category);
+          } else if(subcategory !== null) {
+              console.log("Fetching products by Category ID:", subcategory);
+              data = await ProductService.getProductSubCategoryID(subcategory);
           }
   
           console.log("API Response:", data);
