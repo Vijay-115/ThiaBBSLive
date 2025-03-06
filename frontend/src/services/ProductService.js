@@ -28,6 +28,69 @@ export const ProductService = {
       }
   },
 
+  async getProductCategoryID(id) {
+    try {
+      const response = await api.get(`${BASE_PRODUCTS_URL}/category/${id}`);
+      console.log("Fetched Product:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error in getProductID:", error);
+      throw new Error(error.response?.data?.message || "Failed to fetch product.");
+    }
+  },
+
+  async getProductSubCategoryID(id) {
+    try {
+      const response = await api.get(`${BASE_PRODUCTS_URL}/subcategory/${id}`);
+      console.log("Fetched SubCategory Product:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error in getProductSubCategoryID:", error);
+      throw new Error(error.response?.data?.message || "Failed to fetch product.");
+    }
+  },
+
+  async getProductTags() {
+    try {
+      const response = await api.get(`${BASE_PRODUCTS_URL}/tags`);
+      console.log("Fetched Product Based Tags:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error in getProductID:", error);
+      throw new Error(error.response?.data?.message || "Failed to fetch product.");
+    }
+  },
+
+  async getProductFilter(filters) {
+    try {
+      const queryParams = new URLSearchParams();
+
+      if (filters.categories.length) {
+        queryParams.append("categories", filters.categories.join(","));
+      }
+      if (filters.subcategories.length) {
+        queryParams.append("subcategories", filters.subcategories.join(","));
+      }
+      if (filters.colors.length) {
+        queryParams.append("colors", filters.colors.join(","));
+      }
+      if (filters.tags.length) {
+        queryParams.append("tags", filters.tags.join(","));
+      }
+      if (filters.priceRange) {
+        queryParams.append("minPrice", filters.priceRange.min);
+        queryParams.append("maxPrice", filters.priceRange.max);
+      }
+  
+      const response = await api.get(`${BASE_PRODUCTS_URL}/filter?${queryParams.toString()}`);
+      console.log("Filtered Products:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      throw new Error(error.response?.data?.message || "Failed to fetch products.");
+    }
+  },
+
   async createProduct(product) {
     try {
       const response = await api.post(BASE_PRODUCTS_URL, product, {

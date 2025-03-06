@@ -6,10 +6,15 @@ import { updateQuantity, removeFromCart, fetchCartItems } from '../../slice/cart
 function CartPopup({ cartPopup, setCartPopup }) {
     const dispatch = useDispatch();
     useEffect(() => {
-        dispatch(fetchCartItems());
+        dispatch(fetchCartItems()); // Fetch cart items when the component mounts
     }, [dispatch]);
+    
     const navigate = useNavigate();  // Initialize useNavigate hook
-     const cartItems = useSelector((state) => state.cart.items);
+    const cartItems = useSelector((state) => state.cart.items);
+
+    useEffect(() => {
+        dispatch(fetchCartItems()); // Fetch updated cart items whenever cart changes
+    }, [cartItems]);
     
         const cartTotal = Object.values(cartItems).reduce(
             (total, item) => total + (item.quantity * (item.variant ? item.variant.price : item.product.price) || 0),
