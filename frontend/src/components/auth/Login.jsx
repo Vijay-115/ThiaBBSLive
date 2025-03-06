@@ -67,14 +67,14 @@ const Login = () => {
                         className="bg-gradient-to-r from-logoSecondary to-logoPrimary rounded-[26px] m-4"
                     >
                         <div
-                            className="border-[20px] border-transparent rounded-[20px] dark:bg-gray-900 bg-white shadow-lg xl:p-10 2xl:p-10 lg:p-10 md:p-10 sm:p-2 m-2"
+                            className="border-[20px] border-transparent rounded-[20px] dark:bg-gray-900 bg-white shadow-lg xl:p-5 2xl:p-5 lg:p-5 md:p-5 sm:p-2 m-2"
                         >
-                            <h1 className="pt-8 pb-6 font-bold dark:text-gray-400 text-5xl text-center cursor-default">
+                            <h1 className="pt-8 pb-6 font-bold dark:text-gray-400 text-3xl text-center cursor-default">
                                 Log in
                             </h1>
                             <form onSubmit={handleLoginSubmit} className="space-y-4">
                                 <div>
-                                    <label htmlFor="email" className="mb-2  dark:text-gray-400 text-lg">Email</label>
+                                    <label htmlFor="email" className="mb-2  dark:text-gray-400 text-md">Email</label>
                                     <input
                                         id="email"
                                         name="lemail"
@@ -87,7 +87,7 @@ const Login = () => {
                                     {errors.lemail && <div className="text-red-800">{errors.lemail}</div>}
                                 </div>
                                 <div>
-                                    <label htmlFor="password" className="mb-2 dark:text-gray-400 text-lg">Password</label>
+                                    <label htmlFor="password" className="mb-2 dark:text-gray-400 text-md">Password</label>
                                     <input
                                         id="password"
                                         name="lpassword"
