@@ -1,19 +1,10 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
-
-// Explicitly import ObjectId from mongoose.Schema.Types
-const { ObjectId } = mongoose.Schema.Types;
+const mongoose = require("mongoose");
 
 const WishlistSchema = new mongoose.Schema({
-    user_id: ObjectId, // ID of the user owning the wishlist (reference to Users collection)
-    products: [
-      {
-        product_id: { type: ObjectId, ref: 'Product', required: true }, // Product ID (reference to Products collection)
-      },
-    ], // List of product IDs in the wishlist
-    created_at: { type: Date, default: Date.now }, // Wishlist creation date
-    updated_at: { type: Date, default: Date.now }, // Last updated date
-});
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, // Reference to User
+    product: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true }, // Reference to Product
+    wishlist_id: { type: String, unique: true, default: function() { return new mongoose.Types.ObjectId().toString(); } }
+}, { timestamps: true }); // Automatically manages created_at and updated_at
 
-const Wishlist = mongoose.model('Wishlist', WishlistSchema);
+const Wishlist = mongoose.model("Wishlist", WishlistSchema);
 module.exports = Wishlist;

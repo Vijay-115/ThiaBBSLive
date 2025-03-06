@@ -63,8 +63,8 @@ export const clearWishlist = createAsyncThunk("wishlist/clearWishlist", async (_
 const wishlistSlice = createSlice({
     name: "wishlist",
     initialState: {
-        items: [], // List of items in the wishlist
-        status: "idle", // "idle" | "loading" | "succeeded" | "failed"
+        items: [], // ✅ Ensure it's an array
+        status: "idle",
         error: null,
     },
     reducers: {},
@@ -75,18 +75,15 @@ const wishlistSlice = createSlice({
             })
             .addCase(fetchWishlistItems.fulfilled, (state, action) => {
                 state.status = "succeeded";
-                state.items = action.payload;
+                state.items = action.payload || []; // Ensure items is always an array
             })
             .addCase(fetchWishlistItems.rejected, (state, action) => {
                 state.status = "failed";
                 state.error = action.payload;
             })
             .addCase(addToWishlist.fulfilled, (state, action) => {
-                const { product } = action.payload;
-                // Check if the product already exists in the wishlist
-                if (!state.items.some(item => item.product._id === product._id)) {
-                    state.items.push(action.payload);
-                }
+                state.status = "succeeded";
+                state.items = action.payload;
             })
             .addCase(removeFromWishlist.fulfilled, (state, action) => {
                 state.items = state.items.filter(

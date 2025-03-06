@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux"; // Import Redux hooks
 import { Link } from "react-router-dom"; // Import Link for navigation
 import { addToCart, removeFromCart, updateQuantity, fetchCartItems } from "../../slice/cartSlice";
 import toast from 'react-hot-toast';
-import { addToWishlist, removeFromWishlist } from "../../slice/wishlistSlice";
+import { addToWishlist, removeFromWishlist,fetchWishlistItems } from "../../slice/wishlistSlice";
 
 function ProductlistItem({ type, product, filter }) {
   const [quantities, setQuantities] = useState({}); // State to manage product quantities
@@ -12,8 +12,17 @@ function ProductlistItem({ type, product, filter }) {
   const wishlistItems = useSelector((state) => state.wishlist.items); // Get wishlist items from Redux state
 
   useEffect(() => {
-    dispatch(fetchCartItems());
+    dispatch(fetchCartItems());  
+    dispatch(fetchWishlistItems());
   }, [dispatch]);
+
+  useEffect(() => {
+    dispatch(fetchCartItems());  
+  }, [cartItems]);
+
+  useEffect(() => {
+      console.log("wishlistItems:", wishlistItems); // Debugging
+  }, [wishlistItems]);
 
   // Handle increment
   const handleIncrement = () => {
@@ -68,18 +77,24 @@ function ProductlistItem({ type, product, filter }) {
   };
 
   // Handle adding to cart
-  const handleToggleWishlist = (id) => {
+  const handleToggleWishlist = (productId) => {
     const existingCartItem = Object.values(wishlistItems).find(
-        (item) => item.product._id === id
+        (item) => item?.product?._id === productId
     );
+    
     if (existingCartItem) {
-        dispatch(removeFromWishlist( {productId: id} )); // Pass productId as part of an object
+        dispatch(removeFromWishlist(productId)).then(() => {
+            dispatch(fetchWishlistItems());
+        });
         toast.error(`${product.name} Removed from Wishlist!`);
     } else {
-        dispatch(addToWishlist({ productId: id }));
+        dispatch(addToWishlist({ productId })).then(() => {
+            dispatch(fetchWishlistItems());
+        });
         toast.success(`${product.name} added to Wishlist!`);
     }
   };
+
 
   return (
     <div

@@ -9,7 +9,7 @@ function WishlistPage() {
         dispatch(fetchWishlistItems());
     }, [dispatch]);
     
-    const wishlistItems = useSelector((state) => state.wishlist.items);
+    const wishlistItems = useSelector((state) => state.wishlist.items || []);
 
     useEffect(() => {
         console.log("wishlistItems:", wishlistItems); // Debugging
@@ -50,20 +50,20 @@ function WishlistPage() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                    {Object.values(wishlistItems.products).map(({ product_id }) => (
-                                        <tr key={product_id?._id} className="border-b-[1px] border-solid border-[#eee]">
+                                    {Object.values(wishlistItems).map(({ product }) => (
+                                        <tr key={product?._id} className="border-b-[1px] border-solid border-[#eee]">
                                             <td className="p-[12px]">
                                                 <div className="Product-wishlist flex items-center">
-                                                    <img src={import.meta.env.VITE_API_URL+''+product_id?.product_img ?? ''} alt={product_id?.name} className="w-[70px] border-[1px] border-solid border-[#eee] rounded-[10px]"/>
+                                                    <img src={import.meta.env.VITE_API_URL+''+product?.product_img ?? ''} alt={product?.name} className="w-[70px] border-[1px] border-solid border-[#eee] rounded-[10px]"/>
                                                     <div>   
-                                                        <span className="ml-[10px] block font-Poppins text-[14px] font-semibold leading-[24px] tracking-[0.03rem] text-secondary">{product_id?.name}</span>
-                                                        <span className="ml-[10px] block font-Poppins text-[12px] font-normal leading-[16px] tracking-[0.03rem] text-secondary">{product_id?.description}</span>
+                                                        <span className="ml-[10px] block font-Poppins text-[14px] font-semibold leading-[24px] tracking-[0.03rem] text-secondary">{product?.name}</span>
+                                                        <span className="ml-[10px] block font-Poppins text-[12px] font-normal leading-[16px] tracking-[0.03rem] text-secondary">{product?.description}</span>
                                                         <div className='px-2'>
                                                         {Array.from({ length: 5 }).map((_, index) => (
                                                         <i
                                                             key={index}
                                                             className={`ri-star-fill float-left text-[15px] mr-[3px] ${
-                                                            index < product_id?.rating ? 'text-[#e7d52e]' : 'text-[#777]'
+                                                            index < product?.rating ? 'text-[#e7d52e]' : 'text-[#777]'
                                                             }`}
                                                         ></i>
                                                         ))}
@@ -73,7 +73,7 @@ function WishlistPage() {
                                             </td>
                                             <td className="p-[12px]">
                                                 <div className="pro-remove mx-auto">
-                                                    <button className='block mx-auto' onClick={()=>{console.log('ID - ',product_id?._id); handleRemovewishlist(product_id?._id)}}>
+                                                    <button className='block mx-auto' onClick={()=>{console.log('ID - ',product?._id); handleRemovewishlist(product?._id)}}>
                                                         <i className="ri-heart-fill transition-all duration-[0.3s] ease-in-out text-[20px] text-primary hover:text-[#ff0000]"></i>
                                                     </button>
                                                 </div>
