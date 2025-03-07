@@ -1,6 +1,14 @@
 const Order = require('../models/Order');
 const Variant = require('../models/Variant');
 const Product = require('../models/Product');
+import Razorpay from "razorpay";
+import crypto from "crypto";
+
+// Razorpay Instance
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET
+});
 
 exports.createOrder = async (req, res) => {
   try {
@@ -51,9 +59,16 @@ exports.createOrder = async (req, res) => {
       }
     }
 
+    const options = {
+      amount: totalAmount * 100, // Convert to paise
+      currency: "INR",
+      receipt: `receipt_${Date.now()}`
+    };
+    const order = await razorpay.orders.create(options);
+
     // Create new order
     const newOrder = new Order({
-      order_id: `ORD-${Date.now()}`,
+      order_id: order.id, // `ORD-${Date.now()}`
       user_id,
       orderItems: formattedOrderItems,
       total_price: totalAmount,
@@ -71,6 +86,33 @@ exports.createOrder = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error creating order', error: error.message });
   }
 };
+
+exports.verifyPayment = async (req, res) => {
+  try {
+      const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+      const order = await Order.findOne({ orderId: razorpay_order_id });
+
+      if (!order) {
+          return res.status(400).json({ success: false, message: "Order not found" });
+      }
+
+      const hmac = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET);
+      hmac.update(razorpay_order_id + "|" + razorpay_payment_id);
+      const generatedSignature = hmac.digest("hex");
+
+      if (generatedSignature === razorpay_signature) {
+          order.payment_details.payment_id = razorpay_payment_id;
+          order.payment_details.payment_status = "Paid";
+          order.status = "Paid";
+          await order.save();
+          res.json({ success: true, message: "Payment successful" });
+      } else {
+          res.status(400).json({ success: false, message: "Invalid signature" });
+      }
+  } catch (error) {
+      res.status(500).json({ success: false, message: error.message });
+  }
+}
 
 // Get all orders with user and product details
 exports.getAllOrders = async (req, res) => {
