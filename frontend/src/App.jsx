@@ -28,6 +28,7 @@ import SubCategories from './components/admin/SubCategories';
 import Orders from './components/admin/Orders';  
 import MyAccount from './components/auth/MyAccount';
 import Seller from './components/admin/Seller';
+import Vendor from './components/admin/Vendor';
 
 const AdminRoutes = () => (     
   <ProtectedRoute requiredRole="admin">         
@@ -52,7 +53,7 @@ function App() {
 
   useEffect(() => {    
     const checkHeaderFooter = () => {     
-      const excludeHeaderFooterRoutes = ['/admin/dashboard', '/admin/products', '/admin/orders'];      
+      const excludeHeaderFooterRoutes = ['/admin/dashboard', '/admin/products', '/admin/orders', '/admin/products/categories', '/admin/products/subcategories', '/admin/seller', '/admin/vendor'];
       setShouldRenderHeaderFooter(!excludeHeaderFooterRoutes.includes(location.pathname));     
     };    
 
@@ -83,7 +84,8 @@ function App() {
           <Route path="products/categories" element={<Categories />} />    
           <Route path="products/subcategories" element={<SubCategories />} /> 
           <Route path="orders" element={<Orders />} />                 
-          <Route path="seller" element={<Seller />} />                 
+          <Route path="seller" element={<Seller />} />
+          <Route path="vendor" element={<Vendor />} />
         </Route>             
       </Routes>              
       {shouldRenderHeaderFooter && <FooterTop />}             

@@ -62,14 +62,14 @@ const Register = () => {
                         className="bg-gradient-to-r from-logoSecondary to-logoPrimary rounded-[26px] m-4"
                     >
                         <div
-                            className="border-[20px] border-transparent rounded-[20px] dark:bg-gray-900 bg-white shadow-lg xl:p-10 2xl:p-10 lg:p-10 md:p-10 sm:p-2 m-2"
+                            className="border-[20px] border-transparent rounded-[20px] dark:bg-gray-900 bg-white shadow-lg xl:p-5 2xl:p-5 lg:p-5 md:p-5 sm:p-2 m-2"
                         >
-                            <h1 className="pt-8 pb-6 font-bold dark:text-gray-400 text-5xl text-center cursor-default">
+                            <h1 className="pt-8 pb-6 font-bold dark:text-gray-400 text-3xl text-center cursor-default">
                                 Sign up
                             </h1>
                             <form className="space-y-4" onSubmit={handleRegisterSubmit}>
                                 <div>
-                                    <label htmlFor="name" className="mb-2  dark:text-gray-400 text-lg">Name</label>
+                                    <label htmlFor="name" className="mb-2  dark:text-gray-400 text-md">Name</label>
                                     <input
                                         id="name"
                                         name="name"
@@ -82,7 +82,7 @@ const Register = () => {
                                     {errors.name && <div className="text-red-800">{errors.name}</div>}
                                 </div>
                                 <div>
-                                    <label htmlFor="email" className="mb-2  dark:text-gray-400 text-lg">Email</label>
+                                    <label htmlFor="email" className="mb-2  dark:text-gray-400 text-md">Email</label>
                                     <input
                                         id="email"
                                         name="email"
@@ -95,7 +95,7 @@ const Register = () => {
                                     {errors.email && <div className="text-red-800">{errors.email}</div>}
                                 </div>
                                 <div>
-                                    <label htmlFor="phone" className="mb-2 dark:text-gray-400 text-lg">Phone</label>
+                                    <label htmlFor="phone" className="mb-2 dark:text-gray-400 text-md">Phone</label>
                                     <input
                                         id="phone"
                                         name="phone"
@@ -108,7 +108,7 @@ const Register = () => {
                                     {errors.phone && <div className="text-red-800">{errors.phone}</div>}
                                 </div>
                                 <div>
-                                    <label htmlFor="password" className="mb-2 dark:text-gray-400 text-lg">Password</label>
+                                    <label htmlFor="password" className="mb-2 dark:text-gray-400 text-md">Password</label>
                                     <input
                                         id="password"
                                         name="password"

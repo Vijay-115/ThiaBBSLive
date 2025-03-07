@@ -97,10 +97,10 @@ li {
 	margin-top: 48px;
 }
 #sidebar .side-menu li {
-	height: 55px;
+	/* height: 55px; */
 	background: transparent;
 	margin-left: 6px;
-	border-radius: 48px 0 0 48px;
+	border-radius: 25px 0 0 25px;
 	padding: 6px;
 }
 #sidebar .side-menu li.active {
@@ -131,7 +131,7 @@ li {
 }
 #sidebar .side-menu li a {
 	width: 100%;
-	height: 100%;
+	height: 45px;
 	background: var(--light);
 	display: flex;
 	align-items: center;

@@ -11,7 +11,7 @@ const generateReferralCode = () => {
 // CREATE: Add a new user
 exports.createUser = async (req, res) => {
     const { name, email, password, phone, role } = req.body;
-    console.log('Create Seller Data',req.body);
+    // console.log('Create Seller Data',req.body);
     try {
         // ✅ Check if user already exists
         let user = await User.findOne({ email });
@@ -84,29 +84,60 @@ exports.getUserById = async (req, res) => {
     }
 };
 
+// exports.getUserByRole = async (req, res) => {
+//     try {
+//         const role = req.query.role; // Get role from query parameter
+//         console.log("Requested Role:", role); // Debugging
+
+//         if (!role) {
+//             return res.status(400).json({ message: 'Role parameter is required' });
+//         }
+
+//         const users = await User.find({ role: role }).populate("userdetails"); // Ensure role is correctly filtered
+//         console.log("Filtered Users:", users); // Log the filtered users
+
+//         if (!users.length) {
+//             return res.status(404).json({ message: 'No users found with this role' });
+//         }
+
+//         res.setHeader('Cache-Control', 'no-store'); // Prevent caching
+//         return res.status(200).json(users);
+//     } catch (err) {
+//         console.error("Error Fetching Users:", err);
+//         return res.status(500).json({ message: 'Server error', error: err.message });
+//     }
+// };
+
 exports.getUserByRole = async (req, res) => {
     try {
-        const role = req.query.role; // Get role from query parameter
-        console.log("Requested Role:", role); // Debugging
+        let { role } = req.query; // Get role(s) from query parameter
+
+        console.log("Requested Roles:", role); // Debugging
 
         if (!role) {
-            return res.status(400).json({ message: 'Role parameter is required' });
+            return res.status(400).json({ message: "Role parameter is required" });
         }
 
-        const users = await User.find({ role: role }).populate("userdetails"); // Ensure role is correctly filtered
-        console.log("Filtered Users:", users); // Log the filtered users
+        // Ensure role is always an array (supporting multiple roles)
+        const roles = Array.isArray(role) ? role : role.split(",");
+
+        // Fetch users with any of the given roles
+        const users = await User.find({ role: { $in: roles } }).populate("userdetails");
+
+        console.log("Filtered Users:", users); // Debugging
 
         if (!users.length) {
-            return res.status(404).json({ message: 'No users found with this role' });
+            return res.status(404).json({ message: "No users found with the specified roles" });
         }
 
-        res.setHeader('Cache-Control', 'no-store'); // Prevent caching
+        res.setHeader("Cache-Control", "no-store"); // Prevent caching
         return res.status(200).json(users);
     } catch (err) {
         console.error("Error Fetching Users:", err);
-        return res.status(500).json({ message: 'Server error', error: err.message });
+        return res.status(500).json({ message: "Server error", error: err.message });
     }
 };
+
 
 
 // UPDATE: Update a user by id with image upload
