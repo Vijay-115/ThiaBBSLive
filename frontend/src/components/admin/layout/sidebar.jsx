@@ -1,7 +1,19 @@
-import React from "react";
-import { NavLink } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { NavLink, useLocation } from 'react-router-dom';
 
 const Sidebar = ({ isSidebarHidden, toggleSidebar }) => {
+    const location = useLocation();
+    const isProductSectionActive = ["/admin/products", "/admin/products/categories", "/admin/products/subcategories"]
+        .includes(location.pathname);
+
+    const [isProductOpen, setIsProductOpen] = useState(isProductSectionActive);
+
+    // Ensure dropdown stays open when navigating within product links
+    useEffect(() => {
+        if (isProductSectionActive) {
+            setIsProductOpen(true);
+        }
+    }, [location.pathname]);
     return (
         <>
             <section id="sidebar" className={isSidebarHidden ? 'hide' : 'show'}>
@@ -10,58 +22,74 @@ const Sidebar = ({ isSidebarHidden, toggleSidebar }) => {
                     <span className="text">BBSCart</span>
                 </NavLink>
                 <ul className="side-menu top">
-                    <li className="active">
+                    <li className={location.pathname === "/admin/dashboard" ? "active" : ""}>
                         <NavLink to="/admin/dashboard">
                             <i className="bx bxs-dashboard bx-sm" />
                             <span className="text">Dashboard</span>
                         </NavLink>
                     </li>
-                    <li>
-                        <NavLink to="/admin/products">
-                            <i className="bx bxs-shopping-bag-alt bx-sm" />
-                            <span className="text">Products</span>
-                        </NavLink>
+                    <li className={isProductSectionActive ? "active" : ""}>
+                        <a
+                            onClick={() => setIsProductOpen(!isProductOpen)}
+                            className="flex items-center justify-between rounded-lg hover:bg-blue-500 transition cursor-pointer"
+                        >
+                            <div className="flex items-center">
+                                <i className="bx bxs-shopping-bag-alt bx-sm" />
+                                <span>Products</span>
+                            </div>
+                            <i className={`bx ${isProductOpen ? "bx-chevron-up" : "bx-chevron-down"}`} />
+                        </a>
+
+                        {/* Submenu */}
+                        <ul className={`mt-2 space-y-1 transition-all ${isProductOpen ? "block" : "hidden"}`}>
+                            <li>
+                                <NavLink to="/admin/products" className="" style={location.pathname === "/admin/products" ? { backgroundColor: "#0da89c", color: "#ffffff" } : {backgroundColor: "transparent", color: "#000000"}} >
+                                    <i className="bx bxs-shopping-bag-alt bx-sm" />
+                                    <span>All Products</span>
+                                </NavLink>
+                            </li>
+                            <li className={location.pathname === "/admin/products/categories" ? "bg-blue-600 rounded-lg" : ""}>
+                                <NavLink to="/admin/products/categories" className="" style={location.pathname === "/admin/products/categories" ? { backgroundColor: "#0da89c", color: "#ffffff" } : {backgroundColor: "transparent", color: "#000000"}}>
+                                    <i className="bx bxs-category bx-sm" />
+                                    <span>Categories</span>
+                                </NavLink>
+                            </li>
+                            <li className={location.pathname === "/admin/products/subcategories" ? "bg-blue-600 rounded-lg" : ""}>
+                                <NavLink to="/admin/products/subcategories" className="" style={location.pathname === "/admin/products/subcategories" ? { backgroundColor: "#0da89c", color: "#ffffff" } : {backgroundColor: "transparent", color: "#000000"}}>
+                                    <i className="bx bxs-layer bx-sm" />
+                                    <span>SubCategories</span>
+                                </NavLink>
+                            </li>
+                        </ul>
                     </li>
                     <li>
-                        <NavLink to="/admin/products/categories">
-                            <i className="bx bxs-shopping-bag-alt bx-sm" />
-                            <span className="text">Categories</span>
-                        </NavLink>
-                    </li>
-                    <li>
-                        <NavLink to="/admin/products/subcategories">
-                            <i className="bx bxs-shopping-bag-alt bx-sm" />
-                            <span className="text">SubCategories</span>
-                        </NavLink>
-                    </li>
-                    <li>
-                        <NavLink to="/">
+                        <NavLink to="#">
                             <i className="bx bxs-doughnut-chart bx-sm" />
                             <span className="text">Customers</span>
                         </NavLink>
                     </li>
-                    <li>
+                    <li className={location.pathname === "/admin/orders" ? "active" : ""}>
                         <NavLink to="/admin/orders">
                             <i className="bx bxs-message-dots bx-sm" />
                             <span className="text">Orders</span>
                         </NavLink>
                     </li>
-                    <li>
+                    <li className={location.pathname === "/admin/seller" ? "active" : ""}>
                         <NavLink to="/admin/seller">
                             <i className="bx bxs-group bx-sm" />
                             <span className="text">Seller</span>
                         </NavLink>
-                    </li>
-                    <li>
-                        <NavLink to="/">
+                    </li>   
+                    <li className={location.pathname === "/admin/vendor" ? "active" : ""}>
+                        <NavLink to="/admin/vendor">
                             <i className="bx bxs-group bx-sm" />
-                            <span className="text">Reporting</span>
+                            <span className="text">Vendors</span>
                         </NavLink>
-                    </li>
+                    </li>                  
                 </ul>
                 <ul className="side-menu bottom">
-                    <li>
-                        <NavLink className="logout" to="#">
+                    <li onClick={() => { localStorage.clear(); window.location.reload(); }}>
+                        <NavLink className="logout">
                             <i className="bx bx-power-off bx-sm bx-burst-hover" />
                             <span className="text">Logout</span>
                         </NavLink>

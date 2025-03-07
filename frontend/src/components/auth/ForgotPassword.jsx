@@ -31,14 +31,14 @@ const Forgot = () => {
                         className="bg-gradient-to-r from-logoSecondary to-logoPrimary rounded-[26px] m-4"
                     >
                         <div
-                            className="border-[20px] border-transparent rounded-[20px] dark:bg-gray-900 bg-white shadow-lg xl:p-10 2xl:p-10 lg:p-10 md:p-10 sm:p-2 m-2"
+                            className="border-[20px] border-transparent rounded-[20px] dark:bg-gray-900 bg-white shadow-lg xl:p-5 2xl:p-5 lg:p-5 md:p-5 sm:p-2 m-2"
                         >
-                            <h1 className="pt-8 pb-6 font-bold dark:text-gray-400 text-5xl text-center cursor-default">
+                            <h1 className="pt-8 pb-6 font-bold dark:text-gray-400 text-3xl text-center cursor-default">
                                 Forgot Password
                             </h1>
                             <form  onSubmit={handleSubmit} className="space-y-4">
                                 <div>
-                                    <label htmlFor="email" className="mb-2  dark:text-gray-400 text-lg">Email</label>
+                                    <label htmlFor="email" className="mb-2  dark:text-gray-400 text-md">Email</label>
                                     <input
                                         id="email"
                                         className="border p-3 dark:bg-indigo-700 dark:text-gray-300  dark:border-gray-700 shadow-md placeholder:text-base focus:scale-105 ease-in-out duration-300 border-gray-300 rounded-lg w-full placeholder-gray-300"

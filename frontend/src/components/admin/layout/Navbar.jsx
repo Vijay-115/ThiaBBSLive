@@ -68,8 +68,8 @@ const Navbar = ({
                         <li>
                             <a href="#">Settings</a>
                         </li>
-                        <li>
-                            <a onClick={() => { localStorage.clear(); window.location.reload(); }}>Log Out</a>
+                        <li onClick={() => { localStorage.clear(); window.location.reload(); }}>
+                            <a>Log Out</a>
                         </li>
                     </ul>
                 </div>
