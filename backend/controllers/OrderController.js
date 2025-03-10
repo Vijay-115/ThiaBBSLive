@@ -1,13 +1,13 @@
-const Order = require('../models/Order');
-const Variant = require('../models/Variant');
-const Product = require('../models/Product');
-import Razorpay from "razorpay";
-import crypto from "crypto";
+const Order = require('../models/Order.js');
+const Variant = require('../models/Variant.js');
+const Product = require('../models/Product.js');
+const Razorpay = require("razorpay");
+const crypto = require("crypto");
 
 // Razorpay Instance
 const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET
+  key_id: 'rzp_test_PBsgkv7oOJWPsi',
+  key_secret: 'svYmAQ4X695zVnNtbt5kvfIR'
 });
 
 exports.createOrder = async (req, res) => {
@@ -102,8 +102,7 @@ exports.verifyPayment = async (req, res) => {
 
       if (generatedSignature === razorpay_signature) {
           order.payment_details.payment_id = razorpay_payment_id;
-          order.payment_details.payment_status = "Paid";
-          order.status = "Paid";
+          order.payment_details.payment_status = "completed";
           await order.save();
           res.json({ success: true, message: "Payment successful" });
       } else {

@@ -8,13 +8,14 @@ import toast from "react-hot-toast";
 import { fetchCartItems, removeFromCart } from '../../slice/cartSlice';
 import { getUserInfo } from '../../services/authService';
 import Button from '../layout/Button';
+import { ProductService } from '../../services/ProductService';
 
 function CheckoutPage() {
     const dispatch = useDispatch();
     const [userInfo, setUserInfo] = useState(null);
     useEffect(() => {
         dispatch(fetchCartItems());
-    }, [dispatch]);
+    }, []);
     const navigate = useNavigate();
     const cartItems = useSelector((state) => state.cart.items);
     const [cartTotal,setCartTotal] = useState(0);
@@ -43,7 +44,7 @@ function CheckoutPage() {
                 .toFixed(2),
         }));
         setCartTotal(orderData.totalAmount);
-    }, [cartItems]);    
+    }, []);    
     
     console.log('cartItems',cartItems);
     console.log('orderData',orderData);
@@ -108,8 +109,41 @@ function CheckoutPage() {
                         console.log(item);
                         dispatch(removeFromCart({ productId: item.product._id, variantId: item.variant ? item.variant._id : null }));  // ✅ Fix: Dispatch for each item
                     });    
-                    toast.success("Order placed successfully!");
-                    navigate("/");
+                    // toast.success("Order placed successfully!");
+                    // navigate("/");
+                    const options = {
+                        key: process.env.RAZORPAY_KEY_ID, // Use your Razorpay key
+                        amount: response.order.amount,
+                        currency: "INR",
+                        name: "BBSCart",
+                        description: "Test Transaction",
+                        order_id: response.order.id,
+                        handler: async (response) => {
+                            // Step 3: Verify Payment
+                            const paymentData = {
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_signature: response.razorpay_signature,
+                            }
+                            const verifyRes = await ProductService.verifyPayment(paymentData);
+        
+                            if (verifyRes.data.success) {
+                                alert("Payment successful!");
+                            } else {
+                                alert("Payment verification failed!");
+                            }
+                        },
+                        prefill: {
+                            name: userInfo?.name,
+                            email: userInfo?.email,
+                            contact: userInfo?.userdetails?.phone,
+                        },
+                        theme: {
+                            color: "#3399cc",
+                        },
+                    };        
+                    const rzp = new window.Razorpay(options);
+                    rzp.open();
                 } else {
                     toast.error(response.payload?.message || "Failed to place order.");
                 }

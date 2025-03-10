@@ -3,6 +3,7 @@ const BASE_PRODUCTS_URL = "/products";
 const BASE_CATEGORIES_URL = "/categories";
 const BASE_SUBCATEGORIES_URL = "/subcategories";
 const BASE_VARIANTS_URL = "/variants";
+const PAYMENT_VERIFY_URL = "/verify-payment";
 
 export const ProductService = {
   // Products
@@ -296,5 +297,20 @@ export const ProductService = {
       console.error("Error in VariantByProductID:", error);
       throw new Error(error.response?.data?.message || "Failed to fetch SubCategory.");
     }
-},
+  },
+  // Verify Payment
+  async verifyPayment(paymentData) {
+    try {
+      const response = await api.post(PAYMENT_VERIFY_URL, paymentData, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      console.log("Created Product:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error in createProduct:", error);
+      throw new Error(error.response?.data?.message || "Failed to create product.");
+    }
+  },
 };

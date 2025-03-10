@@ -8,7 +8,7 @@ function CartPage() {
 
     useEffect(() => {
         dispatch(fetchCartItems());
-    }, [dispatch]);
+    }, []);
 
     const cartItems = useSelector((state) => state.cart.items);
 
@@ -21,7 +21,7 @@ function CartPage() {
     useEffect(() => {
         console.log("cartTotal:", cartTotal); // Debugging
         console.log("cartItem:", cartItems); // Debugging
-    }, [cartItems]);
+    }, []);
 
     const location = useLocation();
 

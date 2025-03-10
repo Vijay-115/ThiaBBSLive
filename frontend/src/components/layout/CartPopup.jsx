@@ -7,25 +7,21 @@ function CartPopup({ cartPopup, setCartPopup }) {
     const dispatch = useDispatch();
     useEffect(() => {
         dispatch(fetchCartItems()); // Fetch cart items when the component mounts
-    }, [dispatch]);
+    }, []);
     
     const navigate = useNavigate();  // Initialize useNavigate hook
     const cartItems = useSelector((state) => state.cart.items);
 
     useEffect(() => {
         dispatch(fetchCartItems()); // Fetch updated cart items whenever cart changes
-    }, [cartItems]);
+    }, []);
     
-        const cartTotal = Object.values(cartItems).reduce(
-            (total, item) => total + (item.quantity * (item.variant ? item.variant.price : item.product.price) || 0),
-            0
-          ).toFixed(2);
-        const deliveryCharge = 0;
-    
-        useEffect(() => {
-            console.log("cartTotal:", cartTotal); // Debugging
-            console.log("cartItem:", cartItems); // Debugging
-        }, [cartItems]);
+    const cartTotal = Object.values(cartItems).reduce(
+        (total, item) => total + (item.quantity * (item.variant ? item.variant.price : item.product.price) || 0),
+        0
+        ).toFixed(2);
+    const deliveryCharge = 0;
+
     // Handle increment
     const handleIncrement = (prodId,variantId,quantity) => {
         const currentQuantity = quantity || 1;
