@@ -214,7 +214,7 @@ function CheckoutPage() {
                                             </li>
                                             <li className="flex justify-between leading-[28px]">
                                                 <div className="coupon-down-box w-full">
-                                                    <form method="post" className="relative">
+                                                    <form className="relative">
                                                         <input className="bb-coupon w-full p-[10px] text-[14px] font-normal text-secondary border-[1px] border-solid border-[#eee] outline-[0] rounded-[10px]" type="text" placeholder="Enter Your coupon Code" name="bb-coupon" required=""/>
                                                         <button className="bb-btn-2 transition-all duration-[0.3s] ease-in-out my-[8px] mr-[8px] flex justify-center items-center absolute right-[0] top-[0] bottom-[0] font-Poppins leading-[28px] tracking-[0.03rem] py-[2px] px-[12px] text-[13px] font-normal border-primary text-white bg-primary hover:bg-transparent hover:text-secondary rounded-[10px] border-[1px] border-solid" type="submit">Apply</button>
                                                     </form>
