@@ -22,14 +22,6 @@ function CheckoutPage() {
     const deliveryCharge = 0;
     const { loading, order, error } = useSelector((state) => state.order);
 
-    const [orderData, setOrderData] = useState({
-        userId: "", // Dynamic user ID
-        orderItems: cartItems,
-        totalAmount: cartTotal,
-        shippingAddress: { street: "", city: "", state: "", postalCode: "", country: "" },
-        paymentMethod: "COD",
-    });
-
     useEffect(() => {
         setOrderData((prev) => ({
             ...prev,
@@ -47,6 +39,15 @@ function CheckoutPage() {
     }, []);    
     
     console.log('cartItems',cartItems);
+    
+    const [orderData, setOrderData] = useState({
+        userId: "", // Dynamic user ID
+        orderItems: cartItems,
+        totalAmount: cartTotal,
+        shippingAddress: { street: "", city: "", state: "", postalCode: "", country: "" },
+        paymentMethod: "COD",
+    });
+
     console.log('orderData',orderData);
 
     useEffect(() => {
@@ -112,7 +113,7 @@ function CheckoutPage() {
                     // toast.success("Order placed successfully!");
                     // navigate("/");
                     const options = {
-                        key: process.env.RAZORPAY_KEY_ID, // Use your Razorpay key
+                        key: import.meta.env.RAZORPAY_KEY_ID, // Use your Razorpay key
                         amount: response.order.amount,
                         currency: "INR",
                         name: "BBSCart",

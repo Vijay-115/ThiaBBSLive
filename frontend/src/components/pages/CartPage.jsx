@@ -35,7 +35,9 @@ function CartPage() {
     const handleIncrement = (prodId,variantId,qty) => {
         const currentQuantity = qty || 1;
         const newQuantity = currentQuantity + 1;
-        dispatch(updateQuantity({ productId: prodId, variantId, quantity: newQuantity }));
+        dispatch(updateQuantity({ productId: prodId, variantId, quantity: newQuantity })).then(() => {
+            dispatch(fetchCartItems());
+        });
     };
 
     // Handle decrement
@@ -43,14 +45,17 @@ function CartPage() {
         const currentQuantity = qty || 1;
         const newQuantity = Math.max(currentQuantity - 1, 1);
         if (newQuantity > 0) {
-            dispatch(updateQuantity({ productId: prodId, variantId, quantity: newQuantity }));
+            dispatch(updateQuantity({ productId: prodId, variantId, quantity: newQuantity })).then(() => {
+                dispatch(fetchCartItems());
+            });
         }
     };
 
     const handleRemovecart = (productId, variantId) => {
         console.log("Removing:", productId, variantId);
-        dispatch(removeFromCart({ productId, variantId })); // ✅ Pass as an object
-        dispatch(fetchCartItems());
+        dispatch(removeFromCart({ productId, variantId })).then(() => {
+            dispatch(fetchCartItems());
+        }); // ✅ Pass as an object
     };
 
     useEffect(() => {

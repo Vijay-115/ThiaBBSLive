@@ -14,11 +14,7 @@ function ProductlistItem({ type, product, filter }) {
   useEffect(() => {
     dispatch(fetchCartItems());  
     dispatch(fetchWishlistItems());
-  }, [dispatch]);
-
-  useEffect(() => {
-    dispatch(fetchCartItems());  
-  }, [cartItems]);
+  }, []);
 
   useEffect(() => {
       console.log("wishlistItems:", wishlistItems); // Debugging
@@ -66,7 +62,9 @@ function ProductlistItem({ type, product, filter }) {
   const handleAddToCart = () => {
     const initialQuantity = quantities[product._id] || 1;
     console.log("Adding product to cart:", product._id);
-    dispatch(addToCart({ productId:product._id, quantity: initialQuantity }));
+    dispatch(addToCart({ productId:product._id, quantity: initialQuantity })).then(() => {
+        dispatch(fetchCartItems());
+    });
 
     setQuantities((prev) => ({
       ...prev,

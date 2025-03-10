@@ -11,10 +11,6 @@ function CartPopup({ cartPopup, setCartPopup }) {
     
     const navigate = useNavigate();  // Initialize useNavigate hook
     const cartItems = useSelector((state) => state.cart.items);
-
-    useEffect(() => {
-        dispatch(fetchCartItems()); // Fetch updated cart items whenever cart changes
-    }, []);
     
     const cartTotal = Object.values(cartItems).reduce(
         (total, item) => total + (item.quantity * (item.variant ? item.variant.price : item.product.price) || 0),
@@ -26,7 +22,9 @@ function CartPopup({ cartPopup, setCartPopup }) {
     const handleIncrement = (prodId,variantId,quantity) => {
         const currentQuantity = quantity || 1;
         const newQuantity = currentQuantity + 1;
-        dispatch(updateQuantity({ productId: prodId, variantId, quantity: newQuantity }));
+        dispatch(updateQuantity({ productId: prodId, variantId, quantity: newQuantity })).then(() => {
+            dispatch(fetchCartItems());
+        });
     };
 
     // Handle decrement
@@ -34,13 +32,16 @@ function CartPopup({ cartPopup, setCartPopup }) {
         const currentQuantity = quantity || 1;
         const newQuantity = Math.max(currentQuantity - 1, 1);
         if (newQuantity > 0) {
-            dispatch(updateQuantity({ productId: prodId, variantId, quantity: newQuantity }));
+            dispatch(updateQuantity({ productId: prodId, variantId, quantity: newQuantity })).then(() => {
+                dispatch(fetchCartItems());
+            });
         }
     };
 
     const handleRemovecart = (prodId,variantId) => {
-        dispatch(removeFromCart({productId: prodId,variantId})); // Pass only the productId
-        dispatch(fetchCartItems());
+        dispatch(removeFromCart({productId: prodId,variantId})).then(() => {
+            dispatch(fetchCartItems());
+        }); // Pass only the productId
     };
 
     return (
