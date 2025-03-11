@@ -16,8 +16,8 @@ function HomePage() {
     <>
         
             {/* Page Content */}
-            <div className="homepage bbscontainer">                
-              <HeroSection/>
+            <HeroSection/>
+            <div className="homepage bbscontainer">       
               <SectionCategory/>
               <div className='home'>
                 <ProductList heading="Grocery Items" type="Slider" />
