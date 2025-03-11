@@ -345,6 +345,7 @@ exports.getUserInfo = async (req, res) => {
 
 // Update User Profile
 exports.updateProfile = async (req, res) => {
+    console.log('Image File - ',req.files[0].fieldname === 'profilePic');
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) {
         return res.status(401).json({ message: "No token provided" });
@@ -383,10 +384,10 @@ exports.updateProfile = async (req, res) => {
                 }                
 
                 // Handle profile picture upload
-                if (req.files && req.files.profilePic && req.files.profilePic.length > 0) {
-                    console.log("Profile picture uploaded:", req.files.profilePic);
+                if (req.files && req.files[0].fieldname === 'profilePic') {
+                    console.log("Profile picture uploaded:", req.files[0]);
 
-                    const uploadedFile = req.files.profilePic[0]; // Get the uploaded file
+                    const uploadedFile = req.files[0]; // Get the uploaded file
                     const fileExtension = path.extname(uploadedFile.originalname);
                     const uniqueFileName = `profile_${decoded.userId}_${Date.now()}${fileExtension}`;
                     const uploadPath = path.join(__dirname, "../uploads", uniqueFileName);

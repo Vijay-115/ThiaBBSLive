@@ -10,6 +10,17 @@ import { getUserInfo } from '../../services/authService';
 import Button from '../layout/Button';
 import { ProductService } from '../../services/ProductService';
 
+
+const loadRazorpay = () => {
+    return new Promise((resolve) => {
+        const script = document.createElement("script");
+        script.src = "https://checkout.razorpay.com/v1/checkout.js";
+        script.onload = () => resolve(true);
+        script.onerror = () => resolve(false);
+        document.body.appendChild(script);
+    });
+};
+
 function CheckoutPage() {
     const dispatch = useDispatch();
     const [userInfo, setUserInfo] = useState(null);
@@ -21,6 +32,10 @@ function CheckoutPage() {
     const [cartTotal,setCartTotal] = useState(0);
     const deliveryCharge = 0;
     const { loading, order, error } = useSelector((state) => state.order);
+
+    useEffect(() => {
+        loadRazorpay();
+    }, []);
 
     useEffect(() => {
         setOrderData((prev) => ({
@@ -98,10 +113,12 @@ function CheckoutPage() {
         console.log(orderData);
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         console.log(orderData);
     
+        const res = await loadRazorpay();
+
         dispatch(placeOrder(orderData))
             .then((response) => {
                 console.log("Dispatch Response:", response);
@@ -110,15 +127,19 @@ function CheckoutPage() {
                         console.log(item);
                         dispatch(removeFromCart({ productId: item.product._id, variantId: item.variant ? item.variant._id : null }));  // ✅ Fix: Dispatch for each item
                     });    
-                    // toast.success("Order placed successfully!");
-                    // navigate("/");
+
+                    if (!res) {
+                        console.error("Razorpay SDK failed to load");
+                        return;
+                    }
+
                     const options = {
                         key: import.meta.env.RAZORPAY_KEY_ID, // Use your Razorpay key
-                        amount: response.order.amount,
+                        amount: response.payload?.order.total_price,
                         currency: "INR",
                         name: "BBSCart",
                         description: "Test Transaction",
-                        order_id: response.order.id,
+                        order_id: response.payload?.order.order_id,
                         handler: async (response) => {
                             // Step 3: Verify Payment
                             const paymentData = {
@@ -128,10 +149,11 @@ function CheckoutPage() {
                             }
                             const verifyRes = await ProductService.verifyPayment(paymentData);
         
-                            if (verifyRes.data.success) {
-                                alert("Payment successful!");
+                            if (verifyRes.success) {
+                                toast.success(""+verifyRes.message+", Order placed successfully!");
+                                navigate("/");
                             } else {
-                                alert("Payment verification failed!");
+                                toast.error(verifyRes.message || "Payment verification failed!");
                             }
                         },
                         prefill: {
