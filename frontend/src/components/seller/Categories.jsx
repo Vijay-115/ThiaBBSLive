@@ -8,6 +8,7 @@ import Modal from "react-modal";
 import CategoryForm from "./CategoryForm";
 import { ProductService } from "../../services/ProductService";
 import toast from "react-hot-toast";
+import { getUserInfo } from "../../services/authService";
 
 const Categories = () => {
 
@@ -24,6 +25,7 @@ const Categories = () => {
         toggleProfileMenu,
     } = useDashboardLogic();
 
+  const [userInfo, setUserInfo] = useState(null);
   const [categories, setCategories] = useState([]);
   const [filteredCategories, setFilteredCategories] = useState([]);
   const [editCategory, setEditCategory] = useState(null);
@@ -37,19 +39,42 @@ const Categories = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
+  const fetchUser = async () => {
+    try {
+        const user = await getUserInfo();
+        if(user){
+          console.log('fetchUser - ',user);
+          setTimeout(() => {
+            setUserInfo(user.userInfo);
+          }, 200); 
+          console.log('userInfo - ',userInfo);
+        }
+    } catch (error) {
+        console.error("Error fetching user info:", error);
+    }
+  };
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const data = await ProductService.getCategories();
-        setCategories(data);
-        setFilteredCategories(data);
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-        setErrorMessage(error.message || "Failed to fetch categories.");
-      }
-    };
-    fetchCategories();
+    fetchUser();
   }, []);
+
+  const fetchCategories = async (id) => {
+    try {
+      const data = await ProductService.getCategorySellerID(id);
+      setCategories(data);
+      setFilteredCategories(data);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      setErrorMessage(error.message || "Failed to fetch categories.");
+    }
+  };
+
+  useEffect(() => {
+    if(userInfo !== null){
+      fetchCategories(userInfo._id);
+    }else{
+      fetchUser();
+    }
+  }, [userInfo]);
 
   useEffect(() => {
     const filterAndSortCategories = () => {

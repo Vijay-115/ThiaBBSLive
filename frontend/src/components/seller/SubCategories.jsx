@@ -8,6 +8,7 @@ import Modal from "react-modal";
 import { ProductService } from "../../services/ProductService";
 import SubCategoryForm from "./SubCategoryForm";
 import toast from "react-hot-toast";
+import { getUserInfo } from "../../services/authService";
 
 const SubCategories = () => {
   const {
@@ -22,6 +23,8 @@ const SubCategories = () => {
       isProfileMenuOpen,
       toggleProfileMenu,
   } = useDashboardLogic();
+  
+  const [userInfo, setUserInfo] = useState(null);
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
   const [filteredCategories, setFilteredCategories] = useState([]);
@@ -36,19 +39,37 @@ const SubCategories = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  // Fetch Categories
-  const fetchCategories = async () => {
+  const fetchUser = async () => {
     try {
-      const data = await ProductService.getCategories();
+        const user = await getUserInfo();
+        if(user){
+          console.log('fetchUser - ',user);
+          setTimeout(() => {
+            setUserInfo(user.userInfo);
+          }, 200); 
+          console.log('userInfo - ',userInfo);
+        }
+    } catch (error) {
+        console.error("Error fetching user info:", error);
+    }
+  };
+  useEffect(() => {
+    fetchUser();
+  }, []);
+
+  // Fetch Categories
+  const fetchCategories = async (id) => {
+    try {
+      const data = await ProductService.getCategorySellerID(id);
       setCategories(data);
     } catch (error) {
       console.error("Error fetching categories:", error);
     }
   };
   
-  const fetchSubCategories = async () => {
+  const fetchSubCategories = async (id) => {
     try {
-      const data = await ProductService.getSubCategories();
+      const data = await ProductService.getSubCategorySellerID(id);
       setSubCategories(data);
       setFilteredCategories(data);
     } catch (error) {
@@ -58,9 +79,13 @@ const SubCategories = () => {
   };
 
   useEffect(() => {
-    fetchSubCategories();
-    fetchCategories();
-  }, []); // Runs only once
+    if(userInfo !== null){
+      fetchSubCategories(userInfo._id);
+      fetchCategories(userInfo._id);
+    }else{
+      fetchUser();
+    }
+  }, [userInfo]); // Runs only once
   
   useEffect(() => {
     setFilteredCategories(subCategories); // Updates only when subCategories change

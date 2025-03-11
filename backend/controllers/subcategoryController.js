@@ -5,7 +5,7 @@ const Category = require('../models/Category');
 exports.createSubcategory = async (req, res) => {
     try {
         const { name, description, category_id } = req.body;
-
+        let seller_id = req.user ? req.user.userId : null;
         // Check if category exists
         const category = await Category.findById(category_id);
         if (!category) {
@@ -13,7 +13,7 @@ exports.createSubcategory = async (req, res) => {
         }
 
         // Create subcategory
-        const newSubcategory = new Subcategory({ name, description, category_id });
+        const newSubcategory = new Subcategory({ name, description, category_id, seller_id });
         await newSubcategory.save();
 
         // Update category to include this subcategory (if not already present)
@@ -51,11 +51,26 @@ exports.getSubcategoryById = async (req, res) => {
     }
 };
 
+// READ: Get a single subcategory by ID
+exports.getSubcategoryBySellerId = async (req, res) => {
+    try {
+        const { sellerId } = req.params; 
+        const subcategory = await Subcategory.find({ seller_id: sellerId });
+        if (!subcategory) {
+            return res.status(404).json({ message: 'Subcategory not found' });
+        }
+        res.status(200).json(subcategory);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+
 // UPDATE: Update a subcategory by ID
 exports.updateSubcategory = async (req, res) => {
     try {
         const { name, description, category_id } = req.body;
-
+        let seller_id = req.user ? req.user.userId : null;
         // Find the subcategory before updating
         const oldSubcategory = await Subcategory.findById(req.params.id);
         if (!oldSubcategory) {
@@ -65,7 +80,7 @@ exports.updateSubcategory = async (req, res) => {
         // Update subcategory
         const updatedSubcategory = await Subcategory.findByIdAndUpdate(
             req.params.id,
-            { name, description, category_id },
+            { name, description, category_id, seller_id },
             { new: true }
         ).populate('category_id');
 

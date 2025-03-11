@@ -189,6 +189,21 @@ exports.getProductById = async (req, res) => {
     }
 };
 
+// READ: Get a single product by seller_id
+exports.getProductsBySellerId = async (req, res) => {
+    console.log('getProductsBySellerId');
+    try {
+        const { sellerId } = req.params; 
+        const products = await Product.find({ seller_id: sellerId }).populate('category_id subcategory_id variants seller_id');
+        if (!products) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+        res.status(200).json(products);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
 // READ: Get products by category_id
 exports.getProductsByCategoryId = async (req, res) => {
     try {

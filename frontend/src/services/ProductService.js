@@ -29,6 +29,17 @@ export const ProductService = {
       }
   },
 
+  async getProductsSellerID(id) {
+    try {
+      const response = await api.get(`${BASE_PRODUCTS_URL}/seller/${id}`);
+      console.log("Fetched Product:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error in getProductID:", error);
+      throw new Error(error.response?.data?.message || "Failed to fetch product.");
+    }
+  },
+
   async getProductCategoryID(id) {
     try {
       const response = await api.get(`${BASE_PRODUCTS_URL}/category/${id}`);
@@ -157,6 +168,17 @@ export const ProductService = {
       }
   },
 
+  async getCategorySellerID(id) {
+    try {
+      const response = await api.get(`${BASE_CATEGORIES_URL}/seller/${id}`);
+      console.log("Fetched Product:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error in getProductID:", error);
+      throw new Error(error.response?.data?.message || "Failed to fetch product.");
+    }
+  },
+
   async createCategory(category) {
     try {
       const response = await api.post(BASE_CATEGORIES_URL, category, {
@@ -220,6 +242,17 @@ export const ProductService = {
         console.error("Error in getSubCategoryID:", error);
         throw new Error(error.response?.data?.message || "Failed to fetch SubCategory.");
       }
+  },  
+
+  async getSubCategorySellerID(id) {
+    try {
+      const response = await api.get(`${BASE_SUBCATEGORIES_URL}/seller/${id}`);
+      console.log("Fetched SubCategory By SellerId:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error in getSubCategorySellerID:", error);
+      throw new Error(error.response?.data?.message || "Failed to fetch getSubCategorySellerID.");
+    }
   },
 
   async createSubCategory(subcategory) {

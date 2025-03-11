@@ -8,6 +8,7 @@ import Modal from "react-modal";
 import ProductForm from "./ProductForm";
 import { ProductService } from "../../services/ProductService";
 import toast from "react-hot-toast";
+import { getUserInfo } from "../../services/authService";
 
 const Products = () => {
 
@@ -24,7 +25,7 @@ const Products = () => {
         toggleProfileMenu,
     } = useDashboardLogic();
 
-  
+  const [userInfo, setUserInfo] = useState(null);
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
   const [products, setProducts] = useState([]);
@@ -41,19 +42,37 @@ const Products = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
+  const fetchUser = async () => {
+    try {
+        const user = await getUserInfo();
+        if(user){
+          console.log('fetchUser - ',user);
+          setTimeout(() => {
+            setUserInfo(user.userInfo);
+          }, 200); 
+          console.log('userInfo - ',userInfo);
+        }
+    } catch (error) {
+        console.error("Error fetching user info:", error);
+    }
+  };
+  useEffect(() => {
+    fetchUser();
+  }, []);
+
   // Fetch Categories
-    const fetchCategories = async () => {
+    const fetchCategories = async (id) => {
       try {
-        const data = await ProductService.getCategories();
+        const data = await ProductService.getCategorySellerID(id);
         setCategories(data);
       } catch (error) {
         console.error("Error fetching categories:", error);
       }
     };
     
-    const fetchSubCategories = async () => {
+    const fetchSubCategories = async (id) => {
       try {
-        const data = await ProductService.getSubCategories();
+        const data = await ProductService.getSubCategorySellerID(id);
         setSubCategories(data);
       } catch (error) {
         console.error("Error fetching subCategories:", error);
@@ -61,9 +80,9 @@ const Products = () => {
       }
     };
 
-    const fetchProducts = async () => {
+    const fetchProducts = async (id) => {
       try {
-        const data = await ProductService.getProducts();
+        const data = await ProductService.getProductsSellerID(id);
         setProducts(data);
         setFilteredProducts(data);
       } catch (error) {
@@ -73,13 +92,20 @@ const Products = () => {
     };    
   
     useEffect(() => {
-      fetchSubCategories();
-      fetchCategories();
-    }, []);
+      if(userInfo !== null){
+        fetchSubCategories(userInfo._id);
+        fetchCategories(userInfo._id);
+        fetchProducts(userInfo._id);
+      }else{
+        fetchUser();
+      }
+    }, [userInfo]);
 
-  useEffect(() => {
-    fetchProducts();
-  }, [editProduct]);
+    useEffect(() => {
+      if(userInfo !== null){
+        fetchProducts(userInfo._id);
+      }
+    }, [editProduct]);
 
   useEffect(() => {
     const filterAndSortProducts = () => {
