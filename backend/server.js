@@ -17,6 +17,9 @@ const path = require('path');
 // Load environment variables
 dotenv.config();
 
+console.log("RAZORPAY_KEY_ID:", process.env.RAZORPAY_KEY_ID);
+console.log("RAZORPAY_KEY_SECRET:", process.env.RAZORPAY_KEY_SECRET);
+
 // Connect to MongoDB
 connectDB();
 
@@ -54,7 +57,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api', categoryRoutes);
 app.use('/api', variantRoutes);
-app.use('/api/orders', orderRoutes);
+app.use('/api', orderRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/users', userRoutes);

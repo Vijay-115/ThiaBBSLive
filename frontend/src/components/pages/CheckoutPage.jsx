@@ -8,26 +8,34 @@ import toast from "react-hot-toast";
 import { fetchCartItems, removeFromCart } from '../../slice/cartSlice';
 import { getUserInfo } from '../../services/authService';
 import Button from '../layout/Button';
+import { ProductService } from '../../services/ProductService';
+
+
+const loadRazorpay = () => {
+    return new Promise((resolve) => {
+        const script = document.createElement("script");
+        script.src = "https://checkout.razorpay.com/v1/checkout.js";
+        script.onload = () => resolve(true);
+        script.onerror = () => resolve(false);
+        document.body.appendChild(script);
+    });
+};
 
 function CheckoutPage() {
     const dispatch = useDispatch();
     const [userInfo, setUserInfo] = useState(null);
     useEffect(() => {
         dispatch(fetchCartItems());
-    }, [dispatch]);
+    }, []);
     const navigate = useNavigate();
     const cartItems = useSelector((state) => state.cart.items);
     const [cartTotal,setCartTotal] = useState(0);
     const deliveryCharge = 0;
     const { loading, order, error } = useSelector((state) => state.order);
 
-    const [orderData, setOrderData] = useState({
-        userId: "", // Dynamic user ID
-        orderItems: cartItems,
-        totalAmount: cartTotal,
-        shippingAddress: { street: "", city: "", state: "", postalCode: "", country: "" },
-        paymentMethod: "COD",
-    });
+    useEffect(() => {
+        loadRazorpay();
+    }, []);
 
     useEffect(() => {
         setOrderData((prev) => ({
@@ -43,9 +51,18 @@ function CheckoutPage() {
                 .toFixed(2),
         }));
         setCartTotal(orderData.totalAmount);
-    }, [cartItems]);    
+    }, []);    
     
     console.log('cartItems',cartItems);
+    
+    const [orderData, setOrderData] = useState({
+        userId: "", // Dynamic user ID
+        orderItems: cartItems,
+        totalAmount: cartTotal,
+        shippingAddress: { street: "", city: "", state: "", postalCode: "", country: "" },
+        paymentMethod: "COD",
+    });
+
     console.log('orderData',orderData);
 
     useEffect(() => {
@@ -96,10 +113,12 @@ function CheckoutPage() {
         console.log(orderData);
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         console.log(orderData);
     
+        const res = await loadRazorpay();
+
         dispatch(placeOrder(orderData))
             .then((response) => {
                 console.log("Dispatch Response:", response);
@@ -108,8 +127,46 @@ function CheckoutPage() {
                         console.log(item);
                         dispatch(removeFromCart({ productId: item.product._id, variantId: item.variant ? item.variant._id : null }));  // ✅ Fix: Dispatch for each item
                     });    
-                    toast.success("Order placed successfully!");
-                    navigate("/");
+
+                    if (!res) {
+                        console.error("Razorpay SDK failed to load");
+                        return;
+                    }
+
+                    const options = {
+                        key: import.meta.env.RAZORPAY_KEY_ID, // Use your Razorpay key
+                        amount: response.payload?.order.total_price,
+                        currency: "INR",
+                        name: "BBSCart",
+                        description: "Test Transaction",
+                        order_id: response.payload?.order.order_id,
+                        handler: async (response) => {
+                            // Step 3: Verify Payment
+                            const paymentData = {
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_signature: response.razorpay_signature,
+                            }
+                            const verifyRes = await ProductService.verifyPayment(paymentData);
+        
+                            if (verifyRes.success) {
+                                toast.success(""+verifyRes.message+", Order placed successfully!");
+                                navigate("/");
+                            } else {
+                                toast.error(verifyRes.message || "Payment verification failed!");
+                            }
+                        },
+                        prefill: {
+                            name: userInfo?.name,
+                            email: userInfo?.email,
+                            contact: userInfo?.userdetails?.phone,
+                        },
+                        theme: {
+                            color: "#3399cc",
+                        },
+                    };        
+                    const rzp = new window.Razorpay(options);
+                    rzp.open();
                 } else {
                     toast.error(response.payload?.message || "Failed to place order.");
                 }

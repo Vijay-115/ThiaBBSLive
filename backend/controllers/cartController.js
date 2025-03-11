@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Cart = require("../models/Cart");
 const Product = require("../models/Product");
+const jwt = require("jsonwebtoken");
 
 // ✅ Get all cart items for a user
 exports.getCartItems = async (req, res) => {
@@ -23,7 +24,6 @@ exports.getCartItems = async (req, res) => {
 exports.addToCart = async (req, res) => {
     try {
         const { productId, variantId = null, quantity } = req.body;
-        console.log("Received Data:", req.body);
 
         if (!productId) {
             return res.status(400).json({ message: "Product ID is required" });
