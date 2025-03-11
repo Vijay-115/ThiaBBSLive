@@ -69,4 +69,37 @@ const logout = async (req, res) => {
     }
 };
 
-module.exports = { auth, adminOnly, logout };
+const authUser = async (req, res, next) => {
+    try {
+        const token = req.header("Authorization")?.split(" ")[1];
+
+        if (!token) {
+            req.user = null; // No token, allow request to continue
+            return next();
+        }
+
+        // Check if token is blacklisted
+        const isBlacklisted = await client.get(token);
+        if (isBlacklisted) {
+            req.user = null;
+            return next();
+        }
+
+        // Verify token
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            req.user = decoded;
+        } catch (error) {
+            req.user = null;
+        }
+
+        next();
+    } catch (error) {
+        console.error("❌ JWT Verification Error:", error.message);
+        req.user = null;
+        next();
+    }
+};
+
+
+module.exports = { auth, adminOnly, logout, authUser };

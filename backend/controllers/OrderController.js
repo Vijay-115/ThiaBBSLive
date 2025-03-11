@@ -1,8 +1,17 @@
-const Order = require('../models/Order');
-const Variant = require('../models/Variant');
-const Product = require('../models/Product');
+const Order = require('../models/Order.js');
+const Variant = require('../models/Variant.js');
+const Product = require('../models/Product.js');
+const Razorpay = require("razorpay");
+const crypto = require("crypto");
+
+// Razorpay Instance
+const razorpay = new Razorpay({
+  key_id: 'rzp_test_L6U9arEjNMSbc7',
+  key_secret: 'svYmAQ4X695zVnNtbt5kvfIR'
+});
 
 exports.createOrder = async (req, res) => {
+  console.log("createOrder Request Body:", req.user); // Debugging step
   try {
     const { orderItems, totalAmount, shippingAddress, paymentMethod, payment_details } = req.body;
 
@@ -14,12 +23,12 @@ exports.createOrder = async (req, res) => {
 
     const user_id = req.user ? req.user.userId : null;
 
-    console.log('user_id',user_id);
+    console.log("user_id:", user_id);
 
     // Format order items
     const formattedOrderItems = orderItems.map(item => ({
       product: item?.product || null,
-      variant: item?.variant || null, // Include variant only if available
+      variant: item?.variant || null,
       quantity: item?.quantity || 1,
       price: item?.price || 0,
     }));
@@ -27,7 +36,6 @@ exports.createOrder = async (req, res) => {
     // Update stock for each order item
     for (const item of formattedOrderItems) {
       if (item.variant) {
-        // If variant exists, update stock in the Variant table
         const variant = await Variant.findById(item.variant);
         if (!variant) {
           return res.status(400).json({ success: false, message: "Variant not found" });
@@ -38,7 +46,6 @@ exports.createOrder = async (req, res) => {
         variant.stock -= item.quantity;
         await variant.save();
       } else {
-        // If no variant, update stock in the Product table
         const product = await Product.findById(item.product);
         if (!product) {
           return res.status(400).json({ success: false, message: "Product not found" });
@@ -51,9 +58,21 @@ exports.createOrder = async (req, res) => {
       }
     }
 
-    // Create new order
+    const options = {
+      amount: totalAmount * 100, // Convert to paise
+      currency: "INR",
+      receipt: `receipt_${Date.now()}`
+    };
+
+    console.log("Creating Razorpay order with options:", options); // Debugging log
+
+    const order = await razorpay.orders.create(options);
+
+    console.log("Razorpay order created successfully:", order); // Debugging log
+
+    // Create new order in DB
     const newOrder = new Order({
-      order_id: `ORD-${Date.now()}`,
+      order_id: order.id,
       user_id,
       orderItems: formattedOrderItems,
       total_price: totalAmount,
@@ -67,10 +86,53 @@ exports.createOrder = async (req, res) => {
     res.status(201).json({ success: true, message: 'Order created successfully', order: savedOrder });
 
   } catch (error) {
-    console.error("Error creating order:", error); // Log the error for debugging
-    res.status(500).json({ success: false, message: 'Error creating order', error: error.message });
+    console.error("Error creating order:", error); // Full error object
+
+    if (error.statusCode) {
+      console.error("Error Status Code:", error.statusCode);
+    }
+    if (error.error) {
+      console.error("Error Code:", error.error.code);
+      console.error("Error Description:", error.error.description);
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Error creating order',
+      error: {
+        statusCode: error.statusCode || 500,
+        code: error.error?.code || "UNKNOWN_ERROR",
+        description: error.error?.description || error.message || "Something went wrong"
+      }
+    });
   }
 };
+
+exports.verifyPayment = async (req, res) => {
+  try {
+      const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+      const order = await Order.findOne({ order_id: razorpay_order_id });
+
+      if (!order) {
+          return res.status(400).json({ success: false, message: "Order not found" });
+      }
+
+      const hmac = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET);
+      hmac.update(razorpay_order_id + "|" + razorpay_payment_id);
+      const generatedSignature = hmac.digest("hex");
+
+      if (generatedSignature === razorpay_signature) {
+          order.payment_details.payment_id = razorpay_payment_id;
+          order.payment_details.payment_status = "completed";
+          await order.save();
+          res.json({ success: true, message: "Payment successful" });
+      } else {
+          res.status(400).json({ success: false, message: "Invalid signature" });
+      }
+  } catch (error) {
+      res.status(500).json({ success: false, message: error.message });
+  }
+}
 
 // Get all orders with user and product details
 exports.getAllOrders = async (req, res) => {

@@ -3,6 +3,7 @@ const BASE_PRODUCTS_URL = "/products";
 const BASE_CATEGORIES_URL = "/categories";
 const BASE_SUBCATEGORIES_URL = "/subcategories";
 const BASE_VARIANTS_URL = "/variants";
+const PAYMENT_VERIFY_URL = "/verify-payment";
 
 export const ProductService = {
   // Products
@@ -26,6 +27,69 @@ export const ProductService = {
         console.error("Error in getProductID:", error);
         throw new Error(error.response?.data?.message || "Failed to fetch product.");
       }
+  },
+
+  async getProductCategoryID(id) {
+    try {
+      const response = await api.get(`${BASE_PRODUCTS_URL}/category/${id}`);
+      console.log("Fetched Product:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error in getProductID:", error);
+      throw new Error(error.response?.data?.message || "Failed to fetch product.");
+    }
+  },
+
+  async getProductSubCategoryID(id) {
+    try {
+      const response = await api.get(`${BASE_PRODUCTS_URL}/subcategory/${id}`);
+      console.log("Fetched SubCategory Product:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error in getProductSubCategoryID:", error);
+      throw new Error(error.response?.data?.message || "Failed to fetch product.");
+    }
+  },
+
+  async getProductTags() {
+    try {
+      const response = await api.get(`${BASE_PRODUCTS_URL}/tags`);
+      console.log("Fetched Product Based Tags:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error in getProductID:", error);
+      throw new Error(error.response?.data?.message || "Failed to fetch product.");
+    }
+  },
+
+  async getProductFilter(filters) {
+    try {
+      const queryParams = new URLSearchParams();
+
+      if (filters.categories.length) {
+        queryParams.append("categories", filters.categories.join(","));
+      }
+      if (filters.subcategories.length) {
+        queryParams.append("subcategories", filters.subcategories.join(","));
+      }
+      if (filters.colors.length) {
+        queryParams.append("colors", filters.colors.join(","));
+      }
+      if (filters.tags.length) {
+        queryParams.append("tags", filters.tags.join(","));
+      }
+      if (filters.priceRange) {
+        queryParams.append("minPrice", filters.priceRange.min);
+        queryParams.append("maxPrice", filters.priceRange.max);
+      }
+  
+      const response = await api.get(`${BASE_PRODUCTS_URL}/filter?${queryParams.toString()}`);
+      console.log("Filtered Products:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      throw new Error(error.response?.data?.message || "Failed to fetch products.");
+    }
   },
 
   async createProduct(product) {
@@ -233,5 +297,20 @@ export const ProductService = {
       console.error("Error in VariantByProductID:", error);
       throw new Error(error.response?.data?.message || "Failed to fetch SubCategory.");
     }
-},
+  },
+  // Verify Payment
+  async verifyPayment(paymentData) {
+    try {
+      const response = await api.post(PAYMENT_VERIFY_URL, paymentData, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      console.log("Created Product:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error in createProduct:", error);
+      throw new Error(error.response?.data?.message || "Failed to create product.");
+    }
+  },
 };

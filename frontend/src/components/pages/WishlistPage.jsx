@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation } from 'react-router-dom';
-import { removeFromWishlist } from '../../slice/wishlistSlice';
+import { fetchWishlistItems,removeFromWishlist } from '../../slice/wishlistSlice';
 
 function WishlistPage() {
     const dispatch = useDispatch();
-    const wishlistItems = useSelector((state) => state.wishlist.items);
+    useEffect(() => {
+        dispatch(fetchWishlistItems());
+    }, [dispatch]);
+    
+    const wishlistItems = useSelector((state) => state.wishlist.items || []);
 
     useEffect(() => {
         console.log("wishlistItems:", wishlistItems); // Debugging
@@ -42,25 +46,24 @@ function WishlistPage() {
                                     <thead>
                                         <tr className="border-b-[1px] border-solid border-[#eee]">
                                             <th className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize">Product</th>
-                                            <th className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize">Price</th>
-                                            <th className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize">Remove</th>
+                                            <th className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize">Remove{wishlistItems.length}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                     {Object.values(wishlistItems).map(({ product }) => (
-                                        <tr key={product._id} className="border-b-[1px] border-solid border-[#eee]">
+                                        <tr key={product?._id} className="border-b-[1px] border-solid border-[#eee]">
                                             <td className="p-[12px]">
                                                 <div className="Product-wishlist flex items-center">
-                                                    <img src={import.meta.env.VITE_API_URL+''+product.product_img ?? ''} alt="new-product-1" className="w-[70px] border-[1px] border-solid border-[#eee] rounded-[10px]"/>
+                                                    <img src={import.meta.env.VITE_API_URL+''+product?.product_img ?? ''} alt={product?.name} className="w-[70px] border-[1px] border-solid border-[#eee] rounded-[10px]"/>
                                                     <div>   
-                                                        <span className="ml-[10px] block font-Poppins text-[14px] font-semibold leading-[24px] tracking-[0.03rem] text-secondary">{product.name}</span>
-                                                        <span className="ml-[10px] block font-Poppins text-[12px] font-normal leading-[16px] tracking-[0.03rem] text-secondary">{product.description}</span>
+                                                        <span className="ml-[10px] block font-Poppins text-[14px] font-semibold leading-[24px] tracking-[0.03rem] text-secondary">{product?.name}</span>
+                                                        <span className="ml-[10px] block font-Poppins text-[12px] font-normal leading-[16px] tracking-[0.03rem] text-secondary">{product?.description}</span>
                                                         <div className='px-2'>
                                                         {Array.from({ length: 5 }).map((_, index) => (
                                                         <i
                                                             key={index}
                                                             className={`ri-star-fill float-left text-[15px] mr-[3px] ${
-                                                            index < product.rating ? 'text-[#e7d52e]' : 'text-[#777]'
+                                                            index < product?.rating ? 'text-[#e7d52e]' : 'text-[#777]'
                                                             }`}
                                                         ></i>
                                                         ))}
@@ -69,11 +72,8 @@ function WishlistPage() {
                                                 </div>
                                             </td>
                                             <td className="p-[12px]">
-                                                <span className="price font-Poppins text-[15px] font-medium leading-[26px] tracking-[0.02rem] text-secondary">₹{product.price}</span>
-                                            </td>
-                                            <td className="p-[12px]">
                                                 <div className="pro-remove mx-auto">
-                                                    <button className='block mx-auto' onClick={()=>{console.log('ID - ',product._id); handleRemovewishlist(product._id)}}>
+                                                    <button className='block mx-auto' onClick={()=>{console.log('ID - ',product?._id); handleRemovewishlist(product?._id)}}>
                                                         <i className="ri-heart-fill transition-all duration-[0.3s] ease-in-out text-[20px] text-primary hover:text-[#ff0000]"></i>
                                                     </button>
                                                 </div>

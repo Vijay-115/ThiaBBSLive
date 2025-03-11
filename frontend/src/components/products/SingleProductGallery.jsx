@@ -6,7 +6,12 @@ import "slick-carousel/slick/slick-theme.css";
 function SingleProductGallery({ images }) {
   const [currentImage, setCurrentImage] = useState(0);
   const [zoomStyle, setZoomStyle] = useState({});
+  const [isZoomed, setIsZoomed] = useState(false);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const startPosition = useRef({ x: 0, y: 0 });
   const mainSliderRef = useRef(null);
+
+  const isMobile = window.innerWidth < 768;
 
   const sliderSettings = {
     dots: false,
@@ -31,44 +36,82 @@ function SingleProductGallery({ images }) {
 
   const handleThumbnailClick = (index) => {
     setCurrentImage(index);
-    mainSliderRef.current.slickGoTo(index); // Synchronize the main slider
+    mainSliderRef.current.slickGoTo(index);
   };
 
+  // 📌 **Desktop Hover Zoom Effect**
   const handleMouseMove = (e) => {
+    if (isMobile) return;
+
     const { left, top, width, height } = e.target.getBoundingClientRect();
-    const x = ((e.pageX - left) / width) * 100;
-    const y = ((e.pageY - top) / height) * 100;
+    const x = ((e.clientX - left) / width) * 100;
+    const y = ((e.clientY - top) / height) * 100;
 
     setZoomStyle({
-      backgroundImage: `url(${images[currentImage]})`,
-      backgroundPosition: `${x}% ${y}%`,
-      backgroundSize: "200%", // Adjust zoom level
+      transform: "scale(2)", // Zoom level
+      transformOrigin: `${x}% ${y}%`,
     });
   };
 
   const handleMouseLeave = () => {
+    if (isMobile) return;
     setZoomStyle({});
+  };
+
+  // 📌 **Mobile Tap-to-Zoom with Dragging**
+  const handleTapZoom = () => {
+    if (!isMobile) return;
+    setIsZoomed(!isZoomed);
+    if (!isZoomed) setPosition({ x: 0, y: 0 });
+  };
+
+  // 📌 **Mobile Dragging (Pan)**
+  const handleTouchStart = (e) => {
+    if (!isZoomed || !isMobile) return;
+    const touch = e.touches[0];
+    startPosition.current = { x: touch.clientX - position.x, y: touch.clientY - position.y };
+  };
+
+  const handleTouchMove = (e) => {
+    if (!isZoomed || !isMobile || e.touches.length !== 1) return;
+    const touch = e.touches[0];
+    setPosition({
+      x: touch.clientX - startPosition.current.x,
+      y: touch.clientY - startPosition.current.y,
+    });
   };
 
   return (
     <div className="flex justify-center">
       <div className="w-full max-w-[900px]">
         {/* Main Image with Zoom Effect */}
-        <div
-          className="main-image-container mb-4 relative overflow-hidden border border-gray-200 rounded-lg"
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
-          style={zoomStyle}
-        >
+        <div className="relative mb-4 border border-gray-200 rounded-lg overflow-hidden">
           <Slider ref={mainSliderRef} {...sliderSettings}>
             {images.map((img, index) => (
-              <div key={index}>
-                <img
-                  src={import.meta.env.VITE_API_URL+''+img}
-                  alt={`product-${index + 1}`}
-                  className="w-full h-auto max-h-[500px] object-contain"
-                  style={zoomStyle.backgroundImage ? { visibility: "hidden" } : {}}
-                />
+              <div key={index} className="relative">
+                <div
+                  className="w-full h-auto max-h-[500px] overflow-hidden flex justify-center items-center touch-none"
+                  onMouseMove={handleMouseMove}
+                  onMouseLeave={handleMouseLeave}
+                  onClick={handleTapZoom}
+                  onTouchStart={handleTouchStart}
+                  onTouchMove={handleTouchMove}
+                >
+                  <img
+                    src={import.meta.env.VITE_API_URL + img}
+                    alt={`product-${index + 1}`}
+                    className="transition-transform duration-200 ease-in-out"
+                    style={{
+                      transform: isMobile
+                        ? isZoomed
+                          ? `scale(2) translate(${position.x}px, ${position.y}px)`
+                          : "scale(1)"
+                        : zoomStyle.transform, // Desktop hover zoom
+                      transformOrigin: isMobile ? "center center" : zoomStyle.transformOrigin, // Desktop hover
+                      cursor: isZoomed ? "grab" : "pointer",
+                    }}
+                  />
+                </div>
               </div>
             ))}
           </Slider>
@@ -85,7 +128,7 @@ function SingleProductGallery({ images }) {
               onClick={() => handleThumbnailClick(index)}
             >
               <img
-                src={import.meta.env.VITE_API_URL+''+img}
+                src={import.meta.env.VITE_API_URL + img}
                 alt={`thumbnail-${index + 1}`}
                 className="rounded-lg mx-auto max-h-[100px] object-contain cursor-pointer"
               />

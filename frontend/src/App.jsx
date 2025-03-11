@@ -1,30 +1,31 @@
-import './common.css';
-import './ProductSlider.css';
-import './bannerOne.css';
-import './SingleProduct.css';
-import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, useLocation, Outlet } from "react-router-dom";
-import HeaderTop from './components/layout/HeaderTop';
-import Navbar from './components/layout/Navbar';
-import HomePage from './components/pages/HomePage';
-import FooterTop from './components/layout/FooterTop';
-import SingleProductPage from './components/pages/SingleProductPage';
-import ProductsCategoryPage from './components/pages/ProductsCategoryPage';
-import CartPage from './components/pages/CartPage';
-import Login from './components/auth/Login';
-import Register from './components/auth/Register';
-import Forgot from './components/auth/ForgotPassword';
-import ResetPassword from "./components/auth/ResetPassword";
-import { Toaster } from 'react-hot-toast';
-import CheckoutPage from './components/pages/CheckoutPage';
-import WishlistPage from './components/pages/WishlistPage';
-import ProductsListPage from './components/pages/admin/ProductsListPage';
-import ProtectedRoute from './components/ProtectedRoute';
-import AdminDashboard from './components/admin/Dashboard';
-import Products from './components/admin/Products';
-import Categories from './components/admin/Categories';
-import SubCategories from './components/admin/SubCategories';
-import Orders from './components/admin/Orders';
+import './common.css'; 
+import './ProductSlider.css'; 
+import './bannerOne.css'; 
+import './SingleProduct.css'; 
+import React, { useState, useEffect } from "react"; 
+import { BrowserRouter as Router, Routes, Route, useLocation, Outlet } from "react-router-dom"; 
+import HeaderTop from './components/layout/HeaderTop'; 
+import Navbar from './components/layout/Navbar'; 
+import HomePage from './components/pages/HomePage'; 
+import FooterTop from './components/layout/FooterTop'; 
+import SingleProductPage from './components/pages/SingleProductPage'; 
+import ProductsCategoryPage from './components/pages/ProductsCategoryPage'; 
+import ProductsSubCategoryPage from './components/pages/ProductsSubCategoryPage'; 
+import CartPage from './components/pages/CartPage';  
+import Login from './components/auth/Login'; 
+import Register from './components/auth/Register'; 
+import Forgot from './components/auth/ForgotPassword'; 
+import ResetPassword from "./components/auth/ResetPassword"; 
+import { Toaster } from 'react-hot-toast'; 
+import CheckoutPage from './components/pages/CheckoutPage'; 
+import WishlistPage from './components/pages/WishlistPage'; 
+import ProductsListPage from './components/pages/admin/ProductsListPage';   
+import ProtectedRoute from './components/ProtectedRoute';  
+import AdminDashboard from './components/admin/Dashboard'; 
+import Products from './components/admin/Products'; 
+import Categories from './components/admin/Categories'; 
+import SubCategories from './components/admin/SubCategories'; 
+import Orders from './components/admin/Orders';  
 import MyAccount from './components/auth/MyAccount';
 import Seller from './components/admin/Seller';
 import Vendor from './components/admin/Vendor';
@@ -79,6 +80,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/product/:id" element={<SingleProductPage />} />
         <Route path="/product/category/:category" element={<ProductsCategoryPage />} />
+        <Route path="/product/subcategory/:subcategory" element={<ProductsSubCategoryPage />} /> 
         <Route path="/cart" element={<CartPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />

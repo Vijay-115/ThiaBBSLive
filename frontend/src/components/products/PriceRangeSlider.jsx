@@ -1,31 +1,30 @@
-import React, { useState } from "react";
+import React from "react";
 import "../../RangeSlider.css";
 
-const PriceRangeSlider = ({ min = 0, max = 1000, step = 10 }) => {
-  const [minValue, setMinValue] = useState(min);
-  const [maxValue, setMaxValue] = useState(max);
+const PriceRangeSlider = ({ min, max, step, value, onChange }) => {
+  const { min: minValue, max: maxValue } = value;
 
   const handleMinChange = (event) => {
-    const value = Math.min(Number(event.target.value), maxValue - step);
-    setMinValue(value);
+    const newMin = Math.min(Number(event.target.value), maxValue - step);
+    onChange({ min: newMin, max: maxValue });
   };
 
   const handleMaxChange = (event) => {
-    const value = Math.max(Number(event.target.value), minValue + step);
-    setMaxValue(value);
+    const newMax = Math.max(Number(event.target.value), minValue + step);
+    onChange({ min: minValue, max: newMax });
   };
 
-  const getPercentage = (value) => ((value - min) / (max - min)) * 100;
+  const getPercentage = (val) => ((val - min) / (max - min)) * 100;
 
   return (
     <>
       <div className="relative bg-white rounded-sm p-2 text-center m-2">
         <div className="flex font-quicksand text-lg font-semibold flex-row justify-center">
-          <div className="" style={{ left: `${getPercentage(minValue)}%` }}>
+          <div style={{ left: `${getPercentage(minValue)}%` }}>
             ₹{minValue}
           </div>
-          <span className="inline-block mx-2"> - </span>  
-          <div className="" style={{ left: `${getPercentage(maxValue)}%` }}>
+          <span className="inline-block mx-2"> - </span>
+          <div style={{ left: `${getPercentage(maxValue)}%` }}>
             ₹{maxValue}
           </div>
         </div>

@@ -23,7 +23,7 @@ const ProductForm = ({ product, categories, subCategories, onSave }) => {
     product_img: null,
     gallery_imgs: [],
     is_variant: product?.is_variant || false,
-    variants: product.variants ?? [],
+    variants: product?.variants ?? [],
   });
 
   console.log('productData',productData);
