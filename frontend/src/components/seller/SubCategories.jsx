@@ -8,7 +8,7 @@ import Modal from "react-modal";
 import { ProductService } from "../../services/ProductService";
 import SubCategoryForm from "./SubCategoryForm";
 import toast from "react-hot-toast";
-import { getUserInfo } from "../../services/authService";
+import { useSelector } from "react-redux";
 
 const SubCategories = () => {
   const {
@@ -24,7 +24,7 @@ const SubCategories = () => {
       toggleProfileMenu,
   } = useDashboardLogic();
   
-  const [userInfo, setUserInfo] = useState(null);
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
   const [filteredCategories, setFilteredCategories] = useState([]);
@@ -38,24 +38,6 @@ const SubCategories = () => {
   const [sortConfig, setSortConfig] = useState({ key: "", direction: "" });
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
-
-  const fetchUser = async () => {
-    try {
-        const user = await getUserInfo();
-        if(user){
-          console.log('fetchUser - ',user);
-          setTimeout(() => {
-            setUserInfo(user.userInfo);
-          }, 200); 
-          console.log('userInfo - ',userInfo);
-        }
-    } catch (error) {
-        console.error("Error fetching user info:", error);
-    }
-  };
-  useEffect(() => {
-    fetchUser();
-  }, []);
 
   // Fetch Categories
   const fetchCategories = async (id) => {
@@ -79,13 +61,11 @@ const SubCategories = () => {
   };
 
   useEffect(() => {
-    if(userInfo !== null){
-      fetchSubCategories(userInfo._id);
-      fetchCategories(userInfo._id);
-    }else{
-      fetchUser();
+    if(user !== null){
+      fetchSubCategories(user._id);
+      fetchCategories(user._id);
     }
-  }, [userInfo]); // Runs only once
+  }, [user]); // Runs only once
   
   useEffect(() => {
     setFilteredCategories(subCategories); // Updates only when subCategories change

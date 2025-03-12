@@ -5,6 +5,7 @@ const UserDetails = require("../models/UserDetails");
 const path = require('path');
 const fs = require('fs');
 const mongoose = require('mongoose');
+const jwt = require("jsonwebtoken");
 
 const haversineDistance = (lat1, lon1, lat2, lon2) => {
     const toRad = (value) => (value * Math.PI) / 180;
@@ -296,21 +297,21 @@ exports.getProductByFilter = async (req, res) => {
 
 
 exports.getNearbySellerProducts = async (req, res) => {
-    try {
-        const token = req.headers.authorization?.split(" ")[1];
-        if (!token) {
-            return res.status(401).json({ message: "No token provided" });
+    try {        
+        console.log("🟡 getNearbySellerProducts req.user:", req.user);
+
+        if (!req.user || !req.user.userId) {
+            return res.status(401).json({ message: "Unauthorized: User not authenticated" });
         }
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await User.findById(decoded.userId).populate("userdetails");
+        const user_id = req.user.userId;
+        const user = await User.findById(user_id).populate("userdetails");
 
         if (!user || !user.userdetails) {
             return res.status(404).json({ message: "User details not found" });
         }
 
         const { latitude, longitude } = user.userdetails;
-
         if (!latitude || !longitude) {
             return res.status(400).json({ message: "User location not available" });
         }
@@ -341,15 +342,13 @@ exports.getNearbySellerProducts = async (req, res) => {
         // Fetch products from nearby sellers
         const products = await Product.find({ seller_id: { $in: sellerIds } });
 
-        res.status(200).json({
-            message: "Nearby seller products fetched successfully",
-            products,
-        });
+        res.status(200).json(products);
     } catch (error) {
         console.error("Error fetching nearby seller products:", error);
         res.status(500).json({ message: "Internal Server Error" });
     }
 };
+
 
 // UPDATE: Update a product by product_id with image upload
 exports.updateProduct = async (req, res) => {

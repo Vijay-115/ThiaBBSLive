@@ -5,11 +5,9 @@ import { placeOrder } from '../../slice/orderSlice';
 import Select from "react-select";
 import { GetCountries, GetState, GetCity } from "react-country-state-city";
 import toast from "react-hot-toast";
-import { fetchCartItems, removeFromCart } from '../../slice/cartSlice';
-import { getUserInfo } from '../../services/authService';
+import { removeFromCart } from '../../slice/cartSlice';
 import Button from '../layout/Button';
 import { ProductService } from '../../services/ProductService';
-
 
 const loadRazorpay = () => {
     return new Promise((resolve) => {
@@ -23,15 +21,14 @@ const loadRazorpay = () => {
 
 function CheckoutPage() {
     const dispatch = useDispatch();
-    const [userInfo, setUserInfo] = useState(null);
-    useEffect(() => {
-        dispatch(fetchCartItems());
-    }, []);
+    const { user, isAuthenticated } = useSelector((state) => state.auth);
     const navigate = useNavigate();
     const cartItems = useSelector((state) => state.cart.items);
     const [cartTotal,setCartTotal] = useState(0);
     const deliveryCharge = 0;
     const { loading, order, error } = useSelector((state) => state.order);
+
+    console.log('User - ', user);
 
     useEffect(() => {
         loadRazorpay();
@@ -66,22 +63,10 @@ function CheckoutPage() {
     console.log('orderData',orderData);
 
     useEffect(() => {
-        const fetchUser = async () => {
-            try {
-                const user = await getUserInfo();
-                setUserInfo(user.userInfo);
-            } catch (error) {
-                console.error("Error fetching user info:", error);
-            }
-        };
-        fetchUser();
-    }, []);
-
-    useEffect(() => {
-        if (userInfo) {
+        if (user) {
             setOrderData(prev => ({
                 ...prev,
-                shippingAddress: userInfo?.userdetails?.addresses || {
+                shippingAddress: user?.details?.addresses || {
                     street: "",
                     city: "",
                     state: "",
@@ -90,7 +75,7 @@ function CheckoutPage() {
                 },
             }));     
         }
-    }, [userInfo]);
+    }, [user]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -157,9 +142,9 @@ function CheckoutPage() {
                             }
                         },
                         prefill: {
-                            name: userInfo?.name,
-                            email: userInfo?.email,
-                            contact: userInfo?.userdetails?.phone,
+                            name: user?.name,
+                            email: user?.email,
+                            contact: user?.details?.phone,
                         },
                         theme: {
                             color: "#3399cc",
@@ -369,7 +354,7 @@ function CheckoutPage() {
                         <div className="min-[992px]:w-[66.66%] w-full px-[12px] mb-[24px]">
                             <div className="bb-checkout-contact border-[1px] border-solid border-[#eee] p-[20px] rounded-[20px] aos-init aos-animate" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="400">
                                 {
-                                    !userInfo ? (
+                                    !user ? (
                                         <>
                                             <div className="main-title mb-[20px]">
                                                 <h4 className ="font-quicksand tracking-[0.03rem] leading-[1.2] text-[20px] font-bold text-secondary">Before placing order please log in</h4>
@@ -404,7 +389,7 @@ function CheckoutPage() {
                                                         <div className="min-[992px]:w-[50%] w-full px-[12px]">
                                                             <div className="input-item mb-[24px]">
                                                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">First Name *</label>
-                                                                <input type="text" name="firstName" placeholder="Enter your First Name" className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" value={userInfo.name ?? ''} required />
+                                                                <input type="text" name="firstName" placeholder="Enter your First Name" className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" value={user.name ?? ''} required />
                                                             </div>
                                                         </div>
 

@@ -7,7 +7,8 @@ const { authUser } = require('../middleware/authMiddleware');
 // Category Routes
 router.post('/categories', authUser, categoryController.createCategory);
 router.get('/categories', authUser, categoryController.getAllCategories);
-router.get('/categories/seller/:sellerId', categoryController.getCategoryBySellerId);
+router.get('/categories/nearbyseller',authUser, categoryController.getNearbySellerCategories);
+router.get('/categories/seller/:sellerId', categoryController.getNearbySellerCategories);
 router.get('/categories/:id', authUser, categoryController.getCategoryById);
 router.put('/categories/:id', authUser, categoryController.updateCategory);
 router.delete('/categories/:id', authUser, categoryController.deleteCategory);

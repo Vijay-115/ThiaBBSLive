@@ -15,7 +15,7 @@ client.connect().catch((err) => console.error("❌ Redis Connection Failed:", er
 // Authentication Middleware
 const auth = async (req, res, next) => {
     try {
-        const token = req.header("Authorization")?.split(" ")[1];
+        const token = req.cookies?.accessToken;
 
         if (!token) {
             return res.status(401).json({ success: false, message: "No token, authorization denied" });
@@ -48,7 +48,7 @@ const adminOnly = (req, res, next) => {
 // Logout Function (Blacklist Token)
 const logout = async (req, res) => {
     try {
-        const token = req.header("Authorization")?.split(" ")[1];
+        const token = req.cookies?.accessToken;
 
         if (!token) {
             return res.status(400).json({ success: false, message: "Token is required" });
@@ -71,10 +71,10 @@ const logout = async (req, res) => {
 
 const authUser = async (req, res, next) => {
     try {
-        const token = req.header("Authorization")?.split(" ")[1];
+        const token = req.cookies?.accessToken || req.headers.authorization?.split(" ")[1];
 
         if (!token) {
-            req.user = null; // No token, allow request to continue
+            req.user = null;
             return next();
         }
 
@@ -85,17 +85,17 @@ const authUser = async (req, res, next) => {
             return next();
         }
 
-        // Verify token
         try {
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
-            req.user = decoded;
+            req.user = decoded;  
         } catch (error) {
+            console.error("❌ Token Verification Failed:", error.message);
             req.user = null;
         }
 
         next();
     } catch (error) {
-        console.error("❌ JWT Verification Error:", error.message);
+        console.error("❌ JWT Middleware Error:", error.message);
         req.user = null;
         next();
     }

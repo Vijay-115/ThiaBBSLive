@@ -2,11 +2,13 @@ import React, { useState } from "react";
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { login } from "../../services/authService";
+import { useDispatch } from "react-redux";
 
 const Login = () => {
 
     const [loginData, setLoginData] = useState({ lemail: '', lpassword: '' });
     const [errors, setErrors] = useState({});
+    const dispatch = useDispatch();
     const navigate = useNavigate();
 
     // Validation function for login
@@ -37,7 +39,7 @@ const Login = () => {
         }
     
         try {
-            const response = await login(loginData.lemail, loginData.lpassword);
+            const response = await login(dispatch,loginData.lemail, loginData.lpassword, navigate);
             if (response) {
                 const { user } = response;
                 const { role, name, email } = user;

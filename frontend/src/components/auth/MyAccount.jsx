@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { getUserInfo, updateProfile } from '../../services/authService';
+import { updateProfile } from '../../services/authService';
 import Select from "react-select";
 import { GetCountries, GetState, GetCity } from "react-country-state-city";
 import toast from "react-hot-toast";
+import { useSelector } from 'react-redux';
 
 function MyAccount() {
     
-    const [userInfo, setUserInfo] = useState(null);
+    const { user, isAuthenticated } = useSelector((state) => state.auth);
     const [countries, setCountries] = useState([]);
     const [states, setStates] = useState([]);
     const [cities, setCities] = useState([]);
     const [imagePreview, setImagePreview] = useState("http://i.pravatar.cc/500?img=7");
+
+    console.log(user)
 
     const [userData, setUserData] = useState({
         name: "",
@@ -18,35 +21,23 @@ function MyAccount() {
     });
 
     useEffect(() => {
-        const fetchUser = async () => {
-            try {
-                const user = await getUserInfo();
-                setUserInfo(user.userInfo);
-            } catch (error) {
-                console.error("Error fetching user info:", error);
-            }
-        };
-        fetchUser();
-    }, []);
-
-    useEffect(() => {
-        if (userInfo) {
+        if (user) {
             setUserData(prev => ({
                 ...prev,
-                name: userInfo.name || "",
-                address: userInfo?.userdetails?.addresses || {
+                name: user.name || "",
+                address: user?.details?.addresses || {
                     street: "",
                     city: "",
                     state: "",
                     postalCode: "",
                     country: "",
                 },
-                profilePic : userInfo?.userdetails?.profilePic || '', 
+                profilePic : user?.details?.profilePic || '', 
             }));     
-            setImagePreview(userInfo?.userdetails?.profilePic ? import.meta.env.VITE_API_URL+''+userInfo?.userdetails?.profilePic:'');       
+            setImagePreview(user?.details?.profilePic ? import.meta.env.VITE_API_URL+''+user?.details?.profilePic:'');       
             // console.log('userInfo',userData);
         }
-    }, [userInfo]);
+    }, [user]);
 
     useEffect(() => {
         const fetchCountries = async () => {

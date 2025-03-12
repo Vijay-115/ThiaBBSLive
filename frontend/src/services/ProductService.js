@@ -18,6 +18,17 @@ export const ProductService = {
     }
   },
 
+  async getProductsNearbySeller() {
+    try {
+      const response = await api.get(`${BASE_PRODUCTS_URL}/nearbyseller`);
+      console.log("Fetched Products:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error in getProductsNearbySeller:", error);
+      throw new Error(error.response?.data?.message || "Failed to fetch products.");
+    }
+  },
+
   async getProductID(id) {
       try {
         const response = await api.get(`${BASE_PRODUCTS_URL}/${id}`);
@@ -153,6 +164,17 @@ export const ProductService = {
       return response.data;
     } catch (error) {
       console.error("Error in getCategorys:", error);
+      throw new Error(error.response?.data?.message || "Failed to fetch Categorys.");
+    }
+  },
+
+  async getCategoriesNearbySeller() {
+    try {
+      const response = await api.get(`${BASE_CATEGORIES_URL}/nearbyseller`);
+      console.log("Fetched Categories:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error in getCategoriesNearbySeller:", error);
       throw new Error(error.response?.data?.message || "Failed to fetch Categorys.");
     }
   },

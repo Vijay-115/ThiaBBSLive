@@ -4,6 +4,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import ProductlistItem from "./ProductlistItem";
 import { ProductService } from "../../services/ProductService";
+import { useSelector } from "react-redux";
 
 // Custom Previous Arrow
 const CustomPrevArrow = ({ onClick }) => (
@@ -21,7 +22,9 @@ const CustomNextArrow = ({ onClick }) => (
 
 function ProductList({ heading, type, category, subcategory, filter, filters }) {
   const [products, setProducts] = useState([]); // Ensure products is always an array
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
   console.log(type, category, subcategory, filter, filters);
+  
   // Fetch products from API
   useEffect(() => {
     const fetchProducts = async () => {
@@ -37,6 +40,9 @@ function ProductList({ heading, type, category, subcategory, filter, filters }) 
           } else if(subcategory !== null && subcategory !== undefined) {
               console.log("Fetching products by Category ID:", subcategory);
               data = await ProductService.getProductSubCategoryID(subcategory);
+          } else if(user !== null){
+              console.log("Fetching products by NearBySeller:", user);
+              data = await ProductService.getProductsNearbySeller();
           }else{
             console.log("Fetching all products");
             data = await ProductService.getProducts();
@@ -57,7 +63,7 @@ function ProductList({ heading, type, category, subcategory, filter, filters }) 
       }
     };
     fetchProducts();
-  }, [category, subcategory, filters]); // Added filters to the dependency array
+  }, [category, subcategory, filters,user]); // Added filters to the dependency array
 
   // Slider Settings
   const settings = {

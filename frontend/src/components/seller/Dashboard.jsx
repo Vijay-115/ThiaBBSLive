@@ -4,7 +4,7 @@ import './../admin/assets/dashboard.css';
 import Sidebar from './layout/sidebar';
 import Navbar from './layout/Navbar';
 import useDashboardLogic from "./../admin/hooks/useDashboardLogic"; 
-import { getAllOrders } from "../../slice/orderSlice";
+import { getOrderBySellerId } from "../../slice/orderSlice";
 import { useDispatch, useSelector } from "react-redux";
 import moment from "moment";
 
@@ -24,9 +24,10 @@ const Dashboard = () => {
 
     const dispatch = useDispatch();
     const { orders, loading, error } = useSelector((state) => state.order);
+    const { user, isAuthenticated } = useSelector((state) => state.auth);
 
     useEffect(() => {
-        dispatch(getAllOrders());
+        dispatch(getOrderBySellerId(user._id));
     }, [dispatch]);
 
     return (

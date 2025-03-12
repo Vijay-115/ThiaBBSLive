@@ -1,11 +1,11 @@
 // import { getOrders, updateOrderStatus } from '../../services/adminService';
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { NavLink } from 'react-router-dom';
 import './../admin/assets/dashboard.css';
 import Sidebar from './layout/sidebar';
 import Navbar from './layout/Navbar';
 import useDashboardLogic from "./../admin/hooks/useDashboardLogic"; 
-import { getAllOrders } from "../../slice/orderSlice";
+import { getOrderBySellerId } from "../../slice/orderSlice";
 import { useDispatch, useSelector } from "react-redux";
 import moment from "moment";
 
@@ -24,14 +24,17 @@ const Orders = () => {
         toggleProfileMenu,
     } = useDashboardLogic();
 
+    const { user, isAuthenticated } = useSelector((state) => state.auth);
     const dispatch = useDispatch();
     const { orders, loading, error } = useSelector((state) => state.order);
 
     useEffect(() => {
-        dispatch(getAllOrders());
-    }, [dispatch]);
+        if(user !== null){
+            dispatch(getOrderBySellerId(user._id));
+        }
+    }, [user]);
 
-    console.log(orders);
+    console.log('Seller Orders - ',orders);
 
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Error: {error}</p>;
@@ -97,19 +100,32 @@ const Orders = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                    {orders.map((order) => (
-                                    <tr key={order._id}>
-                                        <td>
-                                            <img src="https://placehold.co/600x400/png" />
-                                            {/* <p>Order #{order._id}</p> */}
-                                            <p>{order.user_id.name}</p>
-                                        </td>
-                                        <td>{moment(order.created_at).format("DD-MM-YYYY")}</td>
-                                        <td>
-                                            <span className="status completed">{order.status}</span>
-                                        </td>
-                                    </tr>
-                                    ))}
+                                    {
+                                        orders.length > 0 ? (
+                                            orders.map((order) => (
+                                                <tr key={order._id}>
+                                                    <td>
+                                                        <img 
+                                                            src={order.orderItems?.[0]?.product?.image || "https://placehold.co/600x400/png"} 
+                                                            alt="Product Image"
+                                                            width="100"
+                                                        />
+                                                        <p>{order.user_id?.name || "Unknown User"}</p>
+                                                    </td>
+                                                    <td>{moment(order.created_at).format("DD-MM-YYYY")}</td>
+                                                    <td>
+                                                        <span className={`status ${order.status.toLowerCase()}`}>{order.status}</span>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan={3}>
+                                                    {error ? <p>{error}</p> : <p>No orders found.</p>}
+                                                </td>
+                                            </tr>
+                                        )
+                                    }
                                     </tbody>
                                 </table>
                             </div>
