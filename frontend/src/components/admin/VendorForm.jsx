@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Select from "react-select";
 
 const VendorForm = ({ vendor, onSave }) => {
   const [formData, setFormData] = useState({
@@ -9,6 +10,34 @@ const VendorForm = ({ vendor, onSave }) => {
     role: "customer", // Default role
     // referredBy: "",
   });
+  const [rolesOptions, setRolesOptions] = useState([]);
+  const [roles, setRoles] = useState([
+    {
+      label:'Customer',
+      value:'customer'
+    },
+    {
+      label:'Agent',
+      value:'agent'
+    },
+    {
+      label:'Territory Head',
+      value:'territory_head'
+    },
+    {
+      label:'Franchise',
+      value:'franchise'
+    },
+  ]);
+
+  useEffect(() => {
+    const formattedOptions = roles.map((role) => ({
+      value: role.value,
+      label: role.label,
+    }));
+    setRolesOptions(formattedOptions);
+  }, [roles]);
+
 
   useEffect(() => {
     if (vendor) {
@@ -27,6 +56,14 @@ const VendorForm = ({ vendor, onSave }) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleSelectChange = (selectedOption) => {
+    console.log(selectedOption);
+    setFormData((prevData) => ({
+      ...prevData,
+      role: selectedOption.value,
+    }));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     onSave(formData);
@@ -39,78 +76,85 @@ const VendorForm = ({ vendor, onSave }) => {
       </h2>
       <div className="input-box-form mt-[20px]">
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-gray-700">Full Name</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-              className="w-full border p-2 rounded-md"
-            />
+          <div className="w-full px-[12px] mt-[0px]">
+            <div className="input-item mb-[12px]">
+              <label className="block text-[14px] font-medium text-secondary mb-[8px]">Full Name</label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                required
+                className="w-full border p-2 rounded-md"
+              />
+            </div>
           </div>
 
-          <div>
-            <label className="block text-gray-700">Email</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              className="w-full border p-2 rounded-md"
-            />
+          <div className="w-full px-[12px] mt-[0px]">
+            <div className="input-item mb-[12px]">
+              <label className="block text-[14px] font-medium text-secondary mb-[8px]">Email</label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                className="w-full border p-2 rounded-md"
+              />
+            </div>
           </div>
 
-          <div>
-            <label className="block text-gray-700">Phone</label>
-            <input
-              type="text"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              required
-              className="w-full border p-2 rounded-md"
-            />
+          <div className="w-full px-[12px] mt-[0px]">
+            <div className="input-item mb-[12px]">
+              <label className="block text-[14px] font-medium text-secondary mb-[8px]">Phone</label>
+              <input
+                type="text"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                required
+                className="w-full border p-2 rounded-md"
+              />
+            </div>
           </div>
           {/* Password */}
-          <div className="w-full px-[12px]">
-              <div className="input-item mb-[24px]">
+          <div className="w-full px-[12px] mt-[0px]">
+            <div className="input-item mb-[12px]">
+              <label className="block text-[14px] font-medium text-secondary mb-[8px]">
+                Password *
+              </label>
+              <input
+                type="password"
+                name="password"
+                placeholder="Enter your Password"
+                className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="w-full px-[12px] mt-[0px]">
+              <div className="input-item mb-[12px]">
                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">
-                  Password *
+                  Select Role*
                 </label>
-                <input
-                  type="password"
-                  name="password"
-                  placeholder="Enter your Password"
-                  className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
+                <Select
+                  options={rolesOptions}
+                  value={rolesOptions.find(option => option.value === formData.role) || null}
+                  onChange={handleSelectChange}
+                  placeholder="Select Category"
+                  isSearchable
+                  className="w-full"
+                  name="role"
                 />
               </div>
             </div>
 
-          <div>
-            <label className="block text-gray-700">Role</label>
-            <select
-              name="role"
-              value={formData.role}
-              onChange={handleChange}
-              required
-              className="w-full border p-2 rounded-md block"
-            >
-              <option value="customer">Customer</option>
-              <option value="agent">Agent</option>
-              <option value="territory_head">Territory Head</option>
-              <option value="franchise">Franchise</option>
-            </select>
-          </div>
-
           {/* {formData.role !== "franchise" && (
             <div>
-              <label className="block text-gray-700">Referred By (Higher Role User ID)</label>
+              <label className="block text-[14px] font-medium text-secondary mb-[8px]">Referred By (Higher Role User ID)</label>
               <input
                 type="text"
                 name="referredBy"

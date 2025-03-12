@@ -2,18 +2,20 @@ const express = require('express');
 const router = express.Router();
 const productController = require('../controllers/productController');
 const { uploadAny } = require('../middleware/upload');
-const { auth, adminOnly } = require('../middleware/authMiddleware');
+const { auth, authUser } = require('../middleware/authMiddleware');
 
 // Create product with image upload
-router.post("/", auth, uploadAny, productController.createProduct);
+router.post("/", authUser, uploadAny, productController.createProduct);
 // READ: Get all products
-router.get('/', productController.getAllProducts);
+router.get('/',authUser, productController.getAllProducts);
+router.get('/nearbyseller',authUser, productController.getNearbySellerProducts);
 
 // READ: Get a single product by ID
 router.get("/filter", productController.getProductByFilter);
 router.get("/tags", productController.getAllProductTags);
 router.get('/category/:categoryId', productController.getProductsByCategoryId);
 router.get('/subcategory/:subcategoryId', productController.getProductsBySubCategoryId);
+router.get('/seller/:sellerId', productController.getProductsBySellerId);
 router.get('/:id', productController.getProductById);
 
 // Update product with image upload

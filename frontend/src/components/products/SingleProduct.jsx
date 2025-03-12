@@ -66,7 +66,7 @@ function SingleProduct() {
     // Handle adding to cart
     const handleAddToCart = () => {
       const initialQuantity = quantities || 1;
-      dispatch(addToCart({ productId: productData?._id, variantId:productData?.variant_id, quantity: initialQuantity }));
+      dispatch(addToCart({ productId: productData?._id, variantId:productData?.variant_id || null, quantity: initialQuantity }));
       setQuantities(1);
       // Display toast notification
       toast.success(`${productData?.name} added to cart!`);

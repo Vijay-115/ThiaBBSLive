@@ -42,6 +42,19 @@ export const getOrderById = createAsyncThunk(
   }
 );
 
+// ✅ Get Order by SellerID
+export const getOrderBySellerId = createAsyncThunk(
+  "order/getOrderBySellerId",
+  async (sellerId, { rejectWithValue }) => {
+    try {
+      const response = await api.get(`${BASE_URL}/seller/${sellerId}`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error?.response?.data?.message || error.message || "Failed to fetch order.");
+    }
+  }
+);
+
 // ✅ Get Orders by Status
 export const getOrdersByStatus = createAsyncThunk(
   "order/getOrdersByStatus",
@@ -135,6 +148,21 @@ const orderSlice = createSlice({
         state.order = action.payload.order;
       })
       .addCase(getOrderById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // 📌 Get Order by SellerID
+      .addCase(getOrderBySellerId.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getOrderBySellerId.fulfilled, (state, action) => {
+        state.loading = false;
+        state.orders = action.payload.orders;
+        console.log('getOrderBySellerId - ',action.payload.orders);
+      })
+      .addCase(getOrderBySellerId.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

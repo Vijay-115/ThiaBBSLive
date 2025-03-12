@@ -8,6 +8,7 @@ import Modal from "react-modal";
 import ProductForm from "./ProductForm";
 import { ProductService } from "../../services/ProductService";
 import toast from "react-hot-toast";
+import { useSelector } from "react-redux";
 
 const Products = () => {
 
@@ -24,7 +25,7 @@ const Products = () => {
         toggleProfileMenu,
     } = useDashboardLogic();
 
-  
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
   const [products, setProducts] = useState([]);
@@ -42,18 +43,18 @@ const Products = () => {
   const itemsPerPage = 5;
 
   // Fetch Categories
-    const fetchCategories = async () => {
+    const fetchCategories = async (id) => {
       try {
-        const data = await ProductService.getCategories();
+        const data = await ProductService.getCategorySellerID(id);
         setCategories(data);
       } catch (error) {
         console.error("Error fetching categories:", error);
       }
     };
     
-    const fetchSubCategories = async () => {
+    const fetchSubCategories = async (id) => {
       try {
-        const data = await ProductService.getSubCategories();
+        const data = await ProductService.getSubCategorySellerID(id);
         setSubCategories(data);
       } catch (error) {
         console.error("Error fetching subCategories:", error);
@@ -61,9 +62,9 @@ const Products = () => {
       }
     };
 
-    const fetchProducts = async () => {
+    const fetchProducts = async (id) => {
       try {
-        const data = await ProductService.getProducts();
+        const data = await ProductService.getProductsSellerID(id);
         setProducts(data);
         setFilteredProducts(data);
       } catch (error) {
@@ -73,13 +74,18 @@ const Products = () => {
     };    
   
     useEffect(() => {
-      fetchSubCategories();
-      fetchCategories();
-    }, []);
+      if(user !== null){
+        fetchSubCategories(user._id);
+        fetchCategories(user._id);
+        fetchProducts(user._id);
+      }
+    }, [user]);
 
-  useEffect(() => {
-    fetchProducts();
-  }, [editProduct]);
+    useEffect(() => {
+      if(user !== null){
+        fetchProducts(user._id);
+      }
+    }, [editProduct]);
 
   useEffect(() => {
     const filterAndSortProducts = () => {

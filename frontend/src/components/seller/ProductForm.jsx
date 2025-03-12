@@ -3,6 +3,9 @@ import Select from "react-select";
 
 const ProductForm = ({ product, categories, subCategories, onSave }) => {
 
+  console.log('ProductForm categories - ', categories);
+  console.log('ProductForm subCategories - ',subCategories);
+
   const [productData, setProductData] = useState({
     _id: product?._id || "",
     name: product?.name || "",
@@ -23,7 +26,7 @@ const ProductForm = ({ product, categories, subCategories, onSave }) => {
     product_img: null,
     gallery_imgs: [],
     is_variant: product?.is_variant || false,
-    variants: product.variants ?? [],
+    variants: product?.variants ?? [],
   });
 
   console.log('productData',productData);
@@ -148,8 +151,9 @@ const ProductForm = ({ product, categories, subCategories, onSave }) => {
         label: subcategory.name,
       }));
       setSubcategoriesOptions(formattedSubCatOptions);
+      console.log('SubcategoriesOptions',subcategoriesOptions);
     }
-  }, [categories, subCategories]); // ✅ Add dependencies
+  }, []); // ✅ Add dependencies
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -275,14 +279,16 @@ const ProductForm = ({ product, categories, subCategories, onSave }) => {
 
         // If category is selected, filter subcategories
         if (name === "category_id") {
+            console.log(name);
             const filteredSubcategories = subCategories.filter(
-                (subcategory) => subcategory.category_id._id === selectedOption.value
+                (subcategory) => subcategory.category_id === selectedOption.value
             ).map((subcategory) => ({
                 value: subcategory._id,
                 label: subcategory.name,
             }));
 
             setSubcategoriesOptions(filteredSubcategories);
+            console.log('handleSelectChange SubcategoriesOptions - ', subcategoriesOptions)
             updatedData.subcategory_id = ""; // Reset subcategory when category changes
         }
 
