@@ -3,14 +3,17 @@ import { useDispatch, useSelector } from "react-redux";
 import CartPopup from "./CartPopup";
 import { Link, useNavigate } from "react-router-dom";
 import toast from 'react-hot-toast';
-import { logout } from "../../services/authService";
+import { loadUser, logout } from "../../services/authService";
 import { fetchCartItems } from "../../slice/cartSlice";
 import axios from "axios";
 
 function HeaderTop(props) {
     const dispatch = useDispatch();
-    const isLoggedIn = !!localStorage.getItem("token");
-    const userName = localStorage.getItem('userName') ?? '';
+    const { user, isAuthenticated } = useSelector((state) => state.auth);
+    // Load user details on mount
+    useEffect(() => {
+        dispatch(loadUser());
+    }, [dispatch]);
     const cartItems = useSelector((state) => state.cart.items);
     const cartCount = Object.values(cartItems).length;
     const wishItems = useSelector((state) => state.wishlist.items);
@@ -20,7 +23,7 @@ function HeaderTop(props) {
     const handleLogout = async (e) => {
         e.preventDefault();
         try {
-            await logout();
+            await logout(dispatch);
             toast.success("Successfully Logged Out");
 
             // Redirect to home page
@@ -30,8 +33,7 @@ function HeaderTop(props) {
         }
     };
 
-    const token = localStorage.getItem("token");
-    const userRole = localStorage.getItem("userRole");
+    const userRole = user?.role;
 
     const roleDashboardRoutes = {
         admin: "/admin/dashboard",
@@ -91,7 +93,7 @@ function HeaderTop(props) {
                                                         <img src="/img/header/profile.png" alt="profile" className="w-[35px] h-[35px] relative -right-1" />
                                                     </div>
                                                     <div className="bb-btn-desc flex flex-col ml-[10px] max-[1199px]:hidden">
-                                                        {!isLoggedIn ? (
+                                                        {!isAuthenticated ? (
                                                             <>
                                                                 <span className="bb-btn-title font-Poppins transition-all duration-[0.3s] ease-in-out text-[12px] leading-[1] text-secondary mb-[4px] tracking-[0.6px] capitalize font-medium whitespace-nowrap">Account</span>
                                                                 <span className="bb-btn-stitle font-Poppins transition-all duration-[0.3s] ease-in-out text-[14px] leading-[16px] font-semibold text-secondary  tracking-[0.03rem] whitespace-nowrap">Login</span>
@@ -99,12 +101,12 @@ function HeaderTop(props) {
                                                         ) : (
                                                             <>
                                                                 <span className="bb-btn-title font-Poppins transition-all duration-[0.3s] ease-in-out text-[12px] leading-[1] text-secondary mb-[4px] tracking-[0.6px] capitalize font-medium whitespace-nowrap">Welcome!</span>
-                                                                <span className="bb-btn-stitle font-Poppins transition-all duration-[0.3s] ease-in-out text-[14px] leading-[16px] font-semibold text-secondary  tracking-[0.03rem] whitespace-nowrap">{userName}</span>
+                                                                <span className="bb-btn-stitle font-Poppins transition-all duration-[0.3s] ease-in-out text-[14px] leading-[16px] font-semibold text-secondary  tracking-[0.03rem] whitespace-nowrap">{user.name}</span>
                                                             </>
                                                         )}
                                                     </div>
                                                     <ul className="hidden absolute top-[33px] bg-white z-50 rounded-[10px] group-hover:block shadow-md p-3">
-                                                        {!isLoggedIn ? (
+                                                        {!isAuthenticated ? (
                                                             <>
                                                                 <li className="py-[4px] px-[15px] m-[0] font-Poppins text-[15px] text-secondary font-light leading-[28px] tracking-[0.03rem]">
                                                                     <Link to="/register" className="dropdown-item transition-all duration-[0.3s] ease-in-out font-Poppins text-[13px] hover:text-primary leading-[22px] block w-full font-normal tracking-[0.03rem] mb-2">
@@ -122,7 +124,7 @@ function HeaderTop(props) {
                                                                 <Link to="/my-account" className="dropdown-item transition-all duration-[0.3s] ease-in-out font-Poppins text-[13px] hover:text-primary leading-[22px] block w-full font-normal tracking-[0.03rem] mb-2">
                                                                     Profile
                                                                 </Link>
-                                                                {token && dashboardPath && (
+                                                                {dashboardPath && (
                                                                     <Link
                                                                         to={dashboardPath}
                                                                         className="dropdown-item transition-all duration-300 ease-in-out font-Poppins text-[13px] hover:text-primary leading-[22px] block w-full font-normal tracking-[0.03rem] mb-2"

@@ -108,10 +108,24 @@ exports.register = async (req, res) => {
             { expiresIn: "7d" }
         );
 
-        // ✅ Send response with tokens and user data
+        // ✅ Set tokens as HttpOnly cookies
+        res.cookie("accessToken", accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production", // Secure in production
+            sameSite: "strict",
+            maxAge: 60 * 60 * 1000 // 1 hour
+        });
+
+        res.cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+
+        // ✅ Send response without exposing tokens
         res.status(201).json({
-            accessToken,
-            refreshToken,
+            msg: "User registered successfully",
             user,
             userDetails
         });
@@ -137,15 +151,15 @@ exports.login = async (req, res) => {
 
     try {
         // Check if the user exists
-        const user = await User.findOne({ email }).select('+password');
+        const user = await User.findOne({ email }).populate("userdetails").select("+password");
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            return res.status(404).json({ message: "User not found" });
         }
 
         // Compare the provided password with the stored hash
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return res.status(400).json({ message: 'Invalid credentials' });
+            return res.status(400).json({ message: "Invalid credentials" });
         }
 
         // ✅ Merge guest cart with logged-in user cart (if applicable)
@@ -158,26 +172,41 @@ exports.login = async (req, res) => {
         const accessToken = jwt.sign(
             { userId: user._id, role: user.role },
             process.env.JWT_SECRET,
-            { expiresIn: '1h' } // Access token valid for 1 hour
+            { expiresIn: "1h" } // Access token valid for 1 hour
         );
 
         // ✅ Generate Refresh Token (Longer Expiry)
         const refreshToken = jwt.sign(
             { userId: user._id },
             process.env.REFRESH_TOKEN_SECRET,
-            { expiresIn: '7d' } // Refresh token valid for 7 days
+            { expiresIn: "7d" } // Refresh token valid for 7 days
         );
 
         // ✅ Store refreshToken securely in the database
         user.refreshToken = refreshToken;
         await user.save();
 
-        // ✅ Send response with tokens and user data
-        res.status(200).json({
-            accessToken,
-            refreshToken,
-            user,
+        // ✅ Set HttpOnly Cookie for Access Token
+        res.cookie("accessToken", accessToken, {
+            httpOnly: true, // Prevents XSS attacks
+            secure: process.env.NODE_ENV === "production", // Only send over HTTPS in production
+            sameSite: "Strict", // Protects against CSRF
+            maxAge: 60 * 60 * 1000, // 1 hour
         });
+
+        // ✅ Send response with refreshToken and user data (without password)
+        res.status(200).json({
+            message: "Login successful",
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                details: user.userdetails, // ✅ Corrected field name
+            },
+        });
+
+        // console.log('Login Res - ',res);
 
     } catch (err) {
         console.error("Login error:", err);
@@ -290,19 +319,27 @@ exports.resetPassword = async (req, res) => {
 // Logout user (Blacklist Token)
 exports.logout = async (req, res) => {
     try {
-        const token = req.headers.authorization?.split(" ")[1];
+        // Get token from cookies (since it's HttpOnly)
+        const token = req.cookies.accessToken;
         if (!token) {
             return res.status(400).json({ message: "No token provided" });
         }
 
+        // Verify token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const expiry = decoded.exp ? decoded.exp - Math.floor(Date.now() / 1000) : 86400; // 24-hour expiry fallback
 
+        // Add token to blacklist in Redis
         await client.setEx(token, expiry, "blacklisted");
 
-        res.status(200).json({ message: "Logout successful" });
+        // Clear cookies
+        res.clearCookie("accessToken", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "strict" });
+        res.clearCookie("refreshToken", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "strict" });
+
+        return res.status(200).json({ message: "Logout successful" });
     } catch (error) {
-        res.status(500).json({ message: "Server error" });
+        console.error("Logout error:", error);
+        return res.status(500).json({ message: "Server error" });
     }
 };
 
@@ -424,5 +461,40 @@ exports.updateProfile = async (req, res) => {
     } catch (error) {
         console.error("Error updating profile:", error);
         res.status(500).json({ message: "Failed to update profile" });
+    }
+};
+
+exports.getUser = async (req, res) => {
+    console.log("Cookies:", req.cookies);
+
+    try {
+        const token = req.cookies?.accessToken;
+        if (!token) {
+            return res.status(401).json({ message: "Not authenticated" });
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console
+        let user = await User.findById(decoded.userId).populate("userdetails").select("-password");
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        console.log("getUser user - ", user);
+
+        return res.status(200).json({
+            message: "Getting UserInfo",
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                details: user.userdetails, // ✅ Corrected field name
+            },
+        });
+    } catch (error) {
+        console.error("Error fetching user:", error);
+        return res.status(401).json({ message: "Invalid token" });
     }
 };

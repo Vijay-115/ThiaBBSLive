@@ -1,34 +1,33 @@
-import React, { useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom';
-import { getUserInfo } from '../services/authService';
+import React, { useEffect } from 'react';
+import { Navigate, Outlet } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { loadUser } from '../services/authService';
 
-const ProtectedRoute = ({ children, requiredRole }) => {
-    const [userInfo, setUserInfo] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
+const ProtectedRoute = ({ requiredRole }) => {
+    const dispatch = useDispatch();
+    const { user, isAuthenticated, loading } = useSelector((state) => state.auth);
 
+    // Load user details on mount
     useEffect(() => {
-        const fetchUser = async () => {
-            try {
-                const user = await getUserInfo();
-                setUserInfo(user.userInfo);
-            } catch (error) {
-                console.error("Error fetching user info:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchUser();
-    }, []);
+        dispatch(loadUser());
+    }, [dispatch]);
 
-    if (isLoading) {
-        return <div>Loading...</div>; // Or a proper loading spinner
+    // ✅ Show a loading state while fetching user data
+    if (loading) {
+        return <div>Loading...</div>; // Replace with a proper loader
     }
 
-    if (!userInfo || userInfo.role !== requiredRole) {
-        return <Navigate to="/" replace />;
+    // ✅ Redirect to login if not authenticated
+    if (!isAuthenticated) {
+        return <Navigate to="/login" />;
     }
 
-    return children;
+    // ✅ Redirect unauthorized users
+    if (user && requiredRole && user.role !== requiredRole) {
+        return <Navigate to="/" />;
+    }
+
+    return <Outlet />;
 };
 
 export default ProtectedRoute;

@@ -56,7 +56,7 @@ const filterAndSortUsers = () => {
   // Fetch vendors
   const roles = ["customer", "agent", "territory_head", "franchise"];
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (roles) => {
     try {
       const data = await UserService.getUserRole(roles);
       // const data = await Promise.all(roles.map((role) => UserService.getUserRole(role)));
@@ -70,7 +70,7 @@ const filterAndSortUsers = () => {
   };
 
   useEffect(() => {
-    fetchUsers();
+    fetchUsers(roles);
   }, []);
 
   useEffect(() => {
@@ -128,7 +128,7 @@ const filterAndSortUsers = () => {
 
       setErrorMessage("");
       setIsAddEditModalOpen(false);
-      fetchVendors(); // Refresh vendor list
+      fetchUsers(roles);
     } catch (error) {
       console.error("Error saving vendor:", error);
       

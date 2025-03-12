@@ -36,20 +36,20 @@ import SellerProducts from './components/seller/Products';
 import SellerCategories from './components/seller/Categories';
 import SellerSubCategories from './components/seller/SubCategories';
 import SellerOrders from './components/seller/Orders';
-
-const AdminRoutes = () => (
-  <ProtectedRoute requiredRole="admin">
-    <Outlet />
-  </ProtectedRoute>
-);
-const SellerRoutes = () => (
-  <ProtectedRoute requiredRole="seller">
-    <Outlet />
-  </ProtectedRoute>
-);
+import { useDispatch } from 'react-redux';
+import { loadUser } from './services/authService';
+import { fetchCartItems } from './slice/cartSlice';
+import { fetchWishlistItems } from './slice/wishlistSlice';
 
 // Main App Component
 function App() {
+  const dispatch = useDispatch();
+  useEffect(() => {
+      dispatch(loadUser());
+      dispatch(fetchCartItems());
+      dispatch(fetchWishlistItems());
+  }, [dispatch]);
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [shouldRenderHeaderFooter, setShouldRenderHeaderFooter] = useState(true);
 
@@ -72,6 +72,9 @@ function App() {
     checkHeaderFooter();
   }, [location.pathname]); // Update when the location changes
 
+  const AdminRoutes = () => <ProtectedRoute requiredRole="admin" />;
+  const SellerRoutes = () => <ProtectedRoute requiredRole="seller" />;
+
   return (
     <>
       {shouldRenderHeaderFooter && <HeaderTop toggleMenu={toggleMenu} />}
@@ -90,21 +93,24 @@ function App() {
         <Route path="/wishlist" element={<WishlistPage />} />
         <Route path="/adminproduct" element={<ProductsListPage />} />
         <Route path="/my-account" element={<MyAccount />} />
-        <Route path="/admin" element={<AdminRoutes />}>
-          <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="products" element={<Products />} />
-          <Route path="products/categories" element={<Categories />} />
-          <Route path="products/subcategories" element={<SubCategories />} />
-          <Route path="orders" element={<Orders />} />
-          <Route path="seller" element={<Seller />} />
-          <Route path="vendor" element={<Vendor />} />
+         {/* ✅ Admin Routes */}
+         <Route path="/admin" element={<AdminRoutes />}>
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="products" element={<Products />} />
+            <Route path="products/categories" element={<Categories />} />
+            <Route path="products/subcategories" element={<SubCategories />} />
+            <Route path="orders" element={<Orders />} />
+            <Route path="seller" element={<Seller />} />
+            <Route path="vendor" element={<Vendor />} />
         </Route>
+
+        {/* ✅ Seller Routes */}
         <Route path="/seller" element={<SellerRoutes />}>
-          <Route path="dashboard" element={<SellerDashboard />} />
-          <Route path="products" element={<SellerProducts />} />
-          <Route path="products/categories" element={<SellerCategories />} />
-          <Route path="products/subcategories" element={<SellerSubCategories />} />
-          <Route path="orders" element={<SellerOrders />} />
+            <Route path="dashboard" element={<SellerDashboard />} />
+            <Route path="products" element={<SellerProducts />} />
+            <Route path="products/categories" element={<SellerCategories />} />
+            <Route path="products/subcategories" element={<SellerSubCategories />} />
+            <Route path="orders" element={<SellerOrders />} />
         </Route>
       </Routes>
       {shouldRenderHeaderFooter && <FooterTop />}

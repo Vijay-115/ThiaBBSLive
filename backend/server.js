@@ -1,4 +1,5 @@
 const express = require('express');
+const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
@@ -40,6 +41,8 @@ app.use(session({
   saveUninitialized: true,
   cookie: { secure: false } // Set `true` if using HTTPS
 }));
+
+app.use(cookieParser()); // ✅ Enable `req.cookies`
 
 // ✅ Serve static files from the 'uploads' folder
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

@@ -8,6 +8,7 @@ import Modal from "react-modal";
 import { ProductService } from "../../services/ProductService";
 import SubCategoryForm from "./SubCategoryForm";
 import toast from "react-hot-toast";
+import { useSelector } from "react-redux";
 
 const SubCategories = () => {
   const {
@@ -22,6 +23,8 @@ const SubCategories = () => {
       isProfileMenuOpen,
       toggleProfileMenu,
   } = useDashboardLogic();
+  
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
   const [filteredCategories, setFilteredCategories] = useState([]);
@@ -37,18 +40,18 @@ const SubCategories = () => {
   const itemsPerPage = 5;
 
   // Fetch Categories
-  const fetchCategories = async () => {
+  const fetchCategories = async (id) => {
     try {
-      const data = await ProductService.getCategories();
+      const data = await ProductService.getCategorySellerID(id);
       setCategories(data);
     } catch (error) {
       console.error("Error fetching categories:", error);
     }
   };
   
-  const fetchSubCategories = async () => {
+  const fetchSubCategories = async (id) => {
     try {
-      const data = await ProductService.getSubCategories();
+      const data = await ProductService.getSubCategorySellerID(id);
       setSubCategories(data);
       setFilteredCategories(data);
     } catch (error) {
@@ -58,9 +61,11 @@ const SubCategories = () => {
   };
 
   useEffect(() => {
-    fetchSubCategories();
-    fetchCategories();
-  }, []); // Runs only once
+    if(user !== null){
+      fetchSubCategories(user._id);
+      fetchCategories(user._id);
+    }
+  }, [user]); // Runs only once
   
   useEffect(() => {
     setFilteredCategories(subCategories); // Updates only when subCategories change

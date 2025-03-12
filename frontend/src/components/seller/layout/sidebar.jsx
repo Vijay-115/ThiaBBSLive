@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
 import { NavLink, useLocation } from 'react-router-dom';
+import { logout } from "../../../services/authService";
 
 const Sidebar = ({ isSidebarHidden, toggleSidebar }) => {
     const location = useLocation();
+    const dispatch = useDispatch();
     const isProductSectionActive = ["/seller/products", "/seller/products/categories", "/seller/products/subcategories"]
         .includes(location.pathname);
 
@@ -70,7 +73,7 @@ const Sidebar = ({ isSidebarHidden, toggleSidebar }) => {
                     </li>                
                 </ul>
                 <ul className="side-menu bottom">
-                    <li onClick={() => { localStorage.clear(); window.location.reload(); }}>
+                    <li onClick={async () => { await logout(dispatch); window.location.reload(); }}>
                         <NavLink className="logout">
                             <i className="bx bx-power-off bx-sm bx-burst-hover" />
                             <span className="text">Logout</span>

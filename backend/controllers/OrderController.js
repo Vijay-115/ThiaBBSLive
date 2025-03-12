@@ -170,6 +170,34 @@ exports.getOrderById = async (req, res) => {
   }
 };
 
+// Get order by SellerID
+exports.getOrdersBySellerId = async (req, res) => {
+  console.log('getOrdersBySellerId');
+  try {
+    const { seller_id } = req.params;
+
+    // Find orders where any order item belongs to the given seller
+    const orders = await Order.find({
+      'orderItems.product': { $in: await Product.find({ seller_id }).distinct('_id') }
+    })
+      .populate("user_id", "name email phone")
+      .populate({
+        path: "orderItems.product",
+        select: "name price image",
+        populate: { path: "seller_id", select: "name" }
+      })
+      .populate("orderItems.variant", "name options");
+
+    if (!orders.length) {
+      return res.status(404).json({ success: false, message: 'No orders found for this seller' });
+    }
+
+    res.status(200).json({ success: true, orders });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error fetching orders', error: error.message });
+  }
+};
+
 // Get orders by status
 exports.getOrdersByStatus = async (req, res) => {
   try {

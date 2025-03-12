@@ -23,6 +23,7 @@ exports.getCartItems = async (req, res) => {
 // ✅ Add a product to the cart (Supports variantId)
 exports.addToCart = async (req, res) => {
     try {
+        console.log('addToCart',req.body);
         const { productId, variantId = null, quantity } = req.body;
 
         if (!productId) {
@@ -52,7 +53,7 @@ exports.addToCart = async (req, res) => {
             cartItem = new Cart({
                 user: userId,
                 product: productId,
-                variant: variantId,
+                variant: variantId || null,
                 quantity,
                 cart_id: new mongoose.Types.ObjectId().toString(),
             });

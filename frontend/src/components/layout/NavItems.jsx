@@ -1,11 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from "react-router-dom"; // Import Link for navigation
 import { ProductService } from '../../services/ProductService';
+import { useDispatch, useSelector } from 'react-redux';
+import { loadUser } from '../../services/authService';
 
 function NavItems({menuOpen,closeMenu}) {
     const [heading, setHeading] = useState('');
     const [subHeading, setSubHeading] = useState('');
     const [categories, setCategories] = useState([]);
+    const { user, isAuthenticated } = useSelector((state) => state.auth);
+    const dispatch = useDispatch();
+    // Load user details on mount
+    useEffect(() => {
+        dispatch(loadUser());
+    }, [dispatch]);
+    
     const [menuItems, setMenuItems] = useState([
         { label: "Home", url: "/", dropdown:[] },
         {
@@ -43,9 +52,16 @@ function NavItems({menuOpen,closeMenu}) {
     ]);
 
     useEffect(() => {
-        const fetchCategories = async () => {
+        const fetchCategories = async (user) => {
             try {
-                const response = await ProductService.getCategories(); // Adjust API endpoint
+                let response = null;
+                if(user?.role === 'seller'){
+                    response = await ProductService.getCategorySellerID(user?._id); // Adjust API endpoint
+                }else if(user?.role === 'admin'){
+                    response = await ProductService.getCategories(); // Adjust API endpoint
+                }else{
+                    response = await ProductService.getCategoriesNearbySeller(); // Adjust API endpoint
+                }
                 setCategories(response || []);
             } catch (error) {
                 console.error("Error fetching categories:", error);
