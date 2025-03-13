@@ -113,13 +113,14 @@ const SubCategories = () => {
                 )
             );
             setEditCategory(null);
-            fetchCategories();
             toast.success("Category updated successfully!");
         } else {
             const newCategory = await ProductService.createSubCategory(categoryData);
             setSubCategories((prev) => [...prev, newCategory]);
             toast.success("Category created successfully!");
         }
+        fetchCategories(user._id);
+        fetchSubCategories(user._id);
         setErrorMessage("");
         setIsAddEditModalOpen(false);
     } catch (error) {

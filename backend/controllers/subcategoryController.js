@@ -5,16 +5,20 @@ const Category = require('../models/Category');
 exports.createSubcategory = async (req, res) => {
     try {
         const { name, description, category_id } = req.body;
-        let seller_id = req.user ? req.user.userId : null;
+        const seller_id = req.user?.userId || null; // Ensures seller_id is handled correctly
+
         // Check if category exists
         const category = await Category.findById(category_id);
         if (!category) {
-            return res.status(404).json({ message: 'Category not found' });
+            return res.status(404).json({ message: "Category not found" });
         }
 
         // Create subcategory
         const newSubcategory = new Subcategory({ name, description, category_id, seller_id });
         await newSubcategory.save();
+
+        // Populate category_id after saving
+        await newSubcategory.populate("category_id");
 
         // Update category to include this subcategory (if not already present)
         if (!category.subcategories.includes(newSubcategory._id)) {
@@ -55,7 +59,7 @@ exports.getSubcategoryById = async (req, res) => {
 exports.getSubcategoryBySellerId = async (req, res) => {
     try {
         const { sellerId } = req.params; 
-        const subcategory = await Subcategory.find({ seller_id: sellerId });
+        const subcategory = await Subcategory.find({ seller_id: sellerId }).populate('category_id');
         if (!subcategory) {
             return res.status(404).json({ message: 'Subcategory not found' });
         }
