@@ -28,7 +28,7 @@ const app = express();
 
 // ✅ Enable CORS Middleware
 app.use(cors({
-    origin: "http://localhost:5173", // Allow requests from frontend
+    origin: process.env.REACT_APP_CLI_URL, // Allow requests from frontend
     credentials: true, // Allow cookies/auth headers
     methods: "GET,POST,PUT,DELETE",
     allowedHeaders: "Content-Type,Authorization",
