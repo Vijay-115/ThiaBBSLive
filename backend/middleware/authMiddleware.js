@@ -71,7 +71,7 @@ const logout = async (req, res) => {
 
 const authUser = async (req, res, next) => {
     try {
-        const token = req.cookies?.accessToken || req.headers.authorization?.split(" ")[1];
+        const token = req.cookies?.accessToken || req.cookies?.accessToken;;
 
         if (!token) {
             req.user = null;

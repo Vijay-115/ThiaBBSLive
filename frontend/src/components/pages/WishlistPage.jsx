@@ -5,15 +5,15 @@ import { fetchWishlistItems,removeFromWishlist } from '../../slice/wishlistSlice
 
 function WishlistPage() {
     const dispatch = useDispatch();
-    useEffect(() => {
-        dispatch(fetchWishlistItems());
-    }, [dispatch]);
+    // useEffect(() => {
+    //     dispatch(fetchWishlistItems());
+    // }, [dispatch]);
     
     const wishlistItems = useSelector((state) => state.wishlist.items || []);
 
-    useEffect(() => {
-        console.log("wishlistItems:", wishlistItems); // Debugging
-    }, [wishlistItems]);
+    // useEffect(() => {
+    //     console.log("wishlistItems:", wishlistItems); // Debugging
+    // }, [wishlistItems]);
 
     const location = useLocation();
 

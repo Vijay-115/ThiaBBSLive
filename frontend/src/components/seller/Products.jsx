@@ -74,7 +74,7 @@ const Products = () => {
     };    
   
     useEffect(() => {
-      if(user !== null){
+      if(user !== null && user._id){
         fetchSubCategories(user._id);
         fetchCategories(user._id);
         fetchProducts(user._id);

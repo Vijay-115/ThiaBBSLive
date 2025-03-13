@@ -27,8 +27,11 @@ const Dashboard = () => {
     const { user, isAuthenticated } = useSelector((state) => state.auth);
 
     useEffect(() => {
-        dispatch(getOrderBySellerId(user._id));
-    }, [dispatch]);
+        if (user && user._id) { 
+            dispatch(getOrderBySellerId(user._id));
+        }
+    }, [dispatch, user]);  // Added `user` as dependency    
+
 
     return (
         <>

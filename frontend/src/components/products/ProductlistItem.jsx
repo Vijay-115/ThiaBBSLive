@@ -11,14 +11,14 @@ function ProductlistItem({ type, product, filter }) {
   const cartItems = useSelector((state) => state.cart.items); // Get cart items from Redux state
   const wishlistItems = useSelector((state) => state.wishlist.items); // Get wishlist items from Redux state
 
-  useEffect(() => {
-    dispatch(fetchCartItems());  
-    dispatch(fetchWishlistItems());
-  }, []);
+  // useEffect(() => {
+  //   dispatch(fetchCartItems());  
+  //   dispatch(fetchWishlistItems());
+  // }, []);
 
-  useEffect(() => {
-      console.log("wishlistItems:", wishlistItems); // Debugging
-  }, [wishlistItems]);
+  // useEffect(() => {
+  //     console.log("wishlistItems:", wishlistItems); // Debugging
+  // }, [wishlistItems]);
 
   // Handle increment
   const handleIncrement = () => {

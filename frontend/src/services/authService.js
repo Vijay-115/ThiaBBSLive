@@ -1,16 +1,25 @@
 import toast from "react-hot-toast";
 import { logoutUser, setUser } from "../slice/authSlice";
 import api from "../utils/api"; // Import the centralized Axios instance
+
 // Register function
-export const register = async (userData) => {
+export const register = async (userData, dispatch, navigate) => {
     try {
         const response = await api.post("/auth/register", userData);
-        if (response.data.accessToken && response.data.refreshToken) {
-            localStorage.setItem("token", response.data.accessToken);
-            localStorage.setItem("refreshToken", response.data.refreshToken);
+        if (response.status === 200 && response.data?.user) {
+            const user = response.data.user;
+
+            dispatch(setUser(user)); // ✅ Store user in Redux
+
+            toast.success("Registration successful");
+
+            navigate(user.role === "admin" ? "/admin/dashboard" : "/");
+
+            return user;
         }
         return response.data;
     } catch (error) {
+        console.error("Registration Error:", error.response?.data || error.message);
         throw new Error(error.response?.data?.msg || "Registration failed");
     }
 };
@@ -19,8 +28,6 @@ export const register = async (userData) => {
 export const login = async (dispatch, email, password, navigate) => {
     try {
         const response = await api.post("/auth/login", { email, password }, { withCredentials: true });
-
-        console.log("Login Response:", response); // ✅ Debugging
 
         if (response.status === 200 && response.data?.user) {
             const user = response.data.user;
@@ -36,27 +43,32 @@ export const login = async (dispatch, email, password, navigate) => {
             throw new Error("Invalid response structure");
         }
     } catch (error) {
-        console.error("Login Error:", error); // ✅ Debugging
+        console.error("Login Error:", error.response?.data || error.message);
         toast.error(error.response?.data?.message || "Login failed");
     }
 };
 
-// Logout function (removes token & blacklists it)
+// Logout function
 export const logout = async (dispatch) => {
     try {
         await api.post("/auth/logout");
-        localStorage.clear();
-        dispatch(logoutUser()); // ✅ Ensure Redux state is cleared
     } catch (error) {
         console.error("Logout failed:", error.response?.data?.message || error.message);
     }
+    
+    // Ensure local storage and state are cleared
+    localStorage.clear();
+    dispatch(logoutUser());
+    window.location.href = "/login"; // Redirect after logout
 };
 
 // Forgot Password
 export const forgotPassword = async (email) => {
     try {
         await api.post("/auth/forgot-password", { email });
+        toast.success("Password reset link sent to your email");
     } catch (error) {
+        console.error("Forgot Password Error:", error.response?.data || error.message);
         throw new Error(error.response?.data?.message || "Failed to send email");
     }
 };
@@ -65,7 +77,9 @@ export const forgotPassword = async (email) => {
 export const resetPassword = async (token, password) => {
     try {
         await api.post(`/auth/reset-password/${token}`, { password });
+        toast.success("Password reset successful. Please login.");
     } catch (error) {
+        console.error("Reset Password Error:", error.response?.data || error.message);
         throw new Error(error.response?.data?.message || "Password reset failed");
     }
 };
@@ -81,7 +95,7 @@ export const isAuthenticated = async () => {
     }
 };
 
-// Check if user is authenticated
+// Update Profile
 export const updateProfile = async (userData) => {
     try {
         const response = await api.put("/auth/update-profile", userData, {
@@ -96,8 +110,7 @@ export const updateProfile = async (userData) => {
     }
 };
 
-
-
+// Load User (Fixed infinite loop issue)
 export const loadUser = () => async (dispatch) => {
     try {
         const response = await api.get("/auth/me", { withCredentials: true });
@@ -106,7 +119,12 @@ export const loadUser = () => async (dispatch) => {
 
         dispatch(setUser(response.data.user)); // ✅ Store user in Redux
     } catch (error) {
-        console.error("Failed to load user:", error); // ✅ Debugging
-        dispatch(logoutUser());
+        console.error("Failed to load user:", error.response?.data || error.message);
+
+        // **Fix: Prevent infinite refresh loop**
+        if (error.response?.status === 401) {
+            dispatch(logoutUser()); // Log user out if unauthorized
+            localStorage.clear();
+        }
     }
 };

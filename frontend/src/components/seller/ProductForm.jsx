@@ -338,7 +338,7 @@ const ProductForm = ({ product, categories, subCategories, onSave }) => {
               <div className="w-full">
                 <div className="input-item">
                   <label className="block text-[14px] font-medium text-secondary mb-[4px]"> Brand * </label>
-                  <input type="text" name="brand" value={productData.brand} onChange={handleChange} placeholder="SKU"  className="w-full p-2 mb-4 border rounded-lg" />
+                  <input type="text" name="brand" value={productData.brand} onChange={handleChange} placeholder="Brand"  className="w-full p-2 mb-4 border rounded-lg" />
                 </div>
               </div>
               <div className="w-full">

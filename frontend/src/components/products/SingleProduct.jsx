@@ -79,7 +79,7 @@ function SingleProduct() {
         const data = await ProductService.getProductID(id);
         console.log(data.name);
         setProduct(data);
-        if(product.is_review === true){setTabs((prev) => [...prev, "reviews"]);}
+        if(product?.is_review === true){setTabs((prev) => [...prev, "reviews"]);}
       } catch (error) {
         console.error("Error fetching product:", error);
       }
