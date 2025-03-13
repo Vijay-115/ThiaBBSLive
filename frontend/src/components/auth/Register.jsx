@@ -2,12 +2,15 @@ import React, { useState } from "react";
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { register } from "../../services/authService";
+import { useDispatch } from "react-redux";
+
 
 const Register = () => {
 
     const [userData, setUserData] = useState({ name: '', email: '', phone: '', password: '' });
     const [errors, setErrors] = useState({});
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     const validateRegister = () => {
         let formErrors = {};
@@ -35,19 +38,7 @@ const Register = () => {
         }
     
         try {
-            const response = await register(userData);
-            if (response) {
-                const { user } = response;
-                const { role, name, email } = user;    
-                // Save user data and token to local storage
-                localStorage.setItem("userRole", role);
-                localStorage.setItem("userName", name);
-                localStorage.setItem("userEmail", email);
-                toast.success("User registered successfully");
-                setUserData({ name: "", email: "", phone: "", password: "" });
-                setErrors({});
-                navigate("/");
-            }
+            const response = await register(userData, dispatch, navigate);
         } catch (error) {
             toast.error(error.message || "Registration failed. Please try again.");
         }

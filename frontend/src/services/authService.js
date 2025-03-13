@@ -2,12 +2,19 @@ import toast from "react-hot-toast";
 import { logoutUser, setUser } from "../slice/authSlice";
 import api from "../utils/api"; // Import the centralized Axios instance
 // Register function
-export const register = async (userData) => {
+export const register = async (userData,dispatch,navigate) => {
     try {
         const response = await api.post("/auth/register", userData);
-        if (response.data.accessToken && response.data.refreshToken) {
-            localStorage.setItem("token", response.data.accessToken);
-            localStorage.setItem("refreshToken", response.data.refreshToken);
+        if (response.status === 200 && response.data?.user) {
+            const user = response.data.user;
+
+            dispatch(setUser(user)); // ✅ Store user in Redux
+
+            toast.success("Registration successful");
+
+            navigate(user.role === "admin" ? "/admin/dashboard" : "/");
+
+            return user;
         }
         return response.data;
     } catch (error) {
