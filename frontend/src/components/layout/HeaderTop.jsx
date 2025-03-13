@@ -12,7 +12,9 @@ function HeaderTop(props) {
     const { user, isAuthenticated } = useSelector((state) => state.auth);
     // Load user details on mount
     useEffect(() => {
-        dispatch(loadUser());
+        if(isAuthenticated){
+            dispatch(loadUser());
+        }
     }, [dispatch]);
     const cartItems = useSelector((state) => state.cart.items);
     const cartCount = Object.values(cartItems).length;

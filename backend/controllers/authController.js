@@ -124,7 +124,7 @@ exports.register = async (req, res) => {
         });
 
         // ✅ Send response without exposing tokens
-        res.status(201).json({
+        res.status(200).json({
             msg: "User registered successfully",
             user,
             userDetails
@@ -192,6 +192,14 @@ exports.login = async (req, res) => {
             secure: process.env.NODE_ENV === "production", // Only send over HTTPS in production
             sameSite: "Strict", // Protects against CSRF
             maxAge: 60 * 60 * 1000, // 1 hour
+        });
+
+        
+        res.cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
         });
 
         // ✅ Send response with refreshToken and user data (without password)
@@ -345,7 +353,7 @@ exports.logout = async (req, res) => {
 
 // Check if user is logged in
 exports.checkAuth = async (req, res) => {
-    const token = req.headers.authorization?.split(" ")[1];
+    const token = req.cookies?.accessToken;;
     if (!token) {
         return res.status(401).json({ message: "No token provided" });
     }
@@ -365,7 +373,7 @@ exports.checkAuth = async (req, res) => {
 
 // Get User Info
 exports.getUserInfo = async (req, res) => {
-    const token = req.headers.authorization?.split(" ")[1];
+    const token = req.cookies?.accessToken;;
     if (!token) {
         return res.status(401).json({ message: "No token provided" });
     }
@@ -382,8 +390,7 @@ exports.getUserInfo = async (req, res) => {
 
 // Update User Profile
 exports.updateProfile = async (req, res) => {
-    console.log('Image File - ',req.files[0].fieldname === 'profilePic');
-    const token = req.headers.authorization?.split(" ")[1];
+    const token = req.cookies?.accessToken;;
     if (!token) {
         return res.status(401).json({ message: "No token provided" });
     }
@@ -421,7 +428,7 @@ exports.updateProfile = async (req, res) => {
                 }                
 
                 // Handle profile picture upload
-                if (req.files && req.files[0].fieldname === 'profilePic') {
+                if (req.files && req.files[0]?.fieldname === 'profilePic') {
                     console.log("Profile picture uploaded:", req.files[0]);
 
                     const uploadedFile = req.files[0]; // Get the uploaded file
@@ -498,3 +505,32 @@ exports.getUser = async (req, res) => {
         return res.status(401).json({ message: "Invalid token" });
     }
 };
+
+exports.authRefershToken = async (req, res) => {
+    console.log('authRefershToken - ',  req.cookies);
+    const refreshToken = req.cookies.refreshToken; // ✅ Get refresh token from cookies
+    if (!refreshToken) {
+        return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    try {
+        const decoded = jwt.verify(refreshToken, process.env.REFRESH_SECRET);
+        const user = await User.findById(decoded.id);
+
+        if (!user) return res.status(401).json({ message: "User not found" });
+
+        // ✅ Generate a new access token
+        const accessToken = generateAccessToken(user);
+
+        // ✅ Send new token in HttpOnly cookie
+        res.cookie("accessToken", accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "Strict",
+        });
+
+        res.status(200).json({ message: "Token refreshed" });
+    } catch (err) {
+        return res.status(401).json({ message: "Invalid refresh token" });
+    }
+}

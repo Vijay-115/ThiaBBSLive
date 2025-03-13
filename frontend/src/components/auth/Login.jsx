@@ -40,21 +40,6 @@ const Login = () => {
     
         try {
             const response = await login(dispatch,loginData.lemail, loginData.lpassword, navigate);
-            if (response) {
-                const { user } = response;
-                const { role, name, email } = user;
-    
-                // Save user data and token to local storage
-                localStorage.setItem("userRole", role);
-                localStorage.setItem("userName", name);
-                localStorage.setItem("userEmail", email);
-    
-                toast.success("Login successful");
-                setLoginData({ lemail: "", lpassword: "" });
-                setErrors({});
-    
-                navigate(role === "admin" ? "/admin/dashboard" : "/");
-            }
         } catch (error) {
             toast.error(error.message || "Login failed. Please try again.");
         }

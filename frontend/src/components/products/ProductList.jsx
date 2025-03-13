@@ -40,10 +40,13 @@ function ProductList({ heading, type, category, subcategory, filter, filters }) 
           } else if(subcategory !== null && subcategory !== undefined) {
               console.log("Fetching products by Category ID:", subcategory);
               data = await ProductService.getProductSubCategoryID(subcategory);
-          } else if(user !== null){
+          } else if(user && user?.role === 'user'){
               console.log("Fetching products by NearBySeller:", user);
               data = await ProductService.getProductsNearbySeller();
-          }else{
+          } else if(user && user?.role === 'seller'){
+            console.log("Fetching products by NearBySeller:", user);
+            data = await ProductService.getProductsSellerID(user._id);
+          } else{
             console.log("Fetching all products");
             data = await ProductService.getProducts();
           }

@@ -36,7 +36,7 @@ import SellerProducts from './components/seller/Products';
 import SellerCategories from './components/seller/Categories';
 import SellerSubCategories from './components/seller/SubCategories';
 import SellerOrders from './components/seller/Orders';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { loadUser } from './services/authService';
 import { fetchCartItems } from './slice/cartSlice';
 import { fetchWishlistItems } from './slice/wishlistSlice';
@@ -44,16 +44,23 @@ import { fetchWishlistItems } from './slice/wishlistSlice';
 // Main App Component
 function App() {
   const dispatch = useDispatch();
+  const location = useLocation(); // Get the current route
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
+
   useEffect(() => {
-      dispatch(loadUser());
+    const excludeRoutes = ['/login', '/register'];
+
+    if (!excludeRoutes.includes(location.pathname)) {
+      // if(isAuthenticated){
+        dispatch(loadUser());
+      // }
       dispatch(fetchCartItems());
       dispatch(fetchWishlistItems());
-  }, [dispatch]);
+    }
+  }, [dispatch, location.pathname]); // Re-run when location changes
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [shouldRenderHeaderFooter, setShouldRenderHeaderFooter] = useState(true);
-
-  const location = useLocation(); // Hook to access current route
 
   const toggleMenu = () => {
     setMenuOpen(true);

@@ -99,7 +99,7 @@ exports.getNearbySellerCategories = async (req, res) => {
 // READ: Get a single category by ID
 exports.getCategoryById = async (req, res) => {
     try {
-        const category = await Category.findById(req.params.id);
+        const category = await Category.findById(req.params.id).populate('subcategories');
         if (!category) {
             return res.status(404).json({ message: 'Category not found' });
         }
@@ -113,7 +113,7 @@ exports.getCategoryById = async (req, res) => {
 exports.getCategoryBySellerId = async (req, res) => {
     try {
         const { sellerId } = req.params; 
-        const category = await Category.find({ seller_id: sellerId });
+        const category = await Category.find({ seller_id: sellerId }).populate('subcategories');
         if (!category) {
             return res.status(404).json({ message: 'Category not found' });
         }
