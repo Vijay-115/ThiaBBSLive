@@ -15,7 +15,7 @@ function ResetPassword() {
             toast.error("Password must be at least 6 characters long");
             return;
         }
-    
+
         try {
             await resetPassword(token, password);
             toast.success("Password reset successful");
@@ -43,7 +43,7 @@ function ResetPassword() {
                                 Reset Password
                             </h1>
                             <p className="mb-3">Your password needs to be at least 6 characters.</p>
-                            <form  onSubmit={handleSubmit} className="space-y-4">
+                            <form onSubmit={handleSubmit} className="space-y-4">
                                 <div>
                                     <label htmlFor="email" className="mb-2  dark:text-gray-400 text-md">Email</label>
                                     <input
@@ -133,28 +133,28 @@ function ResetPassword() {
                                 className="text-gray-500 flex text-center flex-col mt-4 items-center text-sm"
                             >
                                 <p className="cursor-default">
-                                    By signing in, you agree to our 
-                                    <Link
+                                    By signing in, you agree to our
+                                    <a
                                         className="group text-primary transition-all duration-100 ease-in-out"
-                                        to="/terms"
+                                        href="/terms-of-use"
                                     >
                                         <span
                                             className="cursor-pointer bg-left-bottom bg-gradient-to-r from-blue-400 to-blue-400 bg-[length:0%_2px] bg-no-repeat group-hover:bg-[length:100%_2px] transition-all duration-500 ease-out mx-1"
                                         >
-                                            Terms 
+                                            Terms
                                         </span>
-                                    </Link>
-                                    and 
-                                    <Link
+                                    </a>
+                                    and
+                                    <a
                                         className="group text-primary transition-all duration-100 ease-in-out"
-                                        to="/privacy-policy"
+                                        href="/privacy-policy"
                                     >
                                         <span
                                             className="cursor-pointer bg-left-bottom bg-gradient-to-r from-blue-400 to-blue-400 bg-[length:0%_2px] bg-no-repeat group-hover:bg-[length:100%_2px] transition-all duration-500 ease-out mx-1"
                                         >
                                             Privacy Policy
                                         </span>
-                                    </Link>
+                                    </a>
                                 </p>
                             </div>
                         </div>

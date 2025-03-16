@@ -39,20 +39,32 @@ function FooterTop() {
                         </div>
                         <div className="min-[992px]:w-[16.66%] max-[991px]:w-full w-full px-[12px] bb-footer-toggle bb-footer-account">
                             <div className="bb-footer-widget">
-                                <h4 className="bb-footer-heading font-quicksand leading-[1.2] text-[18px] font-bold mb-[20px] text-secondary tracking-[0] relative block w-full pb-[15px] capitalize border-b-[1px] border-solid border-[#eee] max-[991px]:text-[14px]">Company</h4>
+                                <h4 className="bb-footer-heading font-quicksand leading-[1.2] text-[18px] font-bold mb-[20px] text-secondary tracking-[0] relative block w-full pb-[15px] capitalize border-b-[1px] border-solid border-[#eee] max-[991px]:text-[14px]">Customer Service</h4>
                                 <div className="bb-footer-links bb-footer-dropdown  max-[991px]:mb-[35px]">
                                     <ul className="align-items-center">
                                         <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
-                                            <Link to="/" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">About us</Link>
+                                            <Link to="/terms-of-use" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Terms of use</Link>
                                         </li>
                                         <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
-                                            <Link to="/" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Contact Us</Link>
+                                            <Link to="/privacy-policy" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Privacy Policy</Link>
                                         </li>
                                         <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
-                                            <Link to="/" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">FAQ</Link>
+                                            <Link to="/cancellation-policy" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Cancellation Policy</Link>
                                         </li>
                                         <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
-                                            <Link to="/" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Delivery</Link>
+                                            <Link to="/shipping-policy" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Shipping Policy</Link>
+                                        </li>
+                                        <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
+                                            <Link to="/refund-policy" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Refund Policy</Link>
+                                        </li>
+                                        <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
+                                            <Link to="/buyback-policy" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Buyback Policy</Link>
+                                        </li>
+                                        <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
+                                            <Link to="/exchange-policy" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Exchange Policy</Link>
+                                        </li>
+                                        <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
+                                            <Link to="/bank-cashback-policy" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Bank Cashback Policy</Link>
                                         </li>
                                     </ul>
                                 </div>
@@ -60,20 +72,23 @@ function FooterTop() {
                         </div>
                         <div className="min-[992px]:w-[16.66%] max-[991px]:w-full w-full px-[12px] bb-footer-toggle bb-footer-service">
                             <div className="bb-footer-widget">
-                                <h4 className="bb-footer-heading font-quicksand leading-[1.2] text-[18px] font-bold mb-[20px] text-secondary tracking-[0] relative block w-full pb-[15px] capitalize border-b-[1px] border-solid border-[#eee] max-[991px]:text-[14px]">Account</h4>
+                                <h4 className="bb-footer-heading font-quicksand leading-[1.2] text-[18px] font-bold mb-[20px] text-secondary tracking-[0] relative block w-full pb-[15px] capitalize border-b-[1px] border-solid border-[#eee] max-[991px]:text-[14px]">Vendors</h4>
                                 <div className="bb-footer-links bb-footer-dropdown  max-[991px]:mb-[35px]">
                                     <ul className="align-items-center">
                                         <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
-                                            <Link to="/" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Sign In</Link>
+                                            <Link to="/login" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Sign In</Link>
                                         </li>
                                         <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
                                             <Link to="/cart" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">View Cart</Link>
                                         </li>
                                         <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
-                                            <Link to="/" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Return Policy</Link>
+                                            <Link to="/" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Order History</Link>
                                         </li>
                                         <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
-                                            <Link to="/" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Become a Vendor</Link>
+                                            <Link to="/wishlist" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Wish List</Link>
+                                        </li>
+                                        <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
+                                            <Link to="/become-a-vendor" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Become a Vendor</Link>
                                         </li>
                                     </ul>
                                 </div>
@@ -112,7 +127,7 @@ function FooterTop() {
                                     <div className="bb-footer-links bb-footer-dropdown  max-[991px]:mb-[35px]">
                                         <ul className="align-items-center flex flex-wrap items-center">
                                             <li className="bb-footer-link leading-[1.5] flex items-center pr-[5px]">
-                                                <Link to="/" className="transition-all duration-[0.3s] ease-in-out w-[30px] h-[30px] rounded-[5px] bg-secondary hover:bg-tertiary capitalize flex items-center justify-center text-[15px] leading-[20px] text-secondary relative break-all font-normal"><i className="ri-facebook-fill text-[16px] text-[#fff]"></i></Link>
+                                                <Link to="https://www.facebook.com/bbschoix" target='blank' className="transition-all duration-[0.3s] ease-in-out w-[30px] h-[30px] rounded-[5px] bg-secondary hover:bg-tertiary capitalize flex items-center justify-center text-[15px] leading-[20px] text-secondary relative break-all font-normal"><i className="ri-facebook-fill text-[16px] text-[#fff]"></i></Link>
                                             </li>
                                             <li className="bb-footer-link leading-[1.5] flex items-center pr-[5px]">
                                                 <Link to="/" className="transition-all duration-[0.3s] ease-in-out w-[30px] h-[30px] rounded-[5px] bg-secondary hover:bg-tertiary capitalize flex items-center justify-center text-[15px] leading-[20px] text-secondary relative break-all font-normal"><i className="ri-twitter-fill text-[16px] text-[#fff]"></i></Link>
@@ -138,7 +153,7 @@ function FooterTop() {
                         <div className="footer-copy w-full mb-[15px]">
                             <div className="footer-bottom-copy text-center">
                                 <div className="bb-copy text-secondary text-[13px] tracking-[1px] text-center font-normal leading-[2]">Copyright © <span className="text-secondary text-[13px] tracking-[1px] text-center font-normal" id="copyright_year"></span>
-                                    <Link className="site-name transition-all duration-[0.3s] ease-in-out font-medium text-primary hover:text-secondary font-Poppins text-[15px] leading-[28px] tracking-[0.03rem]" to="/">BSS Cart</Link> all rights reserved.
+                                    <Link className="site-name transition-all duration-[0.3s] ease-in-out font-medium text-primary hover:text-secondary font-Poppins text-[15px] leading-[28px] tracking-[0.03rem]" to="/">BSSCart</Link> All Rights Reserved.
                                 </div>
                             </div>
                         </div>
