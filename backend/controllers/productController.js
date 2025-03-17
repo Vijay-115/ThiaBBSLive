@@ -386,7 +386,10 @@ exports.updateProduct = async (req, res) => {
 
         // ✅ Handle Product Image Update
         const productImgFile = req.files.find(file => file.fieldname === "product_img");
+        console.log("productImgFile");
+
         if (productImgFile) {
+            console.log("productImgFile", productImgFile.filename);
             if (existingProduct.product_img) removeOldImage(existingProduct.product_img); // Remove old image
             updatedProductData.product_img = `/uploads/${productImgFile.filename}`;
         } else {
