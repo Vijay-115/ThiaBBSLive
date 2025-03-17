@@ -36,7 +36,7 @@ const Register = () => {
             toast.error("Please fix the errors and try again.");
             return;
         }
-    
+
         try {
             const response = await register(userData, dispatch, navigate);
         } catch (error) {
@@ -218,7 +218,7 @@ const Register = () => {
                                     By signing in, you agree to our
                                     <a
                                         className="group text-primary transition-all duration-100 ease-in-out"
-                                        href="#"
+                                        href="/terms-of-use"
                                     >
                                         <span
                                             className="cursor-pointer bg-left-bottom bg-gradient-to-r from-blue-400 to-blue-400 bg-[length:0%_2px] bg-no-repeat group-hover:bg-[length:100%_2px] transition-all duration-500 ease-out mx-1"
@@ -229,7 +229,7 @@ const Register = () => {
                                     and
                                     <a
                                         className="group text-primary transition-all duration-100 ease-in-out"
-                                        href="#"
+                                        href="/privacy-policy"
                                     >
                                         <span
                                             className="cursor-pointer bg-left-bottom bg-gradient-to-r from-blue-400 to-blue-400 bg-[length:0%_2px] bg-no-repeat group-hover:bg-[length:100%_2px] transition-all duration-500 ease-out mx-1"
