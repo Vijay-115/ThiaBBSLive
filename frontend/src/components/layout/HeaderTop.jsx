@@ -103,7 +103,7 @@ function HeaderTop(props) {
                                                         ) : (
                                                             <>
                                                                 <span className="bb-btn-title font-Poppins transition-all duration-[0.3s] ease-in-out text-[12px] leading-[1] text-secondary mb-[4px] tracking-[0.6px] capitalize font-medium whitespace-nowrap">Welcome!</span>
-                                                                <span className="bb-btn-stitle font-Poppins transition-all duration-[0.3s] ease-in-out text-[14px] leading-[16px] font-semibold text-secondary  tracking-[0.03rem] whitespace-nowrap">{user.name}</span>
+                                                                <span className="bb-btn-stitle font-Poppins transition-all duration-[0.3s] ease-in-out text-[14px] leading-[16px] font-semibold text-secondary  tracking-[0.03rem] whitespace-nowrap">{user?.name}</span>
                                                             </>
                                                         )}
                                                     </div>
