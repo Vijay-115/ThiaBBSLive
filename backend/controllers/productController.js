@@ -384,23 +384,26 @@ exports.updateProduct = async (req, res) => {
             }
         }
 
-        // ✅ Handle product image update
-        if (req.files?.["product_img"]) {
-            if (existingProduct.product_img) removeOldImage(existingProduct.product_img);
-            updatedProductData.product_img = `/uploads/${req.files["product_img"][0].filename}`;
+        // ✅ Handle Product Image Update
+        const productImgFile = req.files.find(file => file.fieldname === "product_img");
+        if (productImgFile) {
+            if (existingProduct.product_img) removeOldImage(existingProduct.product_img); // Remove old image
+            updatedProductData.product_img = `/uploads/${productImgFile.filename}`;
         } else {
             updatedProductData.product_img = existingProduct.product_img || "";
         }
 
-        // ✅ Handle gallery images update
-        if (req.files?.["gallery_imgs"]) {
+        // ✅ Handle Gallery Images Update
+        const galleryImages = req.files.filter(file => file.fieldname === "gallery_imgs");
+        if (galleryImages.length > 0) {
             if (existingProduct.gallery_imgs?.length > 0) {
-                existingProduct.gallery_imgs.forEach(removeOldImage);
+                existingProduct.gallery_imgs.forEach(removeOldImage); // Remove old images
             }
-            updatedProductData.gallery_imgs = req.files["gallery_imgs"].map(file => `/uploads/${file.filename}`);
+            updatedProductData.gallery_imgs = galleryImages.map(file => `/uploads/${file.filename}`);
         } else {
             updatedProductData.gallery_imgs = existingProduct.gallery_imgs || [];
         }
+
 
         // ✅ Parse JSON fields safely
         try {
