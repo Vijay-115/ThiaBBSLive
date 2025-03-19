@@ -52,6 +52,8 @@ import { loadUser } from './services/authService';
 import { fetchCartItems } from './slice/cartSlice';
 import { fetchWishlistItems } from './slice/wishlistSlice';
 
+import ScrollToTopOnRouteChange from "./components/ScrollToTopOnRouteChange";
+
 // Main App Component
 function App() {
   const dispatch = useDispatch();
@@ -97,6 +99,7 @@ function App() {
     <>
       {shouldRenderHeaderFooter && <HeaderTop toggleMenu={toggleMenu} />}
       {shouldRenderHeaderFooter && <Navbar menuOpen={menuOpen} closeMenu={closeMenu} />}
+      <ScrollToTopOnRouteChange /> 
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/product/:id" element={<SingleProductPage />} />
