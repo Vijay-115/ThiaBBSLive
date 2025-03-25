@@ -28,11 +28,23 @@ const app = express();
 
 // ✅ Enable CORS Middleware
 app.use(cors({
-    origin: process.env.REACT_APP_CLI_URL, // Allow requests from frontend
-    credentials: true, // Allow cookies/auth headers
-    methods: "GET,POST,PUT,DELETE",
-    allowedHeaders: "Content-Type,Authorization",
+  origin: (origin, callback) => {
+      const allowedOrigin = process.env.REACT_APP_CLI_URL.replace(/\/$/, ""); // ✅ Remove trailing slash
+      if (!origin || origin === allowedOrigin) {
+          callback(null, true);
+      } else {
+          callback(new Error("CORS policy violation"));
+      }
+  },
+  credentials: true,
+  methods: "GET,POST,PUT,DELETE",
+  allowedHeaders: "Content-Type,Authorization",
 }));
+
+app.use((req, res, next) => {
+  console.log("Request Origin:", req.headers.origin);
+  next();
+});
 
 // ✅ Initialize session middleware
 app.use(session({
@@ -67,6 +79,7 @@ app.use('/api/users', userRoutes);
 
 // ✅ Global error handling middleware
 app.use((err, req, res, next) => {
+  console.log(req.headers.origin)
   console.error(err.stack);
   res.status(500).json({ message: 'Something went wrong!' });
 });

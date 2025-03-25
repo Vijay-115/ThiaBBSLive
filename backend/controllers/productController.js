@@ -1,11 +1,15 @@
 const Product = require('../models/Product');
 const Variant = require("../models/Variant");
+const Category = require('../models/Category');
+const Subcategory = require('../models/Subcategory');
 const User = require("../models/User");
 const UserDetails = require("../models/UserDetails");
 const path = require('path');
 const fs = require('fs');
 const mongoose = require('mongoose');
 const jwt = require("jsonwebtoken");
+const { Parser } = require('json2csv');
+const csvParser = require("csv-parser");
 
 const haversineDistance = (lat1, lon1, lat2, lon2) => {
     const toRad = (value) => (value * Math.PI) / 180;
@@ -554,4 +558,262 @@ exports.deleteProduct = async (req, res) => {
         console.error('Error:', err);
         res.status(500).json({ message: err.message });
     }
+};
+
+// Export Products
+
+exports.exportProducts = async (req, res) => {
+    try {
+        const products = await Product.find()
+            .populate('variants')
+            .populate('category_id')
+            .populate('subcategory_id')
+            .populate('seller_id') // Populate seller info
+            .lean();
+
+        // Define CSV headers
+        const csvFields = [
+            'Product ID', 'Product Name', 'Description', 'SKU', 'Brand', 'Price', 'Stock', 'Is Variant',
+            'Category ID', 'Category Name', 'Category Description',
+            'Subcategory ID', 'Subcategory Name', 'Subcategory Description',
+            'Product Image', 'Gallery Images',
+            'Variant ID', 'Variant Name', 'Variant Price', 'Variant Stock', 'Variant SKU',
+            'Variant Image', 'Variant Gallery Images', 'Variant Attributes',
+            'Seller ID', 'Seller Name', 'Seller Email', 'Seller Phone', 'Seller Address'
+        ];
+
+        let csvData = [];
+
+        for (const product of products) {
+            const category = product.category_id || {};
+            const subcategory = product.subcategory_id || {};
+            const seller = product.seller_id || {};
+
+            if (product.variants.length > 0) {
+                for (const variant of product.variants) {
+                    csvData.push({
+                        'Product ID': product._id,
+                        'Product Name': product.name,
+                        'Description': product.description,
+                        'SKU': product.SKU,
+                        'Brand': product.brand,
+                        'Price': product.price || '',
+                        'Stock': product.stock || '',
+                        'Is Variant': true,
+                        'Category ID': category._id || '',
+                        'Category Name': category.name || '',
+                        'Category Description': category.description || '',
+                        'Subcategory ID': subcategory._id || '',
+                        'Subcategory Name': subcategory.name || '',
+                        'Subcategory Description': subcategory.description || '',
+                        'Product Image': product.product_img,
+                        'Gallery Images': product.gallery_imgs ? product.gallery_imgs.join('|') : '',
+                        'Variant ID': variant._id,
+                        'Variant Name': variant.variant_name,
+                        'Variant Price': variant.price,
+                        'Variant Stock': variant.stock,
+                        'Variant SKU': variant.SKU,
+                        'Variant Image': variant.variant_img,
+                        'Variant Gallery Images': variant.variant_gallery_imgs ? variant.variant_gallery_imgs.join('|') : '',
+                        'Variant Attributes': JSON.stringify(variant.attributes),
+                        'Seller ID': seller._id || '',
+                        'Seller Name': seller.name || '',
+                        'Seller Email': seller.email || '',
+                        'Seller Phone': seller.phone || '',
+                        'Seller Address': seller.address || ''
+                    });
+                }
+            } else {
+                csvData.push({
+                    'Product ID': product._id,
+                    'Product Name': product.name,
+                    'Description': product.description,
+                    'SKU': product.SKU,
+                    'Brand': product.brand,
+                    'Price': product.price,
+                    'Stock': product.stock,
+                    'Is Variant': false,
+                    'Category ID': category._id || '',
+                    'Category Name': category.name || '',
+                    'Category Description': category.description || '',
+                    'Subcategory ID': subcategory._id || '',
+                    'Subcategory Name': subcategory.name || '',
+                    'Subcategory Description': subcategory.description || '',
+                    'Product Image': product.product_img,
+                    'Gallery Images': product.gallery_imgs ? product.gallery_imgs.join('|') : '',
+                    'Variant ID': '',
+                    'Variant Name': '',
+                    'Variant Price': '',
+                    'Variant Stock': '',
+                    'Variant SKU': '',
+                    'Variant Image': '',
+                    'Variant Gallery Images': '',
+                    'Variant Attributes': '',
+                    'Seller ID': seller._id || '',
+                    'Seller Name': seller.name || '',
+                    'Seller Email': seller.email || '',
+                    'Seller Phone': seller.phone || '',
+                    'Seller Address': seller.address || ''
+                });
+            }
+        }
+
+        const exportDir = path.join(__dirname, '../exports');
+
+        // ✅ Ensure the 'exports' directory exists
+        if (!fs.existsSync(exportDir)) {
+            fs.mkdirSync(exportDir, { recursive: true });
+        }
+
+        const filePath = path.join(exportDir, 'products_with_sellers.csv');
+
+        // Convert JSON to CSV
+        const json2csvParser = new Parser({ fields: csvFields });
+        const csv = json2csvParser.parse(csvData);
+
+        // ✅ Save CSV file safely
+        fs.writeFileSync(filePath, csv);
+
+        // ✅ Send file for download
+        res.download(filePath, 'products_with_sellers.csv', (err) => {
+            if (err) {
+                console.error("Download error:", err);
+            }
+            
+            // ✅ Delete file after download
+            fs.unlink(filePath, (unlinkErr) => {
+                if (unlinkErr) {
+                    console.error("Error deleting file:", unlinkErr);
+                }
+            });
+        });
+    } catch (err) {
+        console.error("Export Error:", err);
+        res.status(500).json({ message: err.message });
+    }
+};
+
+// Product Import
+exports.importProducts = async (req, res) => {
+    console.log('importProducts', req.files[0].path);
+    
+    if (!req.files) {
+        return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const filePath = req.files[0].path;
+    const products = [];
+
+    const seller_id = req.user ? req.user.userId : null;
+    if (!seller_id) {
+        return res.status(401).json({ message: "Unauthorized: User ID not found" });
+    }
+
+    fs.createReadStream(filePath)
+        .pipe(csvParser())
+        .on('data', (row) => products.push(row)) // ✅ Collect all rows
+        .on('end', async () => {
+            try {
+                for (const row of products) { // ✅ Loop through each row
+                    try {
+                        // ✅ 1. CHECK & UPDATE CATEGORY
+                        let category = await Category.findOne({ name: row['Category Name'] });
+
+                        if (!category) {
+                            category = new Category({ name: row['Category Name'] });
+                            await category.save();
+                        }
+
+                        // ✅ 2. CHECK & UPDATE SUBCATEGORY
+                        let subcategory = await Subcategory.findOne({ name: row['Subcategory Name'], category_id: category._id });
+
+                        if (!subcategory) {
+                            subcategory = new Subcategory({ 
+                                name: row['Subcategory Name'], 
+                                category_id: category._id 
+                            });
+                            await subcategory.save();
+                        }
+
+                        // ✅ 3. CHECK IF PRODUCT EXISTS, UPDATE IF IT DOES, OTHERWISE CREATE NEW
+                        let existingProduct = await Product.findOne({ _id: row['Product ID'] });
+
+                        if (existingProduct) {
+                            // Update existing product
+                            await Product.updateOne(
+                                { _id: row['Product ID'] },
+                                {
+                                    name: row['Product Name'],
+                                    description: row['Description'],
+                                    SKU: row['SKU'],
+                                    brand: row['Brand'],
+                                    price: parseFloat(row['Price']) || 0,
+                                    stock: parseInt(row['Stock']) || 0,
+                                    category_id: category._id,
+                                    subcategory_id: subcategory._id,
+                                    product_img: row['Product Image'],
+                                    gallery_imgs: row['Gallery Images'] ? row['Gallery Images'].split('|') : [],
+                                    is_variant: row['Is Variant'] === 'true',
+                                    seller_id: row['Seller ID'] || seller_id,
+                                }
+                            );
+                        } else {
+                            // Insert new product
+                            let newProduct = new Product({
+                                _id: row['Product ID'],
+                                name: row['Product Name'],
+                                description: row['Description'],
+                                SKU: row['SKU'],
+                                brand: row['Brand'],
+                                price: parseFloat(row['Price']) || 0,
+                                stock: parseInt(row['Stock']) || 0,
+                                category_id: category._id,
+                                subcategory_id: subcategory._id,
+                                product_img: row['Product Image'],
+                                gallery_imgs: row['Gallery Images'] ? row['Gallery Images'].split('|') : [],
+                                is_variant: row['Is Variant'] === 'true',
+                                seller_id: row['Seller ID'],
+                            });
+
+                            await newProduct.save();
+                        }
+
+                        // ✅ 4. CHECK & UPDATE VARIANTS (if applicable)
+                        if (row['Is Variant'] === 'true') {
+                            let variant = await Variant.findOne({ product_id: row['Product ID'], name: row['Variant Name'] });
+
+                            if (variant) {
+                                await Variant.updateOne(
+                                    { product_id: row['Product ID'], name: row['Variant Name'] },
+                                    {
+                                        price: parseFloat(row['Variant Price']) || 0,
+                                        stock: parseInt(row['Variant Stock']) || 0,
+                                        attributes: row['Variant Attributes'] ? JSON.parse(row['Variant Attributes']) : {},
+                                    }
+                                );
+                            } else {
+                                let newVariant = new Variant({
+                                    product_id: row['Product ID'],
+                                    name: row['Variant Name'],
+                                    price: parseFloat(row['Variant Price']) || 0,
+                                    stock: parseInt(row['Variant Stock']) || 0,
+                                    attributes: row['Variant Attributes'] ? JSON.parse(row['Variant Attributes']) : {},
+                                });
+
+                                await newVariant.save();
+                            }
+                        }
+
+                        console.log(`✅ Product "${row['Product Name']}" processed successfully.`);
+                    } catch (error) {
+                        console.error(`❌ Error processing product "${row['Product Name']}":`, error);
+                    }
+                }
+
+                res.status(200).json({ message: "Products imported successfully" });
+            } catch (error) {
+                console.error(`❌ Error during CSV import:`, error);
+                res.status(500).json({ message: "Error importing products" });
+            }
+        });
 };

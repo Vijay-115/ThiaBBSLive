@@ -42,6 +42,10 @@ const Products = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
+  
+  const [importfile, setImportfile] = useState(null);
+  const [importloading, setImportloading] = useState(false);
+
   // Fetch Categories
     const fetchCategories = async () => {
       try {
@@ -203,6 +207,33 @@ const Products = () => {
 
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
 
+  const handleExport = async () => {
+    await ProductService.exportProducts();
+  };
+
+  // 📌 HANDLE FILE CHANGE
+  const handleImportFileChange = (event) => {
+    setImportfile(event.target.files[0]);
+  };
+
+  const handleImport = async () => {
+    if (!importfile) {
+      alert("Please select a CSV file first.");
+      return;
+    }
+    setImportloading(true);
+    const formData = new FormData();
+    formData.append("file", importfile);
+    try {
+      await ProductService.importProducts(formData);
+    } catch (error) {
+      console.error("Import Error:", error);
+      alert("Error importing products.");
+    } finally {
+      setImportloading(false);
+    }
+  };
+
     return (
         <>
 
@@ -242,10 +273,15 @@ const Products = () => {
                                     </li>
                                 </ul>
                             </div>
-                            <NavLink className="btn-download" to="#">
+                            <input type="file" accept=".csv" onChange={handleImportFileChange} />
+                            <button  onClick={handleImport} disabled={importloading} className="btn-download" to="#">
                                 <i className="bx bxs-cloud-download bx-fade-down-hover" />
-                                <span className="text">Download PDF</span>
-                            </NavLink>
+                                <span className="text">{importloading ? "Importing..." : "Import CSV"}</span>
+                            </button >
+                            <div onClick={handleExport} className="btn-download" to="#">
+                                <i className="bx bxs-cloud-download bx-fade-down-hover" />
+                                <span className="text">Export CSV</span>
+                            </div>
                         </div>
                         <div className="container mx-auto p-4">
                         {errorMessage && (

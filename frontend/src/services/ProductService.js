@@ -156,6 +156,37 @@ export const ProductService = {
       throw new Error(error.response?.data?.message || "Failed to delete product.");
     }
   },
+
+  async exportProducts(){
+    try{
+      const response = await api.get(`${BASE_PRODUCTS_URL}/export`, {
+        responseType: "blob",
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "products_export.csv"); // File name
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }catch (error) {
+      console.error("Export failed:", error);
+    }
+  },
+
+  async importProducts(formData) {
+    try {
+      const response = await api.post(`${BASE_PRODUCTS_URL}/import`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data", // Required for file uploads
+        },
+      });
+      console.log("importProducts", response);
+    } catch (error) {
+      console.error("Error in importProducts:", error);
+    }
+  },
+
   // Categories
   async getCategories() {
     try {
