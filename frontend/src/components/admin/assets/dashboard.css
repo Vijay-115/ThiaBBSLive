@@ -492,11 +492,10 @@ li {
 	color: var(--brown);
 	pointer-events: unset;
 }
-#content main .head-title .btn-download {
+#content main .head-title .btn-download , .btn-import{
 	height: 36px;
 	padding: 0 16px;
 	border-radius: 36px;
-	background: var(--brown);
 	color: var(--light);
 	display: flex;
 	justify-content: center;
@@ -505,8 +504,13 @@ li {
 	font-weight: 500;
 }
 
+.btn-import {
+	background: #115e28;
+}
 
-
+#content main .head-title .btn-download {
+	background: var(--brown);
+}
 
 #content main .box-info {
 	display: grid;
