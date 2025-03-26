@@ -14,6 +14,7 @@ import ProductsSubCategoryPage from './components/pages/ProductsSubCategoryPage'
 import CartPage from './components/pages/CartPage';  
 import Login from './components/auth/Login'; 
 import Register from './components/auth/Register'; 
+import BecomeVendor from './components/auth/BecomeVendor'; 
 import Forgot from './components/auth/ForgotPassword'; 
 import ResetPassword from "./components/auth/ResetPassword"; 
 import { Toaster } from 'react-hot-toast'; 
@@ -30,6 +31,16 @@ import MyAccount from './components/auth/MyAccount';
 import Seller from './components/admin/Seller';
 import Vendor from './components/admin/Vendor';
 
+import AboutPage from './components/pages/AboutPage';
+import TermsOfUse from './components/pages/TermsOfUse';
+import PrivacyPolicy from './components/pages/PrivacyPolicy';
+import CancellationPolicy from './components/pages/CancellationPolicy';
+import ShippingPolicy from './components/pages/ShippingPolicy';
+import RefundPolicy from './components/pages/RefundPolicy';
+import ExchangePolicy from './components/pages/ExchangePolicy';
+import BuybackPolicy from './components/pages/BuybackPolicy';
+import BankCashbackPolicy from './components/pages/BankCashbackPolicy';
+import ContactUs from './components/pages/ContactUs';
 
 import SellerDashboard from './components/seller/Dashboard';
 import SellerProducts from './components/seller/Products';
@@ -94,12 +105,24 @@ function App() {
         <Route path="/cart" element={<CartPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/become-a-vendor" element={<BecomeVendor />} />
         <Route path="/forgot-password" element={<Forgot />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/wishlist" element={<WishlistPage />} />
         <Route path="/adminproduct" element={<ProductsListPage />} />
         <Route path="/my-account" element={<MyAccount />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/terms-of-use" element={<TermsOfUse />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/cancellation-policy" element={<CancellationPolicy />} />
+        <Route path="/shipping-policy" element={<ShippingPolicy />} />
+        <Route path="/refund-policy" element={<RefundPolicy />} />
+        <Route path="/exchange-policy" element={<ExchangePolicy />} />
+        <Route path="/buyback-policy" element={<BuybackPolicy />} />
+        <Route path="/bank-cashback-policy" element={<BankCashbackPolicy />} />
+        <Route path="/contact" element={<ContactUs />} />
+
          {/* ✅ Admin Routes */}
          <Route path="/admin" element={<AdminRoutes />}>
             <Route path="dashboard" element={<AdminDashboard />} />
