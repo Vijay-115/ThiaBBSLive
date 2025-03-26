@@ -573,10 +573,9 @@ exports.exportProducts = async (req, res) => {
 
         // Define CSV headers
         const csvFields = [
-            'Product ID', 'Product Name', 'Description', 'SKU', 'Brand', 'Price', 'Stock', 'Is Variant',
+            'Product ID', 'Product Name', 'Description', 'SKU', 'Brand', 'Weight', 'Dimensions', 'Tags', 'Product Image', 'Product Gallery Images', 'Price', 'Stock', 'Is Review', 'Is Variant',
             'Category ID', 'Category Name', 'Category Description',
             'Subcategory ID', 'Subcategory Name', 'Subcategory Description',
-            'Product Image', 'Gallery Images',
             'Variant ID', 'Variant Name', 'Variant Price', 'Variant Stock', 'Variant SKU',
             'Variant Image', 'Variant Gallery Images', 'Variant Attributes',
             'Seller ID', 'Seller Name', 'Seller Email', 'Seller Phone', 'Seller Address'
@@ -597,8 +596,14 @@ exports.exportProducts = async (req, res) => {
                         'Description': product.description,
                         'SKU': product.SKU,
                         'Brand': product.brand,
+                        'Weight': product.weight,
+                        'Dimensions': product.dimensions ? `${product.dimensions.length}x${product.dimensions.width}x${product.dimensions.height}` : '',
+                        'Tags': product.tags ? product.tags.join('|') : '',
+                        'Product Image': product.product_img,
+                        'Product Gallery Images': product.gallery_imgs ? product.gallery_imgs.join('|') : '',
                         'Price': product.price || '',
                         'Stock': product.stock || '',
+                        'Is Review': product.is_review,
                         'Is Variant': true,
                         'Category ID': category._id || '',
                         'Category Name': category.name || '',
@@ -606,8 +611,6 @@ exports.exportProducts = async (req, res) => {
                         'Subcategory ID': subcategory._id || '',
                         'Subcategory Name': subcategory.name || '',
                         'Subcategory Description': subcategory.description || '',
-                        'Product Image': product.product_img,
-                        'Gallery Images': product.gallery_imgs ? product.gallery_imgs.join('|') : '',
                         'Variant ID': variant._id,
                         'Variant Name': variant.variant_name,
                         'Variant Price': variant.price,
@@ -630,8 +633,14 @@ exports.exportProducts = async (req, res) => {
                     'Description': product.description,
                     'SKU': product.SKU,
                     'Brand': product.brand,
+                    'Weight': product.weight,
+                    'Dimensions': product.dimensions ? `${product.dimensions.length}x${product.dimensions.width}x${product.dimensions.height}` : '',
+                    'Tags': product.tags ? product.tags.join('|') : '',
+                    'Product Image': product.product_img,
+                    'Product Gallery Images': product.gallery_imgs ? product.gallery_imgs.join('|') : '',
                     'Price': product.price,
                     'Stock': product.stock,
+                    'Is Review': product.is_review,
                     'Is Variant': false,
                     'Category ID': category._id || '',
                     'Category Name': category.name || '',
@@ -639,8 +648,6 @@ exports.exportProducts = async (req, res) => {
                     'Subcategory ID': subcategory._id || '',
                     'Subcategory Name': subcategory.name || '',
                     'Subcategory Description': subcategory.description || '',
-                    'Product Image': product.product_img,
-                    'Gallery Images': product.gallery_imgs ? product.gallery_imgs.join('|') : '',
                     'Variant ID': '',
                     'Variant Name': '',
                     'Variant Price': '',
@@ -695,9 +702,9 @@ exports.exportProducts = async (req, res) => {
 
 // Product Import
 exports.importProducts = async (req, res) => {
-    console.log('importProducts', req.files[0].path);
+    console.log('importProducts', req);
     
-    if (!req.files) {
+    if (!req.files && req.files.length < 1) {
         return res.status(400).json({ message: "No file uploaded" });
     }
 
@@ -738,6 +745,18 @@ exports.importProducts = async (req, res) => {
                         // ✅ 3. CHECK IF PRODUCT EXISTS, UPDATE IF IT DOES, OTHERWISE CREATE NEW
                         let existingProduct = await Product.findOne({ _id: row['Product ID'] });
 
+                        let dimensions = {};
+                        if (row['Dimensions']) {
+                            const dimParts = row['Dimensions'].split('x');
+                            if (dimParts.length === 3) {
+                                dimensions = {
+                                    length: parseFloat(dimParts[0]) || 0,
+                                    width: parseFloat(dimParts[1]) || 0,
+                                    height: parseFloat(dimParts[2]) || 0
+                                };
+                            }
+                        }
+
                         if (existingProduct) {
                             // Update existing product
                             await Product.updateOne(
@@ -747,12 +766,16 @@ exports.importProducts = async (req, res) => {
                                     description: row['Description'],
                                     SKU: row['SKU'],
                                     brand: row['Brand'],
+                                    weight: row['Weight'],
+                                    dimensions: dimensions,
+                                    tags: row['Tags'] ? row['Tags'].split('|') : [],
+                                    product_img: row['Product Image'],
+                                    gallery_imgs: row['Gallery Images'] ? row['Gallery Images'].split('|') : [],
                                     price: parseFloat(row['Price']) || 0,
                                     stock: parseInt(row['Stock']) || 0,
                                     category_id: category._id,
                                     subcategory_id: subcategory._id,
-                                    product_img: row['Product Image'],
-                                    gallery_imgs: row['Gallery Images'] ? row['Gallery Images'].split('|') : [],
+                                    is_review: row['Is Review'] === 'true',
                                     is_variant: row['Is Variant'] === 'true',
                                     seller_id: row['Seller ID'] || seller_id,
                                 }
@@ -765,12 +788,16 @@ exports.importProducts = async (req, res) => {
                                 description: row['Description'],
                                 SKU: row['SKU'],
                                 brand: row['Brand'],
+                                weight: row['Weight'],
+                                dimensions: dimensions,
+                                tags: row['Tags'] ? row['Tags'].split('|') : [],
+                                product_img: row['Product Image'],
+                                gallery_imgs: row['Gallery Images'] ? row['Gallery Images'].split('|') : [],
                                 price: parseFloat(row['Price']) || 0,
                                 stock: parseInt(row['Stock']) || 0,
                                 category_id: category._id,
                                 subcategory_id: subcategory._id,
-                                product_img: row['Product Image'],
-                                gallery_imgs: row['Gallery Images'] ? row['Gallery Images'].split('|') : [],
+                                is_review: row['Is Review'] === 'true',
                                 is_variant: row['Is Variant'] === 'true',
                                 seller_id: row['Seller ID'],
                             });

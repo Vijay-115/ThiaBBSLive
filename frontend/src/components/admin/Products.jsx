@@ -9,6 +9,7 @@ import Modal from "react-modal";
 import ProductForm from "./ProductForm";
 import { ProductService } from "../../services/ProductService";
 import toast from "react-hot-toast";
+import ImportProduct from "../layout/ImportProduct";
 
 const Products = () => {
 
@@ -35,6 +36,8 @@ const Products = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [isAddEditModalOpen, setIsAddEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  
   const [productToDelete, setProductToDelete] = useState(null);
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -211,27 +214,28 @@ const Products = () => {
     await ProductService.exportProducts();
   };
 
-  // 📌 HANDLE FILE CHANGE
-  const handleImportFileChange = (event) => {
-    setImportfile(event.target.files[0]);
-  };
-
-  const handleImport = async () => {
-    if (!importfile) {
+  const handleImport = async (file) => {
+    if (!file) {
       alert("Please select a CSV file first.");
-      return;
+      return false;
     }
-    setImportloading(true);
+  
     const formData = new FormData();
-    formData.append("file", importfile);
+    formData.append("file", file); // ✅ Append actual file object
+  
     try {
       await ProductService.importProducts(formData);
+      fetchProducts();
+      return true; // ✅ Success
     } catch (error) {
       console.error("Import Error:", error);
       alert("Error importing products.");
-    } finally {
-      setImportloading(false);
+      return false; // ❌ Failure
     }
+  };
+
+  const openImportProductModal = () => {
+    setIsImportModalOpen(true);
   };
 
     return (
@@ -273,14 +277,13 @@ const Products = () => {
                                     </li>
                                 </ul>
                             </div>
-                            <input type="file" accept=".csv" onChange={handleImportFileChange} />
-                            <button  onClick={handleImport} disabled={importloading} className="btn-download" to="#">
-                                <i className="bx bxs-cloud-download bx-fade-down-hover" />
-                                <span className="text">{importloading ? "Importing..." : "Import CSV"}</span>
-                            </button >
                             <div onClick={handleExport} className="btn-download" to="#">
                                 <i className="bx bxs-cloud-download bx-fade-down-hover" />
                                 <span className="text">Export CSV</span>
+                            </div>
+                            <div onClick={openImportProductModal} className="btn-import" to="#">
+                                <i className="bx bxs-cloud-download bx-fade-down-hover" />
+                                <span className="text">Import CSV</span>
                             </div>
                         </div>
                         <div className="container mx-auto p-4">
@@ -324,6 +327,18 @@ const Products = () => {
                                 Cancel
                                 </button>
                             </div>
+                            </div>
+                        </Modal>
+
+                        <Modal
+                            isOpen={isImportModalOpen}
+                            onRequestClose={() => setIsImportModalOpen(false)}
+                            contentLabel="Import Products"
+                            className="modal-content"
+                            overlayClassName="modal-overlay"
+                        >
+                            <div className="p-8 bg-white rounded-lg">
+                              <ImportProduct setIsImportModalOpen={setIsImportModalOpen} onImport={handleImport}/>
                             </div>
                         </Modal>
 
