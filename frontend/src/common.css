@@ -336,6 +336,9 @@ position: relative;
 max-width: 125px;
 margin: 50px auto;
 }
+.rect.avatar-upload {
+    margin: 0;
+}
 .avatar-upload .avatar-edit {
 position: absolute;
 right: 0px;

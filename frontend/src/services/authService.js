@@ -23,7 +23,6 @@ export const register = async (userData, dispatch, navigate) => {
         throw new Error(error.response?.data?.msg || "Registration failed");
     }
 };
-
 // Login function
 export const login = async (dispatch, email, password, navigate) => {
     try {
