@@ -1,133 +1,685 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { register } from "../../services/authService";
 import { useDispatch } from "react-redux";
+import Select from "react-select";
+import { GetCountries, GetState, GetCity } from "react-country-state-city";
+import useAddress from "../admin/hooks/useAddress";
+import { vendorRegister } from "../../services/vendorService";
 
 const BecomeVendor = () => {
+    
     const [vendorData, setVendorData] = useState({
-        name: '', email: '', phone: '', password: '',
-        pincode: '', country: '', state: '', city: '', taluk: '',
-        address: '', gst: ''
+        vendor_name: '', business_type: '', brand_name: '', contact_person: '', email: '', mobile: '', register_business_address: { street: "", city: "", state: "", postalCode: "", country: "" }, operational_address: { street: "", city: "", state: "", postalCode: "", country: "" },
+        pan_number: '', pan_pic: '', gst_number: '', gst_pic: '',
+        fssai_license: '', fssai_pic: '', shop_establish_license: '', shop_establish_pic: '',
+        outlet_location: { street: "", city: "", state: "", postalCode: "", country: "" }, outlet_manager_name: '', outlet_contact_no: '',
+        bank_name: '', account_holder_name: '', account_no: '', ifcs_code: '',
+        branch_name: '', cancel_cheque: '', passbook: '',
+        profile_pic: '', cover_pic: '', vendor_bio: '',
+        product_category: '', product_category_other: '',
+        vendor_aggremet_polices: false
     });
+
+    // const [files, setFiles] = useState({
+    //     pan_pic: null, gst_pic: null, fssai_pic: null,
+    //     shop_establish_pic: null, cancel_cheque: null, passbook: null,
+    //     profile_pic: null, cover_pic: null
+    // });
+
+    const [data, setData] = useState({
+        pan_number: '', gst_number: '', fssai_license: '', shop_establish_license: ''
+    });
+    
+    const [files, setFiles] = useState({
+        pan_pic: null, gst_pic: null, fssai_pic: null, shop_establish_pic: null, cancel_cheque: null, passbook: null, profile_pic: null, cover_pic: null
+    });
+
+    const [imagePreviews, setImagePreviews] = useState({});
 
     const [errors, setErrors] = useState({});
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
+    const businessTypes = ['Individual', 'Proprietorship', 'Partnership Firm', 'Private Limited Company', 'Public Company'];
+    const productCategories = ['Jewelry', 'Electronics', 'Garments', 'Supermarket/FMCG', 'Health & Beauty', 'Home & Kitchen', 'Books & Stationery', 'Other'];
+
+    const { countries: businessCountries, states: businessStates, cities: businessCities } = useAddress(vendorData.register_business_address.country, vendorData.register_business_address.state);
+    const { countries: operationalCountries, states: operationalStates, cities: operationalCities } = useAddress(vendorData.operational_address.country, vendorData.operational_address.state);
+    const { countries: outletCountries, states: outletStates, cities: outletCities } = useAddress(vendorData.outlet_location.country, vendorData.outlet_location.state);
+
     const validateVendor = () => {
         let formErrors = {};
-        if (!vendorData.name) formErrors.name = "Name is required";
+        if (!vendorData.vendor_name) formErrors.vendor_name = "Vendor name is required";
+        if (!vendorData.business_type) formErrors.business_type = "Business type is required";
         if (!vendorData.email) formErrors.email = "Email is required";
         else if (!/\S+@\S+\.\S+/.test(vendorData.email)) formErrors.email = "Invalid email";
-        if (!vendorData.phone) formErrors.phone = "Phone is required";
-        if (!vendorData.password) formErrors.password = "Password is required";
-        else if (vendorData.password.length < 6) formErrors.password = "At least 6 characters";
-        if (!vendorData.pincode) formErrors.pincode = "Pincode is required";
-        if (!vendorData.country) formErrors.country = "Country is required";
-        if (!vendorData.state) formErrors.state = "State is required";
-        if (!vendorData.city) formErrors.city = "City is required";
-        if (!vendorData.taluk) formErrors.taluk = "Taluk is required";
-        if (!vendorData.address) formErrors.address = "Address is required";
-        if (!vendorData.gst) formErrors.gst = "GST Number is required";
+        if (!vendorData.mobile) formErrors.mobile = "Mobile number is required";
+        if (!vendorData.product_category) formErrors.product_category = "Product category is required";
+        if (vendorData.product_category === "Other" && !vendorData.product_category_other) formErrors.product_category_other = "Please specify the category";
 
         return formErrors;
     };
 
     const handleChange = (e) => {
-        setVendorData({ ...vendorData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+    
+        if (name.includes('.')) {
+            // If the name has a dot, it's an address field (e.g., register_business_address.street)
+            const [section, field] = name.split('.');
+    
+            setVendorData((prevData) => ({
+                ...prevData,
+                [section]: {
+                    ...prevData[section],
+                    [field]: value, // Update the nested address field
+                },
+            }));
+        } else {
+            // If it's a regular field like vendor_name
+            setVendorData((prevData) => ({
+                ...prevData,
+                [name]: value,
+            }));
+        }
+    };   
+    
+
+    // const handleFileChange = (e) => {
+    //     setFiles({ ...files, [e.target.name]: e.target.files[0] });
+    // };
+
+    const handleSelectChange = (selectedOption, actionMeta) => {
+        const { name } = actionMeta; // Extract name
+        console.log("Selected:", selectedOption);
+        console.log(selectedOption);
+        setVendorData((prevData) => ({
+            ...prevData,
+            [name]: selectedOption.value,
+        }));
+    };
+
+    const handleAddressSelectChange = (selectedOption, actionMeta) => {
+        const { name } = actionMeta; // Extract field name (e.g., "country", "state", or "city")
+        const [section, field] = name.split('.'); // Extract address type & field (e.g., "register_business_address", "country")
+    
+        setVendorData((prevData) => ({
+            ...prevData,
+            [section]: {
+                ...prevData[section],
+                [field]: selectedOption?.label || '' // Update only the relevant section
+            }
+        }));
     };
 
     const handleVendorSubmit = async (e) => {
         e.preventDefault();
+    
+        // Validate form
         const validationErrors = validateVendor();
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
             toast.error("Please fix the errors and try again.");
             return;
         }
-
+    
+        const formData = new FormData();
+    
+        // Append all vendorData fields, converting objects to JSON strings
+        Object.entries(vendorData).forEach(([key, value]) => {
+            if (typeof value === "object" && value !== null) {
+                formData.append(key, JSON.stringify(value)); // Convert object to JSON string
+            } else {
+                formData.append(key, value);
+            }
+        });
+    
+        // Append file inputs
+        Object.entries(files).forEach(([key, file]) => {
+            if (file) {
+                formData.append(key, file);
+            }
+        });
+    
+        console.log("handleVendorSubmit", Array.from(formData.entries())); // Debugging
+    
         try {
-            const response = await register(vendorData, dispatch, navigate);
+            await vendorRegister(formData, dispatch, navigate);
+            toast.success("Registration successful, Please wait for admin confirmation");
+            navigate("/");
         } catch (error) {
             toast.error(error.message || "Vendor registration failed. Try again.");
         }
     };
+    
+
+    const handleSameAsReqAdd = (e) => {
+        if (e.target.checked) {
+            // If checked, copy register_business_address to operational_address
+            setVendorData((prevData) => ({
+                ...prevData,
+                operational_address: { ...prevData.register_business_address }
+            }));
+        } else {
+            // If unchecked, reset operational_address to empty
+            setVendorData((prevData) => ({
+                ...prevData,
+                operational_address: {}
+            }));
+        }
+    };
+
+    const handleImageChange = (e) => {
+        const { name } = e.target;
+        const file = e.target.files[0];
+    
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreviews((prev) => ({
+                    ...prev,
+                    [name]: reader.result // Store image preview
+                }));
+                setFiles({ ...files, [name]: file });
+            };
+            reader.readAsDataURL(file);
+        }
+        console.log(files);
+    };
+    
 
     return (
-        <>
-            <div className="h-100 w-screen flex justify-center items-center dark:bg-gray-900 py-10">
-                <div className="grid gap-8">
-                    <div id="back-div" className="bg-gradient-to-r from-logoSecondary to-logoPrimary rounded-[26px] m-4">
-                        <div className="border-[20px] border-transparent rounded-[20px] dark:bg-gray-900 bg-white shadow-lg xl:p-5 2xl:p-5 lg:p-5 md:p-5 sm:p-2 m-2">
-                            <h1 className="pt-8 pb-6 font-bold dark:text-gray-400 text-3xl text-center cursor-default">
-                                Become a Vendor
-                            </h1>
-                            <form className="grid grid-cols-2 gap-6" onSubmit={handleVendorSubmit}>
-                                {Object.entries(vendorData).map(([key, value]) => (
-                                    <div key={key} className="col-span-1">
-                                        <label htmlFor={key} className="mb-2 dark:text-gray-400 text-md capitalize">{key.replace('_', ' ')}</label>
-                                        <input
-                                            id={key}
-                                            name={key}
-                                            type={key === "password" ? "password" : "text"}
-                                            placeholder={`Enter ${key}`}
-                                            className={`border p-3 dark:bg-indigo-700 dark:text-gray-300 dark:border-gray-700 shadow-md placeholder:text-base focus:scale-105 ease-in-out duration-300 border-gray-300 rounded-lg w-full placeholder-gray-300 ${errors[key] ? 'border-red-700' : ''}`}
-                                            onChange={handleChange}
-                                            value={value}
-                                        />
-                                        {errors[key] && <div className="text-red-800">{errors[key]}</div>}
-                                    </div>
-                                ))}
-                                <div className="col-span-2">
-                                    <button className="bg-gradient-to-r dark:text-gray-300 from-logoSecondary to-logoPrimary shadow-lg mt-6 p-3 text-white rounded-lg w-full hover:scale-105 hover:from-logoPrimary hover:to-logoSecondary transition duration-300 ease-in-out" type="submit">
-                                        REGISTER AS VENDOR
-                                    </button>
+        <div className="h-100 w-screen flex justify-center items-center dark:bg-gray-900 py-10">
+            <div className="grid gap-8 max-w-[991px] w-full">
+                <div id="back-div" className="bg-gradient-to-r from-logoSecondary to-logoPrimary rounded-[26px] m-4">
+                    <div className="border-[20px] border-transparent rounded-[20px] dark:bg-gray-900 bg-white shadow-lg p-5 m-2">
+                        <h1 className="pt-8 pb-6 font-bold dark:text-gray-400 text-3xl text-center">
+                            Become a Vendor
+                        </h1>
+                        <form className="grid grid-cols-2 gap-x-4" onSubmit={handleVendorSubmit} encType="multipart/form-data">
+                            {/* Vendor Name */}
+                            <div className="col-span-1 mt-3">
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Vendor Name</label>
+                                <input name="vendor_name" type="text" placeholder="Enter Vendor Name"
+                                    className={`border p-3 w-full rounded-lg ${errors.vendor_name ? 'border-red-700' : ''}`}
+                                    onChange={handleChange} value={vendorData.vendor_name} />
+                                {errors.vendor_name && <div className="text-red-800">{errors.vendor_name}</div>}
+                            </div>
+                            {/* Business Type Dropdown */}
+                            <div className="col-span-1 mt-3">
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Business Type</label>
+                                <Select
+                                    options={businessTypes.map((option) => ({ value: option, label: option, }))}
+                                    value={vendorData.business_type ? { value: vendorData.business_type, label: vendorData.business_type } : null}
+                                    onChange={handleSelectChange}
+                                    placeholder="Select Business Type"
+                                    isSearchable
+                                    className="w-full"
+                                    name="business_type"
+                                />
+                                {errors.business_type && <div className="text-red-800">{errors.business_type}</div>}
+                            </div>      
+                            {/* Brand Name */}
+                            <div className="col-span-1 mt-3">
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Brand Name</label>
+                                <input name="brand_name" type="text" placeholder="Enter Brand Name"
+                                    className={`border p-3 w-full rounded-lg ${errors.brand_name ? 'border-red-700' : ''}`}
+                                    onChange={handleChange} value={vendorData.brand_name} />
+                                {errors.brand_name && <div className="text-red-800">{errors.brand_name}</div>}
+                            </div>
+                            {/* Contact Person Name */}
+                            <div className="col-span-1 mt-3">
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Contact Person Name</label>
+                                <input name="contact_person" type="text" placeholder="Enter Contact Person Name"
+                                    className={`border p-3 w-full rounded-lg ${errors.contact_person ? 'border-red-700' : ''}`}
+                                    onChange={handleChange} value={vendorData.contact_person} />
+                                {errors.contact_person && <div className="text-red-800">{errors.contact_person}</div>}
+                            </div>
+                            {/* Email */}
+                            <div className="col-span-1 mt-3">
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Email</label>
+                                <input name="email" type="email" placeholder="Enter Email"
+                                    className={`border p-3 w-full rounded-lg ${errors.email ? 'border-red-700' : ''}`}
+                                    onChange={handleChange} value={vendorData.email} />
+                                {errors.email && <div className="text-red-800">{errors.email}</div>}
+                            </div>
+                            {/* Mobile */}
+                            <div className="col-span-1 mt-3">
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Contact Person Mobile</label>
+                                <input name="mobile" type="text" placeholder="Enter Contact Person Mobile"
+                                    className={`border p-3 w-full rounded-lg ${errors.mobile ? 'border-red-700' : ''}`}
+                                    onChange={handleChange} value={vendorData.mobile} />
+                                {errors.mobile && <div className="text-red-800">{errors.mobile}</div>}
+                            </div>                            
+                            {/* Alternative Mobile */}
+                            <div className="col-span-1 mt-3">
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Contact Person Alternative Mobile</label>
+                                <input name="alt_mobile" type="text" placeholder="Enter Contact Person Alternative Mobile"
+                                    className={`border p-3 w-full rounded-lg ${errors.alt_mobile ? 'border-red-700' : ''}`}
+                                    onChange={handleChange} value={vendorData.alt_mobile} />
+                                {errors.alt_mobile && <div className="text-red-800">{errors.alt_mobile}</div>}
+                            </div>
+
+                            <h3 className="col-span-2 block text-[18px] font-medium text-primary mt-[20px]  mb-[8px]">Register Business Address </h3>
+                            {/* Register Business Address */}
+                            <div className="col-span-2 w-full">
+                                <div className="input-item mb-[8px]">
+                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">Street</label>
+                                    <input 
+                                        type="text" 
+                                        name="register_business_address.street" 
+                                        onChange={handleChange} 
+                                        value={vendorData?.register_business_address?.street || ""} 
+                                        placeholder="Address Line 1" 
+                                        className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" 
+                                        required 
+                                    />
                                 </div>
-                            </form>
+                            </div>                                            
+    
+                            {/* Country Dropdown */}
+                            <div className="col-span-1 mt-3 w-full">
+                                <div className="input-item mb-[8px]">
+                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">Country</label>
+                                    <Select
+                                        options={businessCountries}
+                                        value={businessCountries.find(option => option.label === vendorData.register_business_address.country) || null}
+                                        onChange={(option) => handleAddressSelectChange(option, { name: "register_business_address.country" })}
+                                        placeholder="Select Country"
+                                        className="w-full"
+                                        isSearchable
+                                    />
+                                </div>
+                            </div>
+    
+                            
+                            {/* Region/State Dropdown */}
+                            <div className="col-span-1 mt-3 w-full">
+                                <div className="input-item mb-[8px]">
+                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">State</label>
+                                    <Select
+                                        options={businessStates}
+                                        value={businessStates.find(option => option.label === vendorData.register_business_address.state) || null}
+                                        onChange={(option) => handleAddressSelectChange(option, { name: "register_business_address.state" })}
+                                        placeholder="Select State"
+                                        isSearchable
+                                        className="w-full"
+                                    />
+                                </div>
+                            </div>
+    
+                            {/* City Dropdown */}
+                            <div className="col-span-1 mt-3 w-full">
+                                <div className="input-item mb-[8px]">
+                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">City</label>
+                                    <Select
+                                        options={businessCities}
+                                        value={businessCities.find(option => option.label === vendorData.register_business_address.city) || null}
+                                        onChange={(option) => handleAddressSelectChange(option, { name: "register_business_address.city" })}
+                                        placeholder="Select City"
+                                        isSearchable
+                                    />
+                                </div>
+                            </div>
+    
+                            {/* Post Code */}
+                            <div className="col-span-1 mt-3 w-full">
+                                <div className="input-item mb-[8px]">
+                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">Post Code *</label>
+                                    <input type="text" name="register_business_address.postalCode" onChange={handleChange} value={vendorData?.register_business_address?.postalCode ?? ''} placeholder="Post Code" className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" required />
+                                </div>
+                            </div>                            
 
-                            <div className="flex flex-col mt-4 items-center justify-center text-sm">
-                                <h3 className="dark:text-gray-300">
-                                    Already have an account?
-                                    <Link className="group text-primary transition-all duration-100 ease-in-out" to="/login">
-                                        <span className="bg-left-bottom bg-gradient-to-r from-blue-400 to-blue-400 bg-[length:0%_2px] bg-no-repeat group-hover:bg-[length:100%_2px] transition-all duration-500 ease-out mx-2">
-                                            Sign In
-                                        </span>
-                                    </Link>
-                                </h3>
+                            <h3 className="col-span-2 block text-[18px] font-medium text-primary mt-[20px]  mb-[8px]">Operational Address  </h3>
+                            <div className="flex flex-wrap gap-2 items-center mb-3">
+                                <input className="w-[15px] h-[15px]" type="checkbox" name="sameasreqadd" id="sameasreqadd" onClick={handleSameAsReqAdd} /> 
+                                <label className="block text-[14px] font-medium text-secondary" htmlFor="sameasreqadd">Same as Registered Address</label>
                             </div>
 
-                            <div className="text-gray-500 flex text-center flex-col mt-4 items-center text-sm">
-                                <p className="cursor-default">
-                                    By signing in, you agree to our
-                                    <a
-                                        className="group text-primary transition-all duration-100 ease-in-out"
-                                        href="/terms-of-use"
-                                    >
-                                        <span
-                                            className="cursor-pointer bg-left-bottom bg-gradient-to-r from-blue-400 to-blue-400 bg-[length:0%_2px] bg-no-repeat group-hover:bg-[length:100%_2px] transition-all duration-500 ease-out mx-1"
-                                        >
-                                            Terms
-                                        </span>
-                                    </a>
-                                    and
-                                    <a
-                                        className="group text-primary transition-all duration-100 ease-in-out"
-                                        href="/privacy-policy"
-                                    >
-                                        <span
-                                            className="cursor-pointer bg-left-bottom bg-gradient-to-r from-blue-400 to-blue-400 bg-[length:0%_2px] bg-no-repeat group-hover:bg-[length:100%_2px] transition-all duration-500 ease-out mx-1"
-                                        >
-                                            Privacy Policy
-                                        </span>
-                                    </a>
-                                </p>
+                            {/* Operational Address */}
+                            <div className="col-span-2 w-full">
+                                <div className="input-item mb-[8px]">
+                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">Street</label>
+                                    <input 
+                                        type="text" 
+                                        name="operational_address.street" 
+                                        onChange={handleChange} 
+                                        value={vendorData?.operational_address?.street || ""} 
+                                        placeholder="Address Line 1" 
+                                        className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" 
+                                        required 
+                                    />
+                                </div>
+                            </div>                                            
+    
+                            {/* Country Dropdown */}
+                            <div className="col-span-1 mt-3 w-full">
+                                <div className="input-item mb-[8px]">
+                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">Country</label>
+                                    <Select
+                                        options={operationalCountries}
+                                        value={operationalCountries.find(option => option.label === vendorData.operational_address.country) || null}
+                                        onChange={(option) => handleAddressSelectChange(option, { name: "operational_address.country" })}
+                                        placeholder="Select Country"
+                                        className="w-full"
+                                        isSearchable
+                                    />
+                                </div>
                             </div>
+    
+                            
+                            {/* Region/State Dropdown */}
+                            <div className="col-span-1 mt-3 w-full">
+                                <div className="input-item mb-[8px]">
+                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">State</label>
+                                    <Select
+                                        options={operationalStates}
+                                        value={operationalStates.find(option => option.label === vendorData.operational_address.state) || null}
+                                        onChange={(option) => handleAddressSelectChange(option, { name: "operational_address.state" })}
+                                        placeholder="Select State"
+                                        isSearchable
+                                        className="w-full"
+                                    />
+                                </div>
+                            </div>
+    
+                            {/* City Dropdown */}
+                            <div className="col-span-1 mt-3 w-full">
+                                <div className="input-item mb-[8px]">
+                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">City</label>
+                                    <Select
+                                        options={operationalCities}
+                                        value={operationalCities.find(option => option.label === vendorData.operational_address.city) || null}
+                                        onChange={(option) => handleAddressSelectChange(option, { name: "operational_address.city" })}
+                                        placeholder="Select City"
+                                        isSearchable
+                                    />
+                                </div>
+                            </div>
+    
+                            {/* Post Code */}
+                            <div className="col-span-1 mt-3 w-full">
+                                <div className="input-item mb-[8px]">
+                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">Post Code *</label>
+                                    <input type="text" name="operational_address.postalCode" onChange={handleChange} value={vendorData?.operational_address?.postalCode ?? ''} placeholder="Post Code" className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" required />
+                                </div>
+                            </div>
+
+                            <div className="col-span-2 mt-3"></div>
+                            {/* File Inputs */}
+                            {/* Map through keys and show text input + file input together */}
+                            {Object.keys(data).map((key) => {
+                                const fileKey = key.replace('_number', '_pic').replace('_license', '_pic');
+
+                                return (
+                                    <div key={key} className="col-span-1 mt-3 relative">
+                                        {/* Text Input */}
+                                        <label className="block text-[14px] font-medium text-secondary mb-[8px]">
+                                            {key.replace('_', ' ').toUpperCase()}
+                                        </label>
+                                        <input 
+                                            type="text" 
+                                            name={key} 
+                                            value={vendorData.key} 
+                                            onChange={handleChange} 
+                                            className="border p-3 w-full rounded-lg" 
+                                        />
+
+                                        {/* File Input */}
+                                        <label className="block text-[14px] font-medium text-secondary mb-[8px] mt-2">
+                                            {fileKey.replace('_', ' ').toUpperCase()}
+                                        </label>
+                                        <input 
+                                            type="file" 
+                                            name={fileKey} 
+                                            className="border p-3 w-full rounded-lg" 
+                                            onChange={handleImageChange} 
+                                        />
+
+                                        {/* Preview Button */}
+                                        {imagePreviews[fileKey] && (
+                                            <button 
+                                                className="mt-2 px-3 py-1 bg-blue-500 text-white text-center rounded-md absolute right-3"
+                                                onClick={() => window.open(imagePreviews[fileKey], '_blank')}
+                                            >
+                                                Preview
+                                            </button>
+                                        )}
+                                    </div>
+                                );
+                            })}
+
+                            <h3 className="col-span-2 block text-[18px] font-medium text-primary mt-[20px]  mb-[8px]">Supermarket Outlets Locations</h3>
+
+                            <div className="col-span-1 mt-3">
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Store Manager Name</label>
+                                <input name="outlet_manager_name" type="text" placeholder="Enter Store Manager Name"
+                                    className={`border p-3 w-full rounded-lg ${errors.outlet_manager_name ? 'border-red-700' : ''}`}
+                                    onChange={handleChange} value={vendorData.outlet_manager_name} />
+                                {errors.outlet_manager_name && <div className="text-red-800">{errors.outlet_manager_name}</div>}
+                            </div>                            
+                            <div className="col-span-1 mt-3">
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Contact Number </label>
+                                <input name="outlet_contact_no" type="text" placeholder="Enter Contact Number"
+                                    className={`border p-3 w-full rounded-lg ${errors.outlet_contact_no ? 'border-red-700' : ''}`}
+                                    onChange={handleChange} value={vendorData.outlet_contact_no} />
+                                {errors.outlet_contact_no && <div className="text-red-800">{errors.outlet_contact_no}</div>}
+                            </div>
+
+                            {/* Register Business Address */}
+                            <div className="col-span-2 w-full">
+                                <div className="input-item mb-[8px]">
+                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">Street</label>
+                                    <input 
+                                        type="text" 
+                                        name="outlet_location.street" 
+                                        onChange={handleChange} 
+                                        value={vendorData?.outlet_location?.street || ""} 
+                                        placeholder="Address Line 1" 
+                                        className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" 
+                                        required 
+                                    />
+                                </div>
+                            </div>                                            
+    
+                            {/* Country Dropdown */}
+                            <div className="col-span-1 mt-3 w-full">
+                                <div className="input-item mb-[8px]">
+                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">Country</label>
+                                    <Select
+                                        options={businessCountries}
+                                        value={businessCountries.find(option => option.label === vendorData.outlet_location.country) || null}
+                                        onChange={(option) => handleAddressSelectChange(option, { name: "outlet_location.country" })}
+                                        placeholder="Select Country"
+                                        className="w-full"
+                                        isSearchable
+                                    />
+                                </div>
+                            </div>
+    
+                            
+                            {/* Region/State Dropdown */}
+                            <div className="col-span-1 mt-3 w-full">
+                                <div className="input-item mb-[8px]">
+                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">State</label>
+                                    <Select
+                                        options={businessStates}
+                                        value={businessStates.find(option => option.label === vendorData.outlet_location.state) || null}
+                                        onChange={(option) => handleAddressSelectChange(option, { name: "outlet_location.state" })}
+                                        placeholder="Select State"
+                                        isSearchable
+                                        className="w-full"
+                                    />
+                                </div>
+                            </div>
+    
+                            {/* City Dropdown */}
+                            <div className="col-span-1 mt-3 w-full">
+                                <div className="input-item mb-[8px]">
+                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">City</label>
+                                    <Select
+                                        options={businessCities}
+                                        value={businessCities.find(option => option.label === vendorData.outlet_location.city) || null}
+                                        onChange={(option) => handleAddressSelectChange(option, { name: "outlet_location.city" })}
+                                        placeholder="Select City"
+                                        isSearchable
+                                    />
+                                </div>
+                            </div>
+    
+                            {/* Post Code */}
+                            <div className="col-span-1 mt-3 w-full">
+                                <div className="input-item mb-[8px]">
+                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">Post Code *</label>
+                                    <input type="text" name="outlet_location.postalCode" onChange={handleChange} value={vendorData?.outlet_location?.postalCode ?? ''} placeholder="Post Code" className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" required />
+                                </div>
+                            </div>
+                            
+                            <h3 className="col-span-2 block text-[18px] font-medium text-primary mt-[20px]  mb-[8px]">Bank & Payment Details</h3>
+                            
+                            <div className="col-span-1 mt-3">
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Bank Name</label>
+                                <input name="bank_name" type="text" placeholder="Enter Bank Name"
+                                    className={`border p-3 w-full rounded-lg ${errors.bank_name ? 'border-red-700' : ''}`}
+                                    onChange={handleChange} value={vendorData.bank_name} />
+                                {errors.bank_name && <div className="text-red-800">{errors.bank_name}</div>}
+                            </div>                            
+                            <div className="col-span-1 mt-3">
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Account Holder’s Name </label>
+                                <input name="account_holder_name" type="text" placeholder="Enter Account Holder’s Name "
+                                    className={`border p-3 w-full rounded-lg ${errors.account_holder_name ? 'border-red-700' : ''}`}
+                                    onChange={handleChange} value={vendorData.account_holder_name} />
+                                {errors.account_holder_name && <div className="text-red-800">{errors.account_holder_name}</div>}
+                            </div>
+                            <div className="col-span-1 mt-3">
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Account Number</label>
+                                <input name="account_no" type="text" placeholder="Enter Account Number"
+                                    className={`border p-3 w-full rounded-lg ${errors.account_no ? 'border-red-700' : ''}`}
+                                    onChange={handleChange} value={vendorData.account_no} />
+                                {errors.account_no && <div className="text-red-800">{errors.account_no}</div>}
+                            </div>                            
+                            <div className="col-span-1 mt-3">
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">IFSC Code</label>
+                                <input name="ifcs_code" type="text" placeholder="Enter IFSC Code"
+                                    className={`border p-3 w-full rounded-lg ${errors.ifcs_code ? 'border-red-700' : ''}`}
+                                    onChange={handleChange} value={vendorData.ifcs_code} />
+                                {errors.ifcs_code && <div className="text-red-800">{errors.ifcs_code}</div>}
+                            </div>                    
+                            <div className="col-span-1 mt-3">
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Branch Name</label>
+                                <input name="branch_name" type="text" placeholder="Enter Branch Name"
+                                    className={`border p-3 w-full rounded-lg ${errors.branch_name ? 'border-red-700' : ''}`}
+                                    onChange={handleChange} value={vendorData.branch_name} />
+                                {errors.branch_name && <div className="text-red-800">{errors.branch_name}</div>}
+                            </div>
+
+                            <div className="col-span-1 mt-3 relative">
+                                {/* Text Input */}
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Cancelled Cheque/Passbook Upload</label>
+                                <input 
+                                    type="file" 
+                                    name="cancel_cheque"
+                                    className="border p-3 w-full rounded-lg" 
+                                    onChange={handleImageChange} 
+                                />
+
+                                {/* Preview Button */}
+                                {imagePreviews['cancel_cheque'] && (
+                                    <button 
+                                        className="mt-2 px-3 py-1 bg-blue-500 text-white text-center rounded-md absolute right-3"
+                                        onClick={() => window.open(imagePreviews['cancel_cheque'], '_blank')}
+                                    >
+                                        Preview
+                                    </button>
+                                )}
+                            </div>
+
+                            <h3 className="col-span-2 block text-[18px] font-medium text-primary mt-[20px]  mb-[8px]">Vendor Profile</h3>                            
+
+                            <div className="col-span-1 mt-3 relative">
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Profile Picture/Logo</label>
+                                <input 
+                                    type="file" 
+                                    name="profile_pic"
+                                    className="border p-3 w-full rounded-lg" 
+                                    onChange={handleImageChange} 
+                                />
+                                {/* Preview Button */}
+                                {imagePreviews['profile_pic'] && (
+                                    <button 
+                                        className="mt-2 px-3 py-1 bg-blue-500 text-white text-center rounded-md absolute right-3"
+                                        onClick={() => window.open(imagePreviews['profile_pic'], '_blank')}
+                                    >
+                                        Preview
+                                    </button>
+                                )}
+                            </div>          
+
+                            <div className="col-span-1 mt-3 relative">
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Cover Image for Vendor Storefront</label>
+                                <input 
+                                    type="file" 
+                                    name="cover_pic"
+                                    className="border p-3 w-full rounded-lg" 
+                                    onChange={handleImageChange} 
+                                />
+                                {/* Preview Button */}
+                                {imagePreviews['cover_pic'] && (
+                                    <button 
+                                        className="mt-2 px-3 py-1 bg-blue-500 text-white text-center rounded-md absolute right-3"
+                                        onClick={() => window.open(imagePreviews['cover_pic'], '_blank')}
+                                    >
+                                        Preview
+                                    </button>
+                                )}
+                            </div>    
+                                             
+                            <div className="col-span-1 mt-3">
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Brief Vendor Bio/Description</label>
+                                <input name="vendor_bio" type="text" placeholder="Enter Brief Vendor Bio/Description"
+                                    className={`border p-3 w-full rounded-lg`}
+                                    onChange={handleChange} value={vendorData.vendor_bio} />
+                            </div>
+
+
+                            {/* Product Category Dropdown */}
+                            <div className="col-span-1 mt-3">
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Product Category</label>
+                                <Select
+                                    options={productCategories.map((option) => ({ value: option, label: option, }))}
+                                    value={vendorData.product_category ? { value: vendorData.product_category, label: vendorData.product_category } : null}
+                                    onChange={handleSelectChange}
+                                    placeholder="Select Product Category"
+                                    isSearchable
+                                    className="w-full"
+                                    name="product_category"
+                                />
+                                {errors.product_category && <div className="text-red-800">{errors.product_category}</div>}
+                            </div>
+
+                            {/* Other Product Category Input */}
+                            {vendorData.product_category === "Other" && (
+                                <div className="col-span-1 mt-3">
+                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">Specify Category</label>
+                                    <input name="product_category_other" type="text" placeholder="Enter category"
+                                        className="border p-3 w-full rounded-lg" onChange={handleChange} value={vendorData.product_category_other} />
+                                    {errors.product_category_other && <div className="text-red-800">{errors.product_category_other}</div>}
+                                </div>
+                            )}
+
+                            <div className="col-span-2">
+                                <button className="bg-gradient-to-r from-logoSecondary to-logoPrimary shadow-lg mt-6 p-3 text-white rounded-lg w-full">
+                                    REGISTER AS VENDOR
+                                </button>
+                            </div>
+                        </form>
+                        <div className="text-sm text-center mt-4">
+                            Already have an account? <Link to="/login" className="text-blue-500">Sign In</Link>
                         </div>
                     </div>
                 </div>
             </div>
-        </>
+        </div>
     );
 };
 

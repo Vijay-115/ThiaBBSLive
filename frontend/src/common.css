@@ -336,6 +336,9 @@ position: relative;
 max-width: 125px;
 margin: 50px auto;
 }
+.rect.avatar-upload {
+    margin: 0;
+}
 .avatar-upload .avatar-edit {
 position: absolute;
 right: 0px;
@@ -396,3 +399,47 @@ background-position: center;
     margin-right: 0;
 }
   
+/* Import Product */
+
+.fade-enter-active, .fade-leave-active {
+    transition: opacity 0.3s ease-in-out;
+}
+.fade-enter, .fade-leave-to {
+    opacity: 0;
+}
+#importProduct .file-input-box {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    border-radius: 10px;
+    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.2);
+    width: 600px;
+    height: auto;
+    background-color: #fff;
+    padding: 20px;
+}
+#importProduct .file-input-box .input-box {
+    padding: 20px;
+    display: grid;
+    place-items: center;
+    border: 2px dashed #cacaca;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    cursor: pointer;
+}
+#importProduct .file-input-box .wrapper-file-section .selected-file .file-list {
+    overflow-y: auto;
+    list-style-type: none;
+    padding: 0 10px 10px 0;
+    margin: 0;
+    transition: 0.3s all ease-in-out;
+}
+#importProduct .file-input-box .wrapper-file-section .selected-file .file-info .name {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #cacaca;
+    border-radius: 5px;
+    padding: 10px;
+    font-size: 14px;
+}

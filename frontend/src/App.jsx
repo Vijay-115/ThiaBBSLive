@@ -30,6 +30,7 @@ import Orders from './components/admin/Orders';
 import MyAccount from './components/auth/MyAccount';
 import Seller from './components/admin/Seller';
 import Vendor from './components/admin/Vendor';
+import VendorRequest from './components/admin/VendorRequest';
 
 import AboutPage from './components/pages/AboutPage';
 import TermsOfUse from './components/pages/TermsOfUse';
@@ -132,6 +133,7 @@ function App() {
             <Route path="orders" element={<Orders />} />
             <Route path="seller" element={<Seller />} />
             <Route path="vendor" element={<Vendor />} />
+            <Route path="vendor-request" element={<VendorRequest />} />            
         </Route>
 
         {/* ✅ Seller Routes */}
