@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getMetrics } from '../../services/adminService';
-import { NavLink } from 'react-router-dom';
+import {  NavLink } from 'react-router-dom';
 import './assets/dashboard.css';
 import Sidebar from './layout/sidebar';
 import Navbar from './layout/Navbar';
@@ -10,6 +9,7 @@ import toast from "react-hot-toast";
 import moment from "moment";
 import VendorForm from "./VendorForm";
 import { vendorApprove, vendorRequest } from "../../services/vendorService";
+import ViewVendorRequest from "./ViewVendorRequest";
 
 const VendorRequest = () => {
 
@@ -105,10 +105,15 @@ const filterAndSortUsers = () => {
   };
 
   const handleApproveOpen = (vendor) => {
-    setEditVendor(vendor);
-    console.log('handleApproveOpen',editVendor);
+    setEditVendor(prevState => {
+        console.log('Previous State:', prevState);
+        console.log('New State:', vendor);
+        return vendor;
+    });
+
     setIsApproveModalOpen(true);
   };
+
 
   const handleApproveUser = async () => {
     try {
@@ -212,24 +217,25 @@ const filterAndSortUsers = () => {
                             className="modal-content"
                             overlayClassName="modal-overlay"
                         >
-                            <div className="p-8 bg-white rounded-lg">
-                              <h3 className="text-lg">Are you sure you want to approve this vendor?</h3>
-                              <p className="mt-2">This action cannot be undone.</p>
-                              <div className="mt-4">
-                                  <button
-                                  onClick={handleApproveUser}
-                                  className="bg-red-500 text-white px-4 py-2 rounded-md mr-2"
-                                  >
-                                  Yes, Approve
-                                  </button>
-                                  <button
-                                  onClick={() => setIsDeleteModalOpen(false)}
-                                  className="bg-gray-500 text-white px-4 py-2 rounded-md"
-                                  >
-                                  Cancel
-                                  </button>
-                              </div>
-                            </div>
+                            {/* <div className="p-8 bg-white rounded-lg">
+                                <h3 className="text-lg">Are you sure you want to approve this vendor?</h3>
+                                <p className="mt-2">This action cannot be undone.</p>
+                                <div className="mt-4">
+                                    <button
+                                    onClick={handleApproveUser}
+                                    className="bg-red-500 text-white px-4 py-2 rounded-md mr-2"
+                                    >
+                                    Yes, Approve
+                                    </button>
+                                    <button
+                                    onClick={() => setIsDeleteModalOpen(false)}
+                                    className="bg-gray-500 text-white px-4 py-2 rounded-md"
+                                    >
+                                    Cancel
+                                    </button>
+                                </div>
+                              </div> */}
+                              <ViewVendorRequest vendorData={editVendor} onApprove={handleApproveUser}/>
                         </Modal>
 
                         <Modal
@@ -328,7 +334,7 @@ const filterAndSortUsers = () => {
                                               className="bg-yellow-500 text-white px-4 py-1 rounded-md"
                                               onClick={() => handleApproveOpen(vendor)}
                                             >
-                                              Approve
+                                              View
                                             </button>
                                             <button
                                               className="bg-red-500 text-white px-4 py-1 ml-2 rounded-md"

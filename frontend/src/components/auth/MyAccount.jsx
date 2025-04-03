@@ -215,7 +215,7 @@ function MyAccount() {
                                     onChange={(option, action) => handleSelectChange(option, { name: "country" })}
                                     placeholder="Select Country"
                                     isSearchable
-                                    className="w-full"
+                                    className="w-full border rounded-lg"
                                     name="country"
                                 />
                             </div>
@@ -232,7 +232,7 @@ function MyAccount() {
                                     onChange={(option, action) => handleSelectChange(option, { name: "state" })}
                                     placeholder="Select Region/State"
                                     isSearchable
-                                    className="w-full"
+                                    className="w-full border rounded-lg"
                                     name="state"
                                 />
                             </div>
@@ -248,7 +248,7 @@ function MyAccount() {
                                     onChange={(option, action) => handleSelectChange(option, { name: "city" })}
                                     placeholder="Select City"
                                     isSearchable
-                                    className="w-full"
+                                    className="w-full border rounded-lg"
                                     name="city"
                                 />
                             </div>

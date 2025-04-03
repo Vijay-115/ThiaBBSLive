@@ -329,7 +329,7 @@ select {
     border-radius: 10px !important;
 }
 .css-13cymwt-control{
-    border-color: hsl(0, 0%, 93.3%) !important;
+    border: none!important;
 }
 .avatar-upload {
 position: relative;

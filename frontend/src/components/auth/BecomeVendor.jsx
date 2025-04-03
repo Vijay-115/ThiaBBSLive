@@ -10,20 +10,12 @@ import { vendorRegister } from "../../services/vendorService";
 const BecomeVendor = () => {
     
     const [vendorData, setVendorData] = useState({
-        vendor_name: '', business_type: '', brand_name: '', contact_person: '', email: '', mobile: '', register_business_address: { street: "", city: "", state: "", postalCode: "", country: "" }, operational_address: { street: "", city: "", state: "", postalCode: "", country: "" },
-        pan_number: '', pan_pic: '', gst_number: '', gst_pic: '',
-        fssai_license: '', fssai_pic: '', shop_establish_license: '', shop_establish_pic: '',
-        outlet_location: { street: "", city: "", state: "", postalCode: "", country: "" }, outlet_manager_name: '', outlet_contact_no: '',
-        bank_name: '', account_holder_name: '', account_no: '', ifcs_code: '',
-        branch_name: '', cancel_cheque: '', passbook: '',
-        profile_pic: '', cover_pic: '', vendor_bio: '',
-        product_category: '', product_category_other: '',
-        vendor_aggremet_polices: false
+        vendor_name: '', business_type: '', brand_name: '', contact_person: '', email: '', mobile: '', register_business_address: { street: "", city: "", state: "", postalCode: "", country: "" }, operational_address: { street: "", city: "", state: "", postalCode: "", country: "" }, pan_number: '', gst_number: '', fssai_license: '', shop_establish_license: '', outlet_location: { street: "", city: "", state: "", postalCode: "", country: "" },outlet_manager_name: '', outlet_contact_no: '', bank_name: '', account_holder_name: '', account_no: '', ifcs_code: '', branch_name: '', cancel_cheque_passbook: '', passbook: '', vendor_bio: '', product_category: '', product_category_other: '', address_proof: '', termsConditions: false, privacyPolicy: false, sellerPolicy: false,
     });
 
     // const [files, setFiles] = useState({
     //     pan_pic: null, gst_pic: null, fssai_pic: null,
-    //     shop_establish_pic: null, cancel_cheque: null, passbook: null,
+    //     shop_establish_pic: null, cancel_cheque_passbook: null, passbook: null,
     //     profile_pic: null, cover_pic: null
     // });
 
@@ -32,7 +24,7 @@ const BecomeVendor = () => {
     });
     
     const [files, setFiles] = useState({
-        pan_pic: null, gst_pic: null, fssai_pic: null, shop_establish_pic: null, cancel_cheque: null, passbook: null, profile_pic: null, cover_pic: null
+        pan_pic: null, gst_pic: null, fssai_pic: null, shop_establish_pic: null, cancel_cheque_passbook: null, passbook: null, profile_pic: null, cover_pic: null, address_proof: null
     });
 
     const [imagePreviews, setImagePreviews] = useState({});
@@ -52,17 +44,30 @@ const BecomeVendor = () => {
         let formErrors = {};
         if (!vendorData.vendor_name) formErrors.vendor_name = "Vendor name is required";
         if (!vendorData.business_type) formErrors.business_type = "Business type is required";
+        if (!vendorData.contact_person) formErrors.email = "Contact person name is required";
         if (!vendorData.email) formErrors.email = "Email is required";
         else if (!/\S+@\S+\.\S+/.test(vendorData.email)) formErrors.email = "Invalid email";
         if (!vendorData.mobile) formErrors.mobile = "Mobile number is required";
         if (!vendorData.product_category) formErrors.product_category = "Product category is required";
         if (vendorData.product_category === "Other" && !vendorData.product_category_other) formErrors.product_category_other = "Please specify the category";
-
+        if (!vendorData.termsConditions) formErrors.termsConditions = "You must agree to terms & conditions";
+        if (!vendorData.privacyPolicy) formErrors.privacyPolicy = "You must agree to privacy policy";
+        if (!vendorData.sellerPolicy) formErrors.sellerPolicy = "You must agree to seller policy";
+        if (!vendorData.pan_number) formErrors.pan_number = "PAN number is required";
+        // if (!files.pan_pic) formErrors.pan_pic = "PAN picture is required";
+        if (!vendorData.outlet_manager_name) formErrors.outlet_manager_name = "Store manager name is required";
+        if (!vendorData.outlet_contact_no) formErrors.outlet_contact_no = "Contact number is required";
+        if (!vendorData.bank_name) formErrors.bank_name = "Bank name is required";
+        if (!vendorData.account_holder_name) formErrors.account_holder_name = "Account holder’s name  is required";
+        if (!vendorData.account_no) formErrors.account_no = "Account number is required";
+        if (!vendorData.ifcs_code) formErrors.ifcs_code = "IFSC code is required";
+        if (!vendorData.branch_name) formErrors.branch_name = "Branch name is required";
+        // if (!files.address_proof) formErrors.address_proof = "Address proof is required";        
         return formErrors;
     };
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
+        const { name, value, type, checked } = e.target;
     
         if (name.includes('.')) {
             // If the name has a dot, it's an address field (e.g., register_business_address.street)
@@ -79,7 +84,7 @@ const BecomeVendor = () => {
             // If it's a regular field like vendor_name
             setVendorData((prevData) => ({
                 ...prevData,
-                [name]: value,
+                [name]: type === "checkbox" ? checked : value,
             }));
         }
     };   
@@ -117,11 +122,13 @@ const BecomeVendor = () => {
     
         // Validate form
         const validationErrors = validateVendor();
+
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
             toast.error("Please fix the errors and try again.");
             return;
         }
+
     
         const formData = new FormData();
     
@@ -201,7 +208,7 @@ const BecomeVendor = () => {
                             <div className="col-span-1 mt-3">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Vendor Name</label>
                                 <input name="vendor_name" type="text" placeholder="Enter Vendor Name"
-                                    className={`border p-3 w-full rounded-lg ${errors.vendor_name ? 'border-red-700' : ''}`}
+                                    className={`border p-[9.85px] w-full rounded-lg ${errors.vendor_name ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.vendor_name} />
                                 {errors.vendor_name && <div className="text-red-800">{errors.vendor_name}</div>}
                             </div>
@@ -214,7 +221,7 @@ const BecomeVendor = () => {
                                     onChange={handleSelectChange}
                                     placeholder="Select Business Type"
                                     isSearchable
-                                    className="w-full"
+                                    className={`w-full border rounded-lg  ${errors.business_type ? 'border-red-700' : ''}`}
                                     name="business_type"
                                 />
                                 {errors.business_type && <div className="text-red-800">{errors.business_type}</div>}
@@ -223,7 +230,7 @@ const BecomeVendor = () => {
                             <div className="col-span-1 mt-3">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Brand Name</label>
                                 <input name="brand_name" type="text" placeholder="Enter Brand Name"
-                                    className={`border p-3 w-full rounded-lg ${errors.brand_name ? 'border-red-700' : ''}`}
+                                    className={`border p-[9.85px] w-full rounded-lg ${errors.brand_name ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.brand_name} />
                                 {errors.brand_name && <div className="text-red-800">{errors.brand_name}</div>}
                             </div>
@@ -231,7 +238,7 @@ const BecomeVendor = () => {
                             <div className="col-span-1 mt-3">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Contact Person Name</label>
                                 <input name="contact_person" type="text" placeholder="Enter Contact Person Name"
-                                    className={`border p-3 w-full rounded-lg ${errors.contact_person ? 'border-red-700' : ''}`}
+                                    className={`border p-[9.85px] w-full rounded-lg ${errors.contact_person ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.contact_person} />
                                 {errors.contact_person && <div className="text-red-800">{errors.contact_person}</div>}
                             </div>
@@ -239,7 +246,7 @@ const BecomeVendor = () => {
                             <div className="col-span-1 mt-3">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Email</label>
                                 <input name="email" type="email" placeholder="Enter Email"
-                                    className={`border p-3 w-full rounded-lg ${errors.email ? 'border-red-700' : ''}`}
+                                    className={`border p-[9.85px] w-full rounded-lg ${errors.email ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.email} />
                                 {errors.email && <div className="text-red-800">{errors.email}</div>}
                             </div>
@@ -247,7 +254,7 @@ const BecomeVendor = () => {
                             <div className="col-span-1 mt-3">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Contact Person Mobile</label>
                                 <input name="mobile" type="text" placeholder="Enter Contact Person Mobile"
-                                    className={`border p-3 w-full rounded-lg ${errors.mobile ? 'border-red-700' : ''}`}
+                                    className={`border p-[9.85px] w-full rounded-lg ${errors.mobile ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.mobile} />
                                 {errors.mobile && <div className="text-red-800">{errors.mobile}</div>}
                             </div>                            
@@ -255,7 +262,7 @@ const BecomeVendor = () => {
                             <div className="col-span-1 mt-3">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Contact Person Alternative Mobile</label>
                                 <input name="alt_mobile" type="text" placeholder="Enter Contact Person Alternative Mobile"
-                                    className={`border p-3 w-full rounded-lg ${errors.alt_mobile ? 'border-red-700' : ''}`}
+                                    className={`border p-[9.85px] w-full rounded-lg ${errors.alt_mobile ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.alt_mobile} />
                                 {errors.alt_mobile && <div className="text-red-800">{errors.alt_mobile}</div>}
                             </div>
@@ -271,8 +278,7 @@ const BecomeVendor = () => {
                                         onChange={handleChange} 
                                         value={vendorData?.register_business_address?.street || ""} 
                                         placeholder="Address Line 1" 
-                                        className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" 
-                                        required 
+                                        className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]"  
                                     />
                                 </div>
                             </div>                                            
@@ -286,7 +292,7 @@ const BecomeVendor = () => {
                                         value={businessCountries.find(option => option.label === vendorData.register_business_address.country) || null}
                                         onChange={(option) => handleAddressSelectChange(option, { name: "register_business_address.country" })}
                                         placeholder="Select Country"
-                                        className="w-full"
+                                        className="w-full border rounded-lg "
                                         isSearchable
                                     />
                                 </div>
@@ -303,7 +309,7 @@ const BecomeVendor = () => {
                                         onChange={(option) => handleAddressSelectChange(option, { name: "register_business_address.state" })}
                                         placeholder="Select State"
                                         isSearchable
-                                        className="w-full"
+                                        className="w-full border rounded-lg "
                                     />
                                 </div>
                             </div>
@@ -318,6 +324,7 @@ const BecomeVendor = () => {
                                         onChange={(option) => handleAddressSelectChange(option, { name: "register_business_address.city" })}
                                         placeholder="Select City"
                                         isSearchable
+                                        className="w-full border rounded-lg "
                                     />
                                 </div>
                             </div>
@@ -326,7 +333,7 @@ const BecomeVendor = () => {
                             <div className="col-span-1 mt-3 w-full">
                                 <div className="input-item mb-[8px]">
                                     <label className="block text-[14px] font-medium text-secondary mb-[8px]">Post Code *</label>
-                                    <input type="text" name="register_business_address.postalCode" onChange={handleChange} value={vendorData?.register_business_address?.postalCode ?? ''} placeholder="Post Code" className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" required />
+                                    <input type="text" name="register_business_address.postalCode" onChange={handleChange} value={vendorData?.register_business_address?.postalCode ?? ''} placeholder="Post Code" className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" />
                                 </div>
                             </div>                            
 
@@ -346,8 +353,7 @@ const BecomeVendor = () => {
                                         onChange={handleChange} 
                                         value={vendorData?.operational_address?.street || ""} 
                                         placeholder="Address Line 1" 
-                                        className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" 
-                                        required 
+                                        className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]"  
                                     />
                                 </div>
                             </div>                                            
@@ -361,8 +367,8 @@ const BecomeVendor = () => {
                                         value={operationalCountries.find(option => option.label === vendorData.operational_address.country) || null}
                                         onChange={(option) => handleAddressSelectChange(option, { name: "operational_address.country" })}
                                         placeholder="Select Country"
-                                        className="w-full"
                                         isSearchable
+                                        className="w-full border rounded-lg"
                                     />
                                 </div>
                             </div>
@@ -378,7 +384,7 @@ const BecomeVendor = () => {
                                         onChange={(option) => handleAddressSelectChange(option, { name: "operational_address.state" })}
                                         placeholder="Select State"
                                         isSearchable
-                                        className="w-full"
+                                        className="w-full border rounded-lg "
                                     />
                                 </div>
                             </div>
@@ -393,6 +399,7 @@ const BecomeVendor = () => {
                                         onChange={(option) => handleAddressSelectChange(option, { name: "operational_address.city" })}
                                         placeholder="Select City"
                                         isSearchable
+                                        className="w-full border rounded-lg "
                                     />
                                 </div>
                             </div>
@@ -401,7 +408,7 @@ const BecomeVendor = () => {
                             <div className="col-span-1 mt-3 w-full">
                                 <div className="input-item mb-[8px]">
                                     <label className="block text-[14px] font-medium text-secondary mb-[8px]">Post Code *</label>
-                                    <input type="text" name="operational_address.postalCode" onChange={handleChange} value={vendorData?.operational_address?.postalCode ?? ''} placeholder="Post Code" className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" required />
+                                    <input type="text" name="operational_address.postalCode" onChange={handleChange} value={vendorData?.operational_address?.postalCode ?? ''} placeholder="Post Code" className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" />
                                 </div>
                             </div>
 
@@ -412,6 +419,7 @@ const BecomeVendor = () => {
                                 const fileKey = key.replace('_number', '_pic').replace('_license', '_pic');
 
                                 return (
+                                    <>
                                     <div key={key} className="col-span-1 mt-3 relative">
                                         {/* Text Input */}
                                         <label className="block text-[14px] font-medium text-secondary mb-[8px]">
@@ -422,20 +430,24 @@ const BecomeVendor = () => {
                                             name={key} 
                                             value={vendorData.key} 
                                             onChange={handleChange} 
-                                            className="border p-3 w-full rounded-lg" 
+                                            className={`border p-[9.85px] w-full rounded-lg ${errors[key] ? 'border-red-700' : ''}`}
+                                            
                                         />
+                                        {errors[key] && <div className="text-red-800">{errors[key]}</div>}
+                                    </div>  
 
+                                    <div key={fileKey} className="col-span-1 mt-3 relative">
                                         {/* File Input */}
-                                        <label className="block text-[14px] font-medium text-secondary mb-[8px] mt-2">
+                                        <label className="block text-[14px] font-medium text-secondary mb-[8px]">
                                             {fileKey.replace('_', ' ').toUpperCase()}
                                         </label>
                                         <input 
                                             type="file" 
                                             name={fileKey} 
-                                            className="border p-3 w-full rounded-lg" 
+                                            className={`border p-[9.85px] w-full rounded-lg ${errors[fileKey] ? 'border-red-700' : ''}`}
                                             onChange={handleImageChange} 
                                         />
-
+                                        {errors[fileKey] && <div className="text-red-800">{errors[fileKey]}</div>}
                                         {/* Preview Button */}
                                         {imagePreviews[fileKey] && (
                                             <button 
@@ -446,6 +458,7 @@ const BecomeVendor = () => {
                                             </button>
                                         )}
                                     </div>
+                                    </>
                                 );
                             })}
 
@@ -454,14 +467,14 @@ const BecomeVendor = () => {
                             <div className="col-span-1 mt-3">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Store Manager Name</label>
                                 <input name="outlet_manager_name" type="text" placeholder="Enter Store Manager Name"
-                                    className={`border p-3 w-full rounded-lg ${errors.outlet_manager_name ? 'border-red-700' : ''}`}
+                                    className={`border p-[9.85px] w-full rounded-lg ${errors.outlet_manager_name ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.outlet_manager_name} />
                                 {errors.outlet_manager_name && <div className="text-red-800">{errors.outlet_manager_name}</div>}
                             </div>                            
                             <div className="col-span-1 mt-3">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Contact Number </label>
                                 <input name="outlet_contact_no" type="text" placeholder="Enter Contact Number"
-                                    className={`border p-3 w-full rounded-lg ${errors.outlet_contact_no ? 'border-red-700' : ''}`}
+                                    className={`border p-[9.85px] w-full rounded-lg ${errors.outlet_contact_no ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.outlet_contact_no} />
                                 {errors.outlet_contact_no && <div className="text-red-800">{errors.outlet_contact_no}</div>}
                             </div>
@@ -476,8 +489,7 @@ const BecomeVendor = () => {
                                         onChange={handleChange} 
                                         value={vendorData?.outlet_location?.street || ""} 
                                         placeholder="Address Line 1" 
-                                        className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" 
-                                        required 
+                                        className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]"  
                                     />
                                 </div>
                             </div>                                            
@@ -487,11 +499,11 @@ const BecomeVendor = () => {
                                 <div className="input-item mb-[8px]">
                                     <label className="block text-[14px] font-medium text-secondary mb-[8px]">Country</label>
                                     <Select
-                                        options={businessCountries}
-                                        value={businessCountries.find(option => option.label === vendorData.outlet_location.country) || null}
+                                        options={outletCountries}
+                                        value={outletCountries.find(option => option.label === vendorData.outlet_location.country) || null}
                                         onChange={(option) => handleAddressSelectChange(option, { name: "outlet_location.country" })}
                                         placeholder="Select Country"
-                                        className="w-full"
+                                        className="w-full border rounded-lg "
                                         isSearchable
                                     />
                                 </div>
@@ -503,12 +515,12 @@ const BecomeVendor = () => {
                                 <div className="input-item mb-[8px]">
                                     <label className="block text-[14px] font-medium text-secondary mb-[8px]">State</label>
                                     <Select
-                                        options={businessStates}
-                                        value={businessStates.find(option => option.label === vendorData.outlet_location.state) || null}
+                                        options={outletStates}
+                                        value={outletStates.find(option => option.label === vendorData.outlet_location.state) || null}
                                         onChange={(option) => handleAddressSelectChange(option, { name: "outlet_location.state" })}
                                         placeholder="Select State"
                                         isSearchable
-                                        className="w-full"
+                                        className="w-full border rounded-lg "
                                     />
                                 </div>
                             </div>
@@ -518,11 +530,12 @@ const BecomeVendor = () => {
                                 <div className="input-item mb-[8px]">
                                     <label className="block text-[14px] font-medium text-secondary mb-[8px]">City</label>
                                     <Select
-                                        options={businessCities}
-                                        value={businessCities.find(option => option.label === vendorData.outlet_location.city) || null}
+                                        options={outletCities}
+                                        value={outletCities.find(option => option.label === vendorData.outlet_location.city) || null}
                                         onChange={(option) => handleAddressSelectChange(option, { name: "outlet_location.city" })}
                                         placeholder="Select City"
                                         isSearchable
+                                        className="w-full border rounded-lg "
                                     />
                                 </div>
                             </div>
@@ -531,7 +544,7 @@ const BecomeVendor = () => {
                             <div className="col-span-1 mt-3 w-full">
                                 <div className="input-item mb-[8px]">
                                     <label className="block text-[14px] font-medium text-secondary mb-[8px]">Post Code *</label>
-                                    <input type="text" name="outlet_location.postalCode" onChange={handleChange} value={vendorData?.outlet_location?.postalCode ?? ''} placeholder="Post Code" className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" required />
+                                    <input type="text" name="outlet_location.postalCode" onChange={handleChange} value={vendorData?.outlet_location?.postalCode ?? ''} placeholder="Post Code" className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]" />
                                 </div>
                             </div>
                             
@@ -540,35 +553,35 @@ const BecomeVendor = () => {
                             <div className="col-span-1 mt-3">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Bank Name</label>
                                 <input name="bank_name" type="text" placeholder="Enter Bank Name"
-                                    className={`border p-3 w-full rounded-lg ${errors.bank_name ? 'border-red-700' : ''}`}
+                                    className={`border p-[9.85px] w-full rounded-lg ${errors.bank_name ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.bank_name} />
                                 {errors.bank_name && <div className="text-red-800">{errors.bank_name}</div>}
                             </div>                            
                             <div className="col-span-1 mt-3">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Account Holder’s Name </label>
                                 <input name="account_holder_name" type="text" placeholder="Enter Account Holder’s Name "
-                                    className={`border p-3 w-full rounded-lg ${errors.account_holder_name ? 'border-red-700' : ''}`}
+                                    className={`border p-[9.85px] w-full rounded-lg ${errors.account_holder_name ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.account_holder_name} />
                                 {errors.account_holder_name && <div className="text-red-800">{errors.account_holder_name}</div>}
                             </div>
                             <div className="col-span-1 mt-3">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Account Number</label>
                                 <input name="account_no" type="text" placeholder="Enter Account Number"
-                                    className={`border p-3 w-full rounded-lg ${errors.account_no ? 'border-red-700' : ''}`}
+                                    className={`border p-[9.85px] w-full rounded-lg ${errors.account_no ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.account_no} />
                                 {errors.account_no && <div className="text-red-800">{errors.account_no}</div>}
                             </div>                            
                             <div className="col-span-1 mt-3">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">IFSC Code</label>
                                 <input name="ifcs_code" type="text" placeholder="Enter IFSC Code"
-                                    className={`border p-3 w-full rounded-lg ${errors.ifcs_code ? 'border-red-700' : ''}`}
+                                    className={`border p-[9.85px] w-full rounded-lg ${errors.ifcs_code ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.ifcs_code} />
                                 {errors.ifcs_code && <div className="text-red-800">{errors.ifcs_code}</div>}
                             </div>                    
                             <div className="col-span-1 mt-3">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Branch Name</label>
                                 <input name="branch_name" type="text" placeholder="Enter Branch Name"
-                                    className={`border p-3 w-full rounded-lg ${errors.branch_name ? 'border-red-700' : ''}`}
+                                    className={`border p-[9.85px] w-full rounded-lg ${errors.branch_name ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.branch_name} />
                                 {errors.branch_name && <div className="text-red-800">{errors.branch_name}</div>}
                             </div>
@@ -578,16 +591,16 @@ const BecomeVendor = () => {
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Cancelled Cheque/Passbook Upload</label>
                                 <input 
                                     type="file" 
-                                    name="cancel_cheque"
-                                    className="border p-3 w-full rounded-lg" 
+                                    name="cancel_cheque_passbook"
+                                    className="border p-[9.85px] w-full rounded-lg" 
                                     onChange={handleImageChange} 
                                 />
 
                                 {/* Preview Button */}
-                                {imagePreviews['cancel_cheque'] && (
+                                {imagePreviews['cancel_cheque_passbook'] && (
                                     <button 
                                         className="mt-2 px-3 py-1 bg-blue-500 text-white text-center rounded-md absolute right-3"
-                                        onClick={() => window.open(imagePreviews['cancel_cheque'], '_blank')}
+                                        onClick={() => window.open(imagePreviews['cancel_cheque_passbook'], '_blank')}
                                     >
                                         Preview
                                     </button>
@@ -601,7 +614,7 @@ const BecomeVendor = () => {
                                 <input 
                                     type="file" 
                                     name="profile_pic"
-                                    className="border p-3 w-full rounded-lg" 
+                                    className="border p-[9.85px] w-full rounded-lg" 
                                     onChange={handleImageChange} 
                                 />
                                 {/* Preview Button */}
@@ -620,7 +633,7 @@ const BecomeVendor = () => {
                                 <input 
                                     type="file" 
                                     name="cover_pic"
-                                    className="border p-3 w-full rounded-lg" 
+                                    className="border p-[9.85px] w-full rounded-lg" 
                                     onChange={handleImageChange} 
                                 />
                                 {/* Preview Button */}
@@ -637,7 +650,7 @@ const BecomeVendor = () => {
                             <div className="col-span-1 mt-3">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Brief Vendor Bio/Description</label>
                                 <input name="vendor_bio" type="text" placeholder="Enter Brief Vendor Bio/Description"
-                                    className={`border p-3 w-full rounded-lg`}
+                                    className={`border p-[9.85px] w-full rounded-lg`}
                                     onChange={handleChange} value={vendorData.vendor_bio} />
                             </div>
 
@@ -651,7 +664,7 @@ const BecomeVendor = () => {
                                     onChange={handleSelectChange}
                                     placeholder="Select Product Category"
                                     isSearchable
-                                    className="w-full"
+                                    className="w-full border rounded-lg "
                                     name="product_category"
                                 />
                                 {errors.product_category && <div className="text-red-800">{errors.product_category}</div>}
@@ -662,13 +675,52 @@ const BecomeVendor = () => {
                                 <div className="col-span-1 mt-3">
                                     <label className="block text-[14px] font-medium text-secondary mb-[8px]">Specify Category</label>
                                     <input name="product_category_other" type="text" placeholder="Enter category"
-                                        className="border p-3 w-full rounded-lg" onChange={handleChange} value={vendorData.product_category_other} />
+                                        className="border p-[9.85px] w-full rounded-lg" onChange={handleChange} value={vendorData.product_category_other} />
                                     {errors.product_category_other && <div className="text-red-800">{errors.product_category_other}</div>}
                                 </div>
                             )}
 
+
+                            <div className="col-span-1 mt-3 relative">
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Address Proof (Utility Bill/Rent Agreement)</label>
+                                <input 
+                                    type="file" 
+                                    name="address_proof"
+                                    className="border p-[9.85px] w-full rounded-lg" 
+                                    onChange={handleImageChange} 
+                                />
+                                {/* Preview Button */}
+                                {imagePreviews['address_proof'] && (
+                                <button 
+                                    className="mt-2 px-3 py-1 bg-blue-500 text-white text-center rounded-md absolute right-3"
+                                    onClick={() => window.open(imagePreviews['address_proof'], '_blank')}
+                                >
+                                    Preview
+                                </button>
+                                )}
+                                {errors.address_proof && <div className="text-red-800">{errors.address_proof}</div>}
+                            </div>
+
+                            {/* Checkboxes for Agreement */}
+                            <div className="col-span-2 mt-6">
+                                <div className="flex flex-row gap-2 items-center">
+                                    <input className="w-[15px] h-[15px]" type="checkbox" name="termsConditions" id="termsConditions" checked={vendorData.termsConditions} onChange={handleChange} /> 
+                                    <label htmlFor="termsConditions"> I agree to BBSCART Vendor Terms & Conditions. {errors.termsConditions && <span className="text-red-800">{`(${errors.termsConditions})`}</span>} </label>
+                                </div>
+                                
+                                <div className="flex flex-row gap-2 items-center">
+                                    <input className="w-[15px] h-[15px]" type="checkbox" name="privacyPolicy" id="privacyPolicy" checked={vendorData.privacyPolicy} onChange={handleChange} /> 
+                                    <label htmlFor="privacyPolicy">Acceptance of Privacy Policy. {errors.privacyPolicy && <span className="text-red-800">{`(${errors.privacyPolicy})`}</span>}</label>
+                                </div>
+                                
+                                <div className="flex flex-row gap-2 items-center">
+                                    <input className="w-[15px] h-[15px]" type="checkbox" name="sellerPolicy" id="sellerPolicy" checked={vendorData.sellerPolicy} onChange={handleChange} /> 
+                                    <label htmlFor="sellerPolicy">Acceptance of Seller Policy & Guidelines. {errors.sellerPolicy && <span className="text-red-800">{`(${errors.sellerPolicy})`}</span>}</label>
+                                </div>
+                            </div>
+
                             <div className="col-span-2">
-                                <button className="bg-gradient-to-r from-logoSecondary to-logoPrimary shadow-lg mt-6 p-3 text-white rounded-lg w-full">
+                                <button className="bg-gradient-to-r from-logoSecondary to-logoPrimary shadow-lg mt-6 p-[9.85px] text-white rounded-lg w-full">
                                     REGISTER AS VENDOR
                                 </button>
                             </div>

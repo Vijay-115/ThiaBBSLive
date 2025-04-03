@@ -88,7 +88,7 @@ const SubCategoryForm = ({ categories, subcategory, onSave }) => {
                   onChange={handleSelectChange}
                   placeholder="Select Category"
                   isSearchable
-                  className="w-full"
+                  className="w-full border rounded-lg"
                   name="category_id"
                 />
               </div>
