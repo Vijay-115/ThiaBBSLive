@@ -8,7 +8,7 @@ exports.registerVendor = async (req, res) => {
     try {
         console.log("✅ Received Request Body:", req.body);
         console.log("✅ Received Files:", req.files);
-
+        // return false;
         // Convert JSON strings to objects (if coming from form-data)
         const parseJson = (data) => {
             try {
@@ -40,8 +40,9 @@ exports.registerVendor = async (req, res) => {
             vendor_bio,
             product_category,
             product_category_other,
-            vendor_agreement_policies,
-            user_id,
+            termsConditions,
+            privacyPolicy,
+            sellerPolicy,
         } = req.body;
 
         // Convert address fields from string to object
@@ -54,10 +55,12 @@ exports.registerVendor = async (req, res) => {
         const gst_pic = req.files.find(file => file.fieldname === "gst_pic") ? `/uploads/${req.files.find(file => file.fieldname === "gst_pic").filename}` : null;
         const fssai_pic = req.files.find(file => file.fieldname === "fssai_pic") ? `/uploads/${req.files.find(file => file.fieldname === "fssai_pic").filename}` : null;
         const shop_establish_pic = req.files.find(file => file.fieldname === "shop_establish_pic") ? `/uploads/${req.files.find(file => file.fieldname === "shop_establish_pic").filename}` : null;
-        const cancel_cheque = req.files.find(file => file.fieldname === "cancel_cheque") ? `/uploads/${req.files.find(file => file.fieldname === "cancel_cheque").filename}` : null;
+        const cancel_cheque_passbook = req.files.find(file => file.fieldname === "cancel_cheque_passbook") ? `/uploads/${req.files.find(file => file.fieldname === "cancel_cheque_passbook").filename}` : null;
         const passbook = req.files.find(file => file.fieldname === "passbook") ? `/uploads/${req.files.find(file => file.fieldname === "passbook").filename}` : null;
         const profile_pic = req.files.find(file => file.fieldname === "profile_pic") ? `/uploads/${req.files.find(file => file.fieldname === "profile_pic").filename}` : null;
         const cover_pic = req.files.find(file => file.fieldname === "cover_pic") ? `/uploads/${req.files.find(file => file.fieldname === "cover_pic").filename}` : null;
+        const address_proof = req.files.find(file => file.fieldname === "address_proof") ? `/uploads/${req.files.find(file => file.fieldname === "address_proof").filename}` : null;
+        
         
 
         // Ensure required fields are present
@@ -114,15 +117,17 @@ exports.registerVendor = async (req, res) => {
             account_no,
             ifcs_code,
             branch_name,
-            cancel_cheque,
+            cancel_cheque_passbook,
             passbook,
             profile_pic,
             cover_pic,
             vendor_bio,
             product_category,
             product_category_other,
-            vendor_agreement_policies,
-            user_id,
+            address_proof,
+            termsConditions,
+            privacyPolicy,
+            sellerPolicy,
         });
 
         // Save vendor to the database

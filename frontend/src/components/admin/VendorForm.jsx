@@ -146,7 +146,7 @@ const VendorForm = ({ vendor, onSave }) => {
                   onChange={handleSelectChange}
                   placeholder="Select Category"
                   isSearchable
-                  className="w-full"
+                  className="w-full border rounded-lg"
                   name="role"
                 />
               </div>
