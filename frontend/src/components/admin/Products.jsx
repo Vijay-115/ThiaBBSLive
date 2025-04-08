@@ -9,6 +9,7 @@ import Modal from "react-modal";
 import ProductForm from "./ProductForm";
 import { ProductService } from "../../services/ProductService";
 import toast from "react-hot-toast";
+import ImportProduct from "../layout/ImportProduct";
 
 const Products = () => {
 
@@ -35,12 +36,18 @@ const Products = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [isAddEditModalOpen, setIsAddEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  
   const [productToDelete, setProductToDelete] = useState(null);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: "", direction: "" });
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+
+  
+  const [importfile, setImportfile] = useState(null);
+  const [importloading, setImportloading] = useState(false);
 
   // Fetch Categories
     const fetchCategories = async () => {
@@ -203,6 +210,34 @@ const Products = () => {
 
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
 
+  const handleExport = async () => {
+    await ProductService.exportProducts();
+  };
+
+  const handleImport = async (file) => {
+    if (!file) {
+      alert("Please select a CSV file first.");
+      return false;
+    }
+  
+    const formData = new FormData();
+    formData.append("file", file); // ✅ Append actual file object
+  
+    try {
+      await ProductService.importProducts(formData);
+      fetchProducts();
+      return true; // ✅ Success
+    } catch (error) {
+      console.error("Import Error:", error);
+      alert("Error importing products.");
+      return false; // ❌ Failure
+    }
+  };
+
+  const openImportProductModal = () => {
+    setIsImportModalOpen(true);
+  };
+
     return (
         <>
 
@@ -242,10 +277,14 @@ const Products = () => {
                                     </li>
                                 </ul>
                             </div>
-                            <NavLink className="btn-download" to="#">
+                            <div onClick={handleExport} className="btn-download" to="#">
                                 <i className="bx bxs-cloud-download bx-fade-down-hover" />
-                                <span className="text">Download PDF</span>
-                            </NavLink>
+                                <span className="text">Export CSV</span>
+                            </div>
+                            <div onClick={openImportProductModal} className="btn-import" to="#">
+                                <i className="bx bxs-cloud-download bx-fade-down-hover" />
+                                <span className="text">Import CSV</span>
+                            </div>
                         </div>
                         <div className="container mx-auto p-4">
                         {errorMessage && (
@@ -288,6 +327,18 @@ const Products = () => {
                                 Cancel
                                 </button>
                             </div>
+                            </div>
+                        </Modal>
+
+                        <Modal
+                            isOpen={isImportModalOpen}
+                            onRequestClose={() => setIsImportModalOpen(false)}
+                            contentLabel="Import Products"
+                            className="modal-content"
+                            overlayClassName="modal-overlay"
+                        >
+                            <div className="p-8 bg-white rounded-lg">
+                              <ImportProduct setIsImportModalOpen={setIsImportModalOpen} onImport={handleImport}/>
                             </div>
                         </Modal>
 

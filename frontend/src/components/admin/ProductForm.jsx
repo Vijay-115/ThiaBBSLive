@@ -410,7 +410,7 @@ const ProductForm = ({ product, categories, subCategories, onSave }) => {
                     onChange={handleSelectChange}
                     placeholder="Select Category"
                     isSearchable
-                    className="w-full"
+                    className="w-full border rounded-lg"
                     name="category_id"
                   />
                 </div>
@@ -424,7 +424,7 @@ const ProductForm = ({ product, categories, subCategories, onSave }) => {
                       onChange={handleSelectChange}
                       placeholder="Select Subcategories"
                       isSearchable
-                      className="w-full"
+                      className="w-full border rounded-lg"
                       name="subcategory_id"
                   />
                 </div>

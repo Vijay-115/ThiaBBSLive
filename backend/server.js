@@ -12,6 +12,7 @@ const orderRoutes = require('./routes/orderRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const wishlistRoutes = require('./routes/wishlistRoutes');
 const userRoutes = require('./routes/userRoutes');
+const vendorRoutes = require('./routes/vendorRoutes');
 const cors = require('cors');
 const path = require('path');
 
@@ -28,11 +29,23 @@ const app = express();
 
 // ✅ Enable CORS Middleware
 app.use(cors({
-    origin: process.env.REACT_APP_CLI_URL, // Allow requests from frontend
-    credentials: true, // Allow cookies/auth headers
-    methods: "GET,POST,PUT,DELETE",
-    allowedHeaders: "Content-Type,Authorization",
+  origin: (origin, callback) => {
+      const allowedOrigin = process.env.REACT_APP_CLI_URL.replace(/\/$/, ""); // ✅ Remove trailing slash
+      if (!origin || origin === allowedOrigin) {
+          callback(null, true);
+      } else {
+          callback(new Error("CORS policy violation"));
+      }
+  },
+  credentials: true,
+  methods: "GET,POST,PUT,DELETE",
+  allowedHeaders: "Content-Type,Authorization",
 }));
+
+app.use((req, res, next) => {
+  console.log("Request Origin:", req.headers.origin);
+  next();
+});
 
 // ✅ Initialize session middleware
 app.use(session({
@@ -55,6 +68,7 @@ app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 // ✅ Routes
+app.use('/api/vendor', vendorRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/products', productRoutes);
@@ -67,6 +81,7 @@ app.use('/api/users', userRoutes);
 
 // ✅ Global error handling middleware
 app.use((err, req, res, next) => {
+  console.log(req.headers.origin)
   console.error(err.stack);
   res.status(500).json({ message: 'Something went wrong!' });
 });

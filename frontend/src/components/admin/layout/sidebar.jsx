@@ -88,7 +88,13 @@ const Sidebar = ({ isSidebarHidden, toggleSidebar }) => {
                             <i className="bx bxs-group bx-sm" />
                             <span className="text">Vendors</span>
                         </NavLink>
-                    </li>                  
+                    </li>     
+                    <li className={location.pathname === "/admin/vendor-request" ? "active" : ""}>
+                        <NavLink to="/admin/vendor-request">
+                            <i className="bx bxs-group bx-sm" />
+                            <span className="text">Vendors Request</span>
+                        </NavLink>
+                    </li>                   
                 </ul>
                 <ul className="side-menu bottom">
                     <li onClick={ async () => { await logout(dispatch); window.location.reload(); }}>
