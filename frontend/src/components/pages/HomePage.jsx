@@ -1,6 +1,12 @@
 import React, { useEffect } from 'react';
 import HeroSection from "../home/HeroSection";
 import SectionCategory from "../home/SectionCategory";
+import AnimationCards from "../home/AnimationCards";
+import OfferSection from "../home/OfferSection";
+import TrendingItems from "../home/TrendingItems";
+import HeroVideoCarousel from "../home/HeroVideoCarousel";
+import VendorSlider from "../home/VendorSlider";
+import WhatsAppChat from "../home/WhatsAppChat";
 import ProductList from "../products/ProductList";
 import BannerOne from "../home/BannerOne";
 import Services from "../home/Services";
@@ -22,8 +28,14 @@ function HomePage() {
               <div className='home'>
                 <ProductList heading="Grocery Items" type="Slider" />
               </div>
+              <TrendingItems/>
+              <VendorSlider />
+              <AnimationCards/>
+              <OfferSection/>
+              <HeroVideoCarousel/>
               <BannerOne/>
               <Services/>
+              <WhatsAppChat />
             </div>
             {/* Page Content */}
         

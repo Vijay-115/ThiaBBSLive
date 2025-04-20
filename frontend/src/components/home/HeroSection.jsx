@@ -11,25 +11,53 @@ const HeroSection = () => {
       id: 1,
       offer: "Flat 30% Off",
       title: "Explore Gold & Silver Jewellery",
-      image: "/img/hero/Banner1.jpg",
+      image: "/img/hero/Grocery1.jpg",
       link: "/product/category/womens-jewellery",
     },
     {
       id: 2,
       offer: "Flat 30% Off",
       title: "Explore Organic & Fresh Vegetables",
-      image: "/img/hero/Banner2.jpg",
+      image: "/img/hero/Banner1.jpg",
       link: "/groceries/fruits-vegetables",
     },
     {
       id: 3,
       offer: "Flat 30% Off",
       title: "Explore Organic & Fresh Vegetables",
-      image: "/img/hero/Banner3.jpg",
+      image: "/img/hero/Grocery2.jpg",
       link: "/groceries/fruits-vegetables",
     },
     {
       id: 4,
+      offer: "Flat 30% Off",
+      title: "Explore Organic & Fresh Vegetables",
+      image: "/img/hero/Banner2.jpg",
+      link: "/groceries/fruits-vegetables",
+    },
+    {
+      id: 5,
+      offer: "Flat 30% Off",
+      title: "Explore Organic & Fresh Vegetables",
+      image: "/img/hero/Grocery3.jpg",
+      link: "/groceries/fruits-vegetables",
+    },
+    {
+      id: 6,
+      offer: "Flat 30% Off",
+      title: "Explore Organic & Fresh Vegetables",
+      image: "/img/hero/Banner3.jpg",
+      link: "/groceries/fruits-vegetables",
+    },
+    {
+      id: 7,
+      offer: "Flat 30% Off",
+      title: "Explore Organic & Fresh Vegetables",
+      image: "/img/hero/Grocery4.jpg",
+      link: "/groceries/fruits-vegetables",
+    },
+    {
+      id: 8,
       offer: "Flat 30% Off",
       title: "Explore Organic & Fresh Vegetables",
       image: "/img/hero/Banner4.jpg",
@@ -73,7 +101,7 @@ const HeroSection = () => {
           <SwiperSlide key={slide.id}>
             <div className="hero-content-sec flex flex-col md:flex-row md:flex-wrap items-center">
               <div className="hero-image-wrapper w-[100%] order-1 md:order-2">
-                <img className="w-[100%] mx-auto object-cover object-top" src={slide.image} alt={slide.title} />
+                <img className="w-[100%] mx-auto object-cover object-center" style={{height: '600px'}} src={slide.image} alt={slide.title} />
               </div>
             </div>
           </SwiperSlide>

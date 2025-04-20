@@ -86,7 +86,7 @@ function App() {
 
   useEffect(() => {
     const checkHeaderFooter = () => {
-      const excludeHeaderFooterRoutes = ['/admin/dashboard', '/admin/products', '/admin/orders', '/admin/products/categories', '/admin/products/subcategories', '/admin/seller', '/admin/vendor', '/seller/dashboard', '/seller/products', '/seller/orders', '/seller/products/categories', '/seller/products/subcategories'];
+      const excludeHeaderFooterRoutes = ['/admin/dashboard', '/admin/products', '/admin/orders', '/admin/products/categories', '/admin/products/subcategories', '/admin/seller', '/admin/vendor', '/seller/dashboard', '/seller/products', '/seller/orders', '/seller/products/categories', '/seller/products/subcategories', '/admin/vendor-request'];
       setShouldRenderHeaderFooter(!excludeHeaderFooterRoutes.includes(location.pathname));
     };
 
