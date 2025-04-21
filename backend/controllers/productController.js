@@ -357,157 +357,148 @@ exports.getNearbySellerProducts = async (req, res) => {
 // UPDATE: Update a product by product_id with image upload
 exports.updateProduct = async (req, res) => {
     try {
-        console.log('typeof',typeof req.body.variants);
-        
-        console.log("updateProduct", req.files);
         console.log("🔄 Received Update Request:", req.body);
-
         const productId = req.params.id;
+
         const existingProduct = await Product.findById(productId);
         if (!existingProduct) {
             return res.status(404).json({ message: "❌ Product not found" });
         }
 
-        // Ensure variants are parsed properly before updating
-        if (typeof req.body.variants === 'string') {
+        // Parse stringified fields
+        let variants = req.body.variants;
+        if (typeof variants === 'string') {
             try {
-            req.body.variants = JSON.parse(req.body.variants);
-            } catch (error) {
-            return res.status(400).json({ error: 'Invalid variants format' });
+                variants = JSON.parse(variants);
+            } catch (err) {
+                return res.status(400).json({ message: "❌ Invalid variants format" });
             }
         }
 
-        let updatedProductData = { ...req.body };
+        const updatedProductData = { ...req.body };
 
-         // Parse dimensions if needed
-         if (req.body.dimensions) {
+        // Parse dimensions
+        if (req.body.dimensions) {
             try {
                 updatedProductData.dimensions = JSON.parse(req.body.dimensions);
             } catch (error) {
-                return res.status(400).json({ message: "Invalid dimensions format" });
+                return res.status(400).json({ message: "❌ Invalid dimensions format" });
             }
         }
 
-        // ✅ Handle Product Image Update
-        const productImgFile = req.files.find(file => file.fieldname === "product_img");
-        console.log("productImgFile");
-
-        if (productImgFile) {
-            console.log("productImgFile", productImgFile.filename);
-            if (existingProduct.product_img) removeOldImage(existingProduct.product_img); // Remove old image
-            updatedProductData.product_img = `/uploads/${productImgFile.filename}`;
-        } else {
-            updatedProductData.product_img = existingProduct.product_img || "";
+        // Parse tags
+        if (req.body.tags) {
+            try {
+                updatedProductData.tags = Array.isArray(req.body.tags) ? req.body.tags : JSON.parse(req.body.tags);
+            } catch (err) {
+                return res.status(400).json({ message: "❌ Invalid tags format" });
+            }
         }
 
-        // ✅ Handle Gallery Images Update
+        // ✅ Product Image
+        const productImgFile = req.files.find(file => file.fieldname === "product_img");
+        if (productImgFile) {
+            if (existingProduct.product_img) removeOldImage(existingProduct.product_img);
+            updatedProductData.product_img = `/uploads/${productImgFile.filename}`;
+        } else {
+            updatedProductData.product_img = existingProduct.product_img;
+        }
+
+        // ✅ Gallery Images
         const galleryImages = req.files.filter(file => file.fieldname === "gallery_imgs");
         if (galleryImages.length > 0) {
-            if (existingProduct.gallery_imgs?.length > 0) {
-                existingProduct.gallery_imgs.forEach(removeOldImage); // Remove old images
+            if (existingProduct.gallery_imgs?.length) {
+                existingProduct.gallery_imgs.forEach(removeOldImage);
             }
             updatedProductData.gallery_imgs = galleryImages.map(file => `/uploads/${file.filename}`);
         } else {
-            updatedProductData.gallery_imgs = existingProduct.gallery_imgs || [];
+            updatedProductData.gallery_imgs = existingProduct.gallery_imgs;
         }
 
+        // ❗️Don't include `variants` when updating product
+        delete updatedProductData.variants;
 
-        // ✅ Parse JSON fields safely
-        try {
-            if (req.body.dimensions) updatedProductData.dimensions = JSON.parse(req.body.dimensions);
-            if (req.body.tags) updatedProductData.tags = Array.isArray(req.body.tags) ? req.body.tags : JSON.parse(req.body.tags);
-        } catch (error) {
-            return res.status(400).json({ message: "❌ Invalid JSON format" });
-        }
-
-        // ✅ Update product details
         const updatedProduct = await Product.findByIdAndUpdate(productId, updatedProductData, { new: true });
         console.log("✅ Product Updated:", updatedProduct);
 
-        console.log('typeof',typeof req.body.variants)
-
-        // ✅ Handle variants processing
-        if (req.body.variants) {
-            let variantData = req.body.variants;
-            console.log("🔍 Parsed Variants Data:", variantData);
-
+        // ✅ Handle Variant Update/Create/Delete
+        if (variants) {
             const existingVariants = await Variant.find({ product_id: updatedProduct._id });
             const existingVariantIds = existingVariants.map(v => v._id.toString());
 
             const variantIds = [];
             const bulkOperations = [];
 
-            for (const [index, variant] of variantData.entries()) {
-                if (!variant._id) variant._id = new mongoose.Types.ObjectId();
-                variantIds.push(variant._id);
+            for (const [index, variant] of variants.entries()) {
+                const variantId = variant._id || new mongoose.Types.ObjectId();
+                variant._id = variantId;
+                variantIds.push(variantId);
 
-                let variantImgPath = existingVariants.find(v => v._id.toString() === variant._id)?.variant_img || "";
-                if (req.files.find(file => file.fieldname === `variant_img_${index}`)) {
+                // Variant image
+                let variantImgPath = existingVariants.find(v => v._id.toString() === variantId.toString())?.variant_img || "";
+                const variantImgFile = req.files.find(file => file.fieldname === `variant_img_${index}`);
+                if (variantImgFile) {
                     if (variantImgPath) removeOldImage(variantImgPath);
-                    variantImgPath = `/uploads/${req.files.find(file => file.fieldname === `variant_img_${index}`).filename}`;
+                    variantImgPath = `/uploads/${variantImgFile.filename}`;
                 }
 
-                let variantGalleryPaths = existingVariants.find(v => v._id.toString() === variant._id)?.variant_gallery_imgs || [];
-                if (req.files.find(file => file.fieldname === `variant_gallery_imgs_${index}`)) {
+                // Variant gallery images
+                let variantGalleryPaths = existingVariants.find(v => v._id.toString() === variantId.toString())?.variant_gallery_imgs || [];
+                const galleryFiles = req.files.filter(file => file.fieldname === `variant_gallery_imgs_${index}`);
+                if (galleryFiles.length > 0) {
                     if (variantGalleryPaths.length > 0) variantGalleryPaths.forEach(removeOldImage);
-                    variantGalleryPaths = req.files
-                        .filter(file => file.fieldname === `variant_gallery_imgs_${index}`)
-                        .map(file => `/uploads/${file.filename}`);
+                    variantGalleryPaths = galleryFiles.map(file => `/uploads/${file.filename}`);
                 }
 
-                if (existingVariantIds.includes(variant._id.toString())) {
-                    console.log("🔄 Updating Variant:", variant._id);
+                const baseData = {
+                    product_id: updatedProduct._id,
+                    variant_name: variant.variant_name,
+                    price: variant.price,
+                    stock: variant.stock,
+                    SKU: variant.SKU,
+                    attributes: variant.attributes,
+                    variant_img: variantImgPath,
+                    variant_gallery_imgs: variantGalleryPaths,
+                };
+
+                if (existingVariantIds.includes(variantId.toString())) {
                     bulkOperations.push({
                         updateOne: {
-                            filter: { _id: variant._id, product_id: updatedProduct._id },
-                            update: {
-                                variant_name: variant.variant_name,
-                                price: variant.price,
-                                stock: variant.stock,
-                                SKU: variant.SKU,
-                                attributes: variant.attributes,
-                                variant_img: variantImgPath || variant.variant_img,
-                                variant_gallery_imgs: variantGalleryPaths || variant.variant_gallery_imgs,
-                            },
+                            filter: { _id: variantId, product_id: updatedProduct._id },
+                            update: baseData,
                         },
                     });
                 } else {
-                    console.log("➕ Creating New Variant:", variant);
                     bulkOperations.push({
                         insertOne: {
-                            document: {
-                                ...variant,
-                                product_id: updatedProduct._id,
-                                variant_img: variantImgPath,
-                                variant_gallery_imgs: variantGalleryPaths,
-                            },
+                            document: { _id: variantId, ...baseData },
                         },
                     });
                 }
             }
 
-            // ✅ Execute bulk write for variants
             if (bulkOperations.length > 0) {
                 const bulkResult = await Variant.bulkWrite(bulkOperations);
-                console.log("✅ BulkWrite Result:", bulkResult);
+                console.log("✅ Variant Bulk Write:", bulkResult);
             }
 
-            // ✅ Update the product with new variant IDs
+            await Variant.deleteMany({ product_id: updatedProduct._id, _id: { $nin: variantIds } });
+
             updatedProduct.variants = variantIds;
             await updatedProduct.save();
-
-            // ✅ Delete removed variants
-            const deleteResult = await Variant.deleteMany({
-                product_id: updatedProduct._id,
-                _id: { $nin: variantIds },
-            });
-            console.log("🗑️ Deleted Variants Result:", deleteResult);
         }
 
-        res.status(200).json({ message: "✅ Product updated successfully", product: updatedProduct });
+        res.status(200).json({
+            message: "✅ Product updated successfully",
+            product: updatedProduct,
+        });
+
     } catch (err) {
         console.error("❌ Error:", err);
-        res.status(500).json({ message: "❌ Internal Server Error", error: err.message });
+        res.status(500).json({
+            message: "❌ Internal Server Error",
+            error: err.message,
+        });
     }
 };
 
@@ -711,11 +702,6 @@ exports.importProducts = async (req, res) => {
     const filePath = req.files[0].path;
     const products = [];
 
-    const seller_id = req.user ? req.user.userId : null;
-    if (!seller_id) {
-        return res.status(401).json({ message: "Unauthorized: User ID not found" });
-    }
-
     fs.createReadStream(filePath)
         .pipe(csvParser())
         .on('data', (row) => products.push(row)) // ✅ Collect all rows
@@ -723,11 +709,26 @@ exports.importProducts = async (req, res) => {
             try {
                 for (const row of products) { // ✅ Loop through each row
                     try {
+                        const productId = row['Product ID']?.trim();
+                        let finalProductId = productId && mongoose.Types.ObjectId.isValid(productId) ? productId : new mongoose.Types.ObjectId(); // ✅ generate new one if missing/invalid
+
+                        const seller_id_from_csv = row['Seller ID'];
+
+                        // Validate and use seller_id from CSV if it's a valid ObjectId
+                        let finalSellerId;
+                        if (seller_id_from_csv && mongoose.Types.ObjectId.isValid(seller_id_from_csv)) {
+                          finalSellerId = seller_id_from_csv;
+                        } else if (req.user && mongoose.Types.ObjectId.isValid(req.user.userId)) {
+                          finalSellerId = req.user.userId;
+                        } else {
+                          return res.status(401).json({ message: 'Unauthorized: Invalid Seller ID' });
+                        }                        
+
                         // ✅ 1. CHECK & UPDATE CATEGORY
                         let category = await Category.findOne({ name: row['Category Name'] });
 
                         if (!category) {
-                            category = new Category({ name: row['Category Name'] });
+                            category = new Category({ name: row['Category Name'], seller_id: finalSellerId, description: row['Category Description']});
                             await category.save();
                         }
 
@@ -737,13 +738,15 @@ exports.importProducts = async (req, res) => {
                         if (!subcategory) {
                             subcategory = new Subcategory({ 
                                 name: row['Subcategory Name'], 
-                                category_id: category._id 
+                                category_id: category._id,
+                                seller_id: finalSellerId, 
+                                description: row['Subcategory Description'] 
                             });
                             await subcategory.save();
                         }
 
                         // ✅ 3. CHECK IF PRODUCT EXISTS, UPDATE IF IT DOES, OTHERWISE CREATE NEW
-                        let existingProduct = await Product.findOne({ _id: row['Product ID'] });
+                        let existingProduct = await Product.findOne({ _id: finalProductId });
 
                         let dimensions = {};
                         if (row['Dimensions']) {
@@ -760,7 +763,7 @@ exports.importProducts = async (req, res) => {
                         if (existingProduct) {
                             // Update existing product
                             await Product.updateOne(
-                                { _id: row['Product ID'] },
+                                { _id: finalProductId },
                                 {
                                     name: row['Product Name'],
                                     description: row['Description'],
@@ -777,13 +780,13 @@ exports.importProducts = async (req, res) => {
                                     subcategory_id: subcategory._id,
                                     is_review: row['Is Review'] === 'true',
                                     is_variant: row['Is Variant'] === 'true',
-                                    seller_id: row['Seller ID'] || seller_id,
+                                    seller_id: finalSellerId,
                                 }
                             );
                         } else {
                             // Insert new product
                             let newProduct = new Product({
-                                _id: row['Product ID'],
+                                _id: finalProductId,
                                 name: row['Product Name'],
                                 description: row['Description'],
                                 SKU: row['SKU'],
@@ -799,7 +802,7 @@ exports.importProducts = async (req, res) => {
                                 subcategory_id: subcategory._id,
                                 is_review: row['Is Review'] === 'true',
                                 is_variant: row['Is Variant'] === 'true',
-                                seller_id: row['Seller ID'],
+                                seller_id: finalSellerId,
                             });
 
                             await newProduct.save();
