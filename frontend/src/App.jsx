@@ -53,6 +53,8 @@ import { loadUser } from './services/authService';
 import { fetchCartItems } from './slice/cartSlice';
 import { fetchWishlistItems } from './slice/wishlistSlice';
 
+import ScrollToTopOnRouteChange from "./components/ScrollToTopOnRouteChange";
+
 // Main App Component
 function App() {
   const dispatch = useDispatch();
@@ -84,7 +86,7 @@ function App() {
 
   useEffect(() => {
     const checkHeaderFooter = () => {
-      const excludeHeaderFooterRoutes = ['/admin/dashboard', '/admin/products', '/admin/orders', '/admin/products/categories', '/admin/products/subcategories', '/admin/seller', '/admin/vendor', '/seller/dashboard', '/seller/products', '/seller/orders', '/seller/products/categories', '/seller/products/subcategories'];
+      const excludeHeaderFooterRoutes = ['/admin/dashboard', '/admin/products', '/admin/orders', '/admin/products/categories', '/admin/products/subcategories', '/admin/seller', '/admin/vendor', '/seller/dashboard', '/seller/products', '/seller/orders', '/seller/products/categories', '/seller/products/subcategories', '/admin/vendor-request'];
       setShouldRenderHeaderFooter(!excludeHeaderFooterRoutes.includes(location.pathname));
     };
 
@@ -98,6 +100,7 @@ function App() {
     <>
       {shouldRenderHeaderFooter && <HeaderTop toggleMenu={toggleMenu} />}
       {shouldRenderHeaderFooter && <Navbar menuOpen={menuOpen} closeMenu={closeMenu} />}
+      <ScrollToTopOnRouteChange /> 
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/product/:id" element={<SingleProductPage />} />
