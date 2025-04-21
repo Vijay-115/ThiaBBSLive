@@ -13,7 +13,7 @@ console.log('category - ',category);
     subcategories: [],
     colors: [],
     tags: [],
-    priceRange: { min: 0, max: 2000 }, // Set default range
+    priceRange: { min: 0, max: 100000000 }, // Set default range
   });
   const updateFilters = (newFilters) => {
     setFilters(newFilters);
