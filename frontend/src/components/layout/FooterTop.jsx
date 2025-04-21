@@ -1,10 +1,33 @@
-import React from 'react';
+import { useState, useEffect } from "react";
 import { Link } from 'react-router-dom';
 
 function FooterTop() {
-  return (
-    <>
-        <div className="footer-top bbscontainer py-[50px] max-[1199px]:py-[35px]">
+
+    const [isVisible, setIsVisible] = useState(false);
+
+    useEffect(() => {
+        const toggleVisibility = () => {
+            if (window.scrollY > 300) {
+                setIsVisible(true);
+            } else {
+                setIsVisible(false);
+            }
+        };
+
+        window.addEventListener("scroll", toggleVisibility);
+        return () => window.removeEventListener("scroll", toggleVisibility);
+    }, []);
+
+    const scrollToTop = () => {
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+        });
+    };
+
+    return (
+        <>
+            <div className="footer-top bbscontainer py-[50px] max-[1199px]:py-[35px]">
                 <div className="flex flex-wrap justify-between relative items-center">
                     <div className="flex flex-wrap w-full max-[991px]:mb-[-30px]" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="200">
                         <div className="min-[992px]:w-[25%] max-[991px]:w-full w-full px-[12px] bb-footer-toggle bb-footer-cat">
@@ -14,10 +37,10 @@ function FooterTop() {
                                     your daily needs from our store.</p>
                                 <div className="bb-app-store m-[-7px] flex flex-wrap">
                                     <Link to="/" className="app-img">
-                                        <img src="/img/app/android.png" className="adroid max-w-[140px] m-[7px] rounded-[5px] max-[1399px]:max-w-[120px]" alt="apple"/>
+                                        <img src="/img/app/android.png" className="adroid max-w-[140px] m-[7px] rounded-[5px] max-[1399px]:max-w-[120px]" alt="apple" />
                                     </Link>
                                     <Link to="/" className="app-img">
-                                        <img src="/img/app/apple.png" className="apple max-w-[140px] m-[7px] rounded-[5px] max-[1399px]:max-w-[120px]" alt="apple"/>
+                                        <img src="/img/app/apple.png" className="apple max-w-[140px] m-[7px] rounded-[5px] max-[1399px]:max-w-[120px]" alt="apple" />
                                     </Link>
                                 </div>
                             </div>
@@ -145,24 +168,34 @@ function FooterTop() {
                         </div>
                     </div>
                 </div>
-        </div>
-        <div className="footer-bottom py-[10px] border-t-[1px] border-solid border-[#eee] max-[991px]:py-[15px]">
-            <div className="flex flex-wrap justify-between relative items-center mx-auto">
-                <div className="flex flex-wrap w-full">
-                    <div className="bb-bottom-info w-full flex flex-row items-center justify-between max-[991px]:flex-col px-[12px]">
-                        <div className="footer-copy w-full mb-[15px]">
-                            <div className="footer-bottom-copy text-center">
-                                <div className="bb-copy text-secondary text-[13px] tracking-[1px] text-center font-normal leading-[2]">Copyright © <span className="text-secondary text-[13px] tracking-[1px] text-center font-normal" id="copyright_year"></span>
-                                    <Link className="site-name transition-all duration-[0.3s] ease-in-out font-medium text-primary hover:text-secondary font-Poppins text-[15px] leading-[28px] tracking-[0.03rem]" to="/">BSSCart</Link> All Rights Reserved.
+            </div>
+            <div className="footer-bottom py-[10px] border-t-[1px] border-solid border-[#eee] max-[991px]:py-[15px]">
+                <div className="flex flex-wrap justify-between relative items-center mx-auto">
+                    <div className="flex flex-wrap w-full">
+                        <div className="bb-bottom-info w-full flex flex-row items-center justify-between max-[991px]:flex-col px-[12px]">
+                            <div className="footer-copy w-full mb-[15px]">
+                                <div className="footer-bottom-copy text-center">
+                                    <div className="bb-copy text-secondary text-[13px] tracking-[1px] text-center font-normal leading-[2]">Copyright © <span className="text-secondary text-[13px] tracking-[1px] text-center font-normal" id="copyright_year"></span>
+                                        <Link className="site-name transition-all duration-[0.3s] ease-in-out font-medium text-primary hover:text-secondary font-Poppins text-[15px] leading-[28px] tracking-[0.03rem]" to="/">BSSCart</Link> All Rights Reserved.
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </>
-  )
+            <div>
+                {isVisible && (
+                    <button
+                    onClick={scrollToTop}
+                    className="fixed bottom-5 right-5 p-1 px-2 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-800 transition bg-gradient-to-r from-logoSecondary to-logoPrimary hover:from-logoPrimary hover:to-logoSecondary"
+                  >
+                        <i className="ri-arrow-up-fill"></i>
+                    </button>
+                )}
+            </div>
+        </>
+    )
 }
 
 export default FooterTop
