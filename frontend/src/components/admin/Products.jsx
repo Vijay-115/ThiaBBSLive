@@ -224,9 +224,13 @@ const Products = () => {
     formData.append("file", file); // ✅ Append actual file object
   
     try {
-      await ProductService.importProducts(formData);
-      fetchProducts();
-      return true; // ✅ Success
+      const importRes = await ProductService.importProducts(formData);
+      if(importRes.status === 200){
+        fetchProducts();
+        return importRes;
+      }else{
+        return importRes;
+      }
     } catch (error) {
       console.error("Import Error:", error);
       alert("Error importing products.");
