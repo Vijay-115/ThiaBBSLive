@@ -36,7 +36,7 @@ const ImportProduct = ({ setIsImportModalOpen, onImport }) => {
     setImportSuccess(false);
     
     const success = await onImport(selectedFile); // ✅ Await the response
-    if (success) {
+    if (success.status === 200) {
       setTimeout(() => {
         setIsImporting(false);
         setImportSuccess(true);
@@ -47,7 +47,7 @@ const ImportProduct = ({ setIsImportModalOpen, onImport }) => {
       }, 1000);
     } else {
       setIsImporting(false);
-      alert("Import failed. Please try again.");
+      alert("Import failed. Please try again.", success.message);
     }
   };
 
@@ -65,7 +65,7 @@ const ImportProduct = ({ setIsImportModalOpen, onImport }) => {
                 ref={fileInputRef}
                 type="file"
                 hidden
-                accept=".csv" // ✅ Restrict file type
+                accept=".zip" // ✅ Restrict file type
                 onChange={handleFileChange}
               />
             </div>
