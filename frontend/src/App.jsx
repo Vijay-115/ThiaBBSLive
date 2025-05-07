@@ -31,6 +31,10 @@ import MyAccount from './components/auth/MyAccount';
 import Seller from './components/admin/Seller';
 import Vendor from './components/admin/Vendor';
 import VendorRequest from './components/admin/VendorRequest';
+import BecomeAgent from './components/auth/BecomeAgent'; 
+import BecomeFranchiseHead from './components/auth/BecomeFranchiseHead'; 
+import BecomeTerritoryHead from './components/auth/BecomeTerritoryHead'; 
+
 
 import AboutPage from './components/pages/AboutPage';
 import TermsOfUse from './components/pages/TermsOfUse';
@@ -110,6 +114,9 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/become-a-vendor" element={<BecomeVendor />} />
+        <Route path="/become-a-agent" element={<BecomeAgent />} />
+        <Route path="/become-a-territory-head" element={<BecomeTerritoryHead />} />
+        <Route path="/become-a-franchise-head" element={<BecomeFranchiseHead />} />
         <Route path="/forgot-password" element={<Forgot />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/checkout" element={<CheckoutPage />} />
