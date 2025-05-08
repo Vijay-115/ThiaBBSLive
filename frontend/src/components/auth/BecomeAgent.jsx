@@ -58,7 +58,8 @@ const BecomeAgent = () => {
         if (!vendorData.privacyPolicy) formErrors.privacyPolicy = "You must agree to privacy policy";
         if (!vendorData.sellerPolicy) formErrors.sellerPolicy = "You must agree to seller policy";
         if (!vendorData.pan_number) formErrors.pan_number = "PAN number is required";
-        // if (!files.pan_pic) formErrors.pan_pic = "PAN picture is required";
+        if (!files.pan_pic) formErrors.pan_pic = "PAN picture is required";
+        if (!files.gst_pic) formErrors.gst_pic = "GST picture is required";
         if (!vendorData.outlet_manager_name) formErrors.outlet_manager_name = "Store manager name is required";
         if (!vendorData.outlet_contact_no) formErrors.outlet_contact_no = "Contact number is required";
         if (!vendorData.bank_name) formErrors.bank_name = "Bank name is required";
@@ -558,7 +559,7 @@ const BecomeAgent = () => {
                                     <Select
                                         options={outletCountries}
                                         value={outletCountries.find(option => option.label === vendorData.outlet_location.country) || null}
-                                        onChange={(option) => handleAddressSelectChange(option, { name: "outlet_location?.country" })}
+                                        onChange={(option) => handleAddressSelectChange(option, { name: "outlet_location.country" })}
                                         placeholder="Select Country"
                                         className={`w-full border rounded-lg ${errors.outlet_location?.country ? 'border-red-700' : ''}`}
                                         isSearchable

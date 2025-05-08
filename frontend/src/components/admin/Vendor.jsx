@@ -54,7 +54,7 @@ const filterAndSortUsers = () => {
 };
 
   // Fetch vendors
-  const roles = ["customer", "agent", "territory_head", "franchise"];
+  const roles = ["customer", "agent", "territory_head", "franchise_head"];
 
   const fetchUsers = async (roles) => {
     try {
