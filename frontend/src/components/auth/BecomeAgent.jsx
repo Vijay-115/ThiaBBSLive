@@ -7,10 +7,10 @@ import { GetCountries, GetState, GetCity } from "react-country-state-city";
 import useAddress from "../admin/hooks/useAddress";
 import { vendorRegister } from "../../services/vendorService";
 
-const BecomeVendor = () => {
+const BecomeAgent = () => {
     
     const [vendorData, setVendorData] = useState({
-        vendor_name: '', business_type: '', brand_name: '', contact_person: '', email: '', mobile: '', register_business_address: { street: "", city: "", state: "", postalCode: "", country: "" }, operational_address: { street: "", city: "", state: "", postalCode: "", country: "" }, pan_number: '', gst_number: '', fssai_license: '', shop_establish_license: '', outlet_location: { street: "", city: "", state: "", postalCode: "", country: "" },outlet_manager_name: '', outlet_contact_no: '', bank_name: '', account_holder_name: '', account_no: '', ifcs_code: '', branch_name: '', cancel_cheque_passbook: '', passbook: '', vendor_bio: '', product_category: '', product_category_other: '', address_proof: '', termsConditions: false, privacyPolicy: false, sellerPolicy: false, role: 'seller',
+        vendor_name: '', business_type: '', brand_name: '', contact_person: '', email: '', mobile: '', register_business_address: { street: "", city: "", state: "", postalCode: "", country: "" }, operational_address: { street: "", city: "", state: "", postalCode: "", country: "" }, pan_number: '', gst_number: '', fssai_license: '', shop_establish_license: '', outlet_location: { street: "", city: "", state: "", postalCode: "", country: "" },outlet_manager_name: '', outlet_contact_no: '', bank_name: '', account_holder_name: '', account_no: '', ifcs_code: '', branch_name: '', cancel_cheque_passbook: '', passbook: '', vendor_bio: '', product_category: '', product_category_other: '', address_proof: '', termsConditions: false, privacyPolicy: false, sellerPolicy: false, role: 'agent',
     });
 
     // const [files, setFiles] = useState({
@@ -253,7 +253,7 @@ const BecomeVendor = () => {
                 <div id="back-div" className="bg-gradient-to-r from-logoSecondary to-logoPrimary rounded-[26px] m-4">
                     <div className="border-[20px] border-transparent rounded-[20px] dark:bg-gray-900 bg-white shadow-lg p-5 m-2">
                         <h1 className="pt-8 pb-6 font-bold dark:text-gray-400 text-3xl text-center">
-                            Become a Seller
+                            Become a Agent
                         </h1>
                         <form className="grid grid-cols-2 gap-x-4" onSubmit={handleVendorSubmit} encType="multipart/form-data">
                             {/* Vendor Name */}
@@ -783,7 +783,7 @@ const BecomeVendor = () => {
 
                             <div className="col-span-2">
                                 <button className="bg-gradient-to-r from-logoSecondary to-logoPrimary shadow-lg mt-6 p-[9.85px] text-white rounded-lg w-full">
-                                    REGISTER AS SELLER
+                                    REGISTER AS AGENT
                                 </button>
                             </div>
                         </form>
@@ -797,4 +797,4 @@ const BecomeVendor = () => {
     );
 };
 
-export default BecomeVendor;
+export default BecomeAgent;

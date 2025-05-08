@@ -58,7 +58,7 @@ export const logout = async (dispatch) => {
     // Ensure local storage and state are cleared
     localStorage.clear();
     dispatch(logoutUser());
-    window.location.href = "/login"; // Redirect after logout
+    // window.location.href = "/login"; // Redirect after logout
 };
 
 // Forgot Password

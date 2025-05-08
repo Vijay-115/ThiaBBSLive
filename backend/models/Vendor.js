@@ -45,6 +45,7 @@ const VendorSchema = new mongoose.Schema({
     termsConditions: { type: Boolean, required: true },
     privacyPolicy: { type: Boolean, required: true },
     sellerPolicy: { type: Boolean, required: true },
+    role: { type: String, enum: ['seller', 'agent', 'territory_head', 'franchise_head'], required: true },
     user_id: { type: ObjectId, ref: 'User', default: null },
     is_active: { type: Boolean, default: false },
     created_at: { type: Date, default: Date.now },

@@ -43,6 +43,7 @@ exports.registerVendor = async (req, res) => {
             termsConditions,
             privacyPolicy,
             sellerPolicy,
+            role,
         } = req.body;
 
         // Convert address fields from string to object
@@ -128,6 +129,7 @@ exports.registerVendor = async (req, res) => {
             termsConditions,
             privacyPolicy,
             sellerPolicy,
+            role,
         });
 
         // Save vendor to the database
@@ -180,7 +182,7 @@ exports.approveVendor = async (req, res) => {
             name: vendor.vendor_name,
             email: vendor.email,
             password: hashedPassword, // Store hashed password
-            role: 'seller',
+            role: vendor.role,
         });
 
         await newUser.save();

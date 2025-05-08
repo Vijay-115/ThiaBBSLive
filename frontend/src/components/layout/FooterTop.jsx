@@ -113,6 +113,15 @@ function FooterTop() {
                                         <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
                                             <Link to="/become-a-vendor" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Become a Vendor</Link>
                                         </li>
+                                        <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
+                                            <Link to="/become-a-agent" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Become a Agent</Link>
+                                        </li>
+                                        <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
+                                            <Link to="/become-a-territory-head" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Become a Territory Head</Link>
+                                        </li>
+                                        <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
+                                            <Link to="/become-a-franchise-head " className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Become a Franchise Head</Link>
+                                        </li>
                                     </ul>
                                 </div>
                             </div>

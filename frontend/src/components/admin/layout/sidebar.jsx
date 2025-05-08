@@ -97,7 +97,7 @@ const Sidebar = ({ isSidebarHidden, toggleSidebar }) => {
                     </li>                   
                 </ul>
                 <ul className="side-menu bottom">
-                    <li onClick={ async () => { await logout(dispatch); window.location.reload(); }}>
+                    <li onClick={ async () => { await logout(dispatch);}}>
                         <NavLink className="logout">
                             <i className="bx bx-power-off bx-sm bx-burst-hover" />
                             <span className="text">Logout</span>
