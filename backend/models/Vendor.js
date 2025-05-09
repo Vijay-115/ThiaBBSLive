@@ -10,7 +10,9 @@ const AddressSchema = new mongoose.Schema({
 });
 
 const VendorSchema = new mongoose.Schema({
-    vendor_name: { type: String, required: true },
+    vendor_fname: { type: String, required: true },
+    vendor_lname: { type: String },
+    dob: { type: Date },
     business_type: { type: String, enum: ['Individual', 'Proprietorship', 'Partnership Firm', 'Private Limited Company', 'Public Company'], required: true },
     brand_name: { type: String, default: null },
     contact_person: { type: String, required: true },
@@ -19,6 +21,14 @@ const VendorSchema = new mongoose.Schema({
     alt_mobile: { type: String, default: null },
     register_business_address: AddressSchema,
     operational_address: AddressSchema,
+    education_qualify: { type: String, required: true },
+    work_experience: { type: String, required: true },
+    aadhar_number: { type: String, required: true },
+    aadhar_pic: { type: String, required: null },
+    self_declaration: { type: String, required: true }, 
+    criminal_history: { type: String, required: true }, 
+    referral_details: { type: String, required: null },
+    lang_proficiency: { type: String, required: null },
     pan_number: { type: String, required: true },
     pan_pic: { type: String, required: null },
     gst_number: { type: String, default: null },

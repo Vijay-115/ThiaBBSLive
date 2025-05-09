@@ -20,11 +20,20 @@ const storage = multer.diskStorage({
 
 // File filter to allow only images
 const fileFilter = (req, file, cb) => {
-    const allowedTypes = ["image/jpeg", "image/png", "image/jpg", "text/csv", "application/zip", "application/x-zip-compressed"];
+    const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/jpg",
+        "text/csv",
+        "application/zip",
+        "application/x-zip-compressed",
+        "application/pdf", // ✅ Added PDF support
+    ];
+
     if (allowedTypes.includes(file.mimetype)) {
         cb(null, true);
     } else {
-        cb(new Error("Invalid file type. Only JPG, JPEG, PNG, CSV and ZIP are allowed!"), false);
+        cb(new Error("Invalid file type. Only JPG, JPEG, PNG, CSV, ZIP, and PDF are allowed!"), false);
     }
 };
 

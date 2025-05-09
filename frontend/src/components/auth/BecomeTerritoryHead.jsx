@@ -10,7 +10,7 @@ import { vendorRegister } from "../../services/vendorService";
 const BecomeTerritoryHead = () => {
     
     const [vendorData, setVendorData] = useState({
-        vendor_name: '', business_type: '', brand_name: '', contact_person: '', email: '', mobile: '', register_business_address: { street: "", city: "", state: "", postalCode: "", country: "" }, operational_address: { street: "", city: "", state: "", postalCode: "", country: "" }, pan_number: '', gst_number: '', fssai_license: '', shop_establish_license: '', outlet_location: { street: "", city: "", state: "", postalCode: "", country: "" },outlet_manager_name: '', outlet_contact_no: '', bank_name: '', account_holder_name: '', account_no: '', ifcs_code: '', branch_name: '', cancel_cheque_passbook: '', passbook: '', vendor_bio: '', product_category: '', product_category_other: '', address_proof: '', termsConditions: false, privacyPolicy: false, sellerPolicy: false, role: 'territory_head',
+        vendor_fname: '', vendor_lname: '', dob: '', education_qualify: '', work_experience: '', referral_details: '', lang_proficiency: '', aadhar_number: '', business_type: '', brand_name: '', contact_person: '', email: '', mobile: '', register_business_address: { street: "", city: "", state: "", postalCode: "", country: "" }, operational_address: { street: "", city: "", state: "", postalCode: "", country: "" }, pan_number: '', gst_number: '', fssai_license: '', shop_establish_license: '', outlet_location: { street: "", city: "", state: "", postalCode: "", country: "" },outlet_manager_name: '', outlet_contact_no: '', bank_name: '', account_holder_name: '', account_no: '', ifcs_code: '', branch_name: '', cancel_cheque_passbook: '', passbook: '', vendor_bio: '', product_category: '', product_category_other: '', address_proof: '', termsConditions: false, privacyPolicy: false, sellerPolicy: false, role: 'territory_head',
     });
 
     // const [files, setFiles] = useState({
@@ -20,11 +20,11 @@ const BecomeTerritoryHead = () => {
     // });
 
     const [data, setData] = useState({
-        pan_number: '', gst_number: '', fssai_license: '', shop_establish_license: ''
+        aadhar_number: '',pan_number: '', gst_number: '', fssai_license: '', shop_establish_license: ''
     });
     
     const [files, setFiles] = useState({
-        pan_pic: null, gst_pic: null, fssai_pic: null, shop_establish_pic: null, cancel_cheque_passbook: null, passbook: null, profile_pic: null, cover_pic: null, address_proof: null
+        aadhar_pic: null, pan_pic: null, gst_pic: null, fssai_pic: null, shop_establish_pic: null, cancel_cheque_passbook: null, passbook: null, profile_pic: null, cover_pic: null, address_proof: null, self_declaration: null, criminal_history: null
     });
 
     const [imagePreviews, setImagePreviews] = useState({});
@@ -44,7 +44,7 @@ const BecomeTerritoryHead = () => {
         let formErrors = {};
     
         // Basic validations
-        if (!vendorData.vendor_name) formErrors.vendor_name = "Vendor name is required";
+        if (!vendorData.vendor_fname) formErrors.vendor_fname = "Vendor first name is required";
         if (!vendorData.business_type) formErrors.business_type = "Business type is required";
         if (!vendorData.contact_person) formErrors.contact_person = "Contact person name is required";
         if (!vendorData.email) formErrors.email = "Email is required";
@@ -133,7 +133,7 @@ const BecomeTerritoryHead = () => {
                 },
             }));
         } else {
-            // If it's a regular field like vendor_name
+            // If it's a regular field like vendor_fname
             setVendorData((prevData) => ({
                 ...prevData,
                 [name]: type === "checkbox" ? checked : value,
@@ -258,11 +258,23 @@ const BecomeTerritoryHead = () => {
                         <form className="grid grid-cols-2 gap-x-4" onSubmit={handleVendorSubmit} encType="multipart/form-data">
                             {/* Vendor Name */}
                             <div className="col-span-1 mt-3">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Vendor Name</label>
-                                <input name="vendor_name" type="text" placeholder="Enter Vendor Name"
-                                    className={`border p-[9.85px] w-full rounded-lg ${errors.vendor_name ? 'border-red-700' : ''}`}
-                                    onChange={handleChange} value={vendorData.vendor_name} />
-                                {errors.vendor_name && <div className="text-red-800">{errors.vendor_name}</div>}
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Vendor First Name</label>
+                                <input name="vendor_fname" type="text" placeholder="Enter Vendor First Name"
+                                    className={`border p-[9.85px] w-full rounded-lg ${errors.vendor_fname ? 'border-red-700' : ''}`}
+                                    onChange={handleChange} value={vendorData.vendor_fname} />
+                                {errors.vendor_fname && <div className="text-red-800">{errors.vendor_fname}</div>}
+                            </div>
+                            <div className="col-span-1 mt-3">
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Vendor Last Name</label>
+                                <input name="vendor_lname" type="text" placeholder="Enter Vendor Last Name"
+                                    className={`border p-[9.85px] w-full rounded-lg`}
+                                    onChange={handleChange} value={vendorData.vendor_lname} />
+                            </div>
+                            <div className="col-span-1 mt-3">
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Vendor DOB</label>
+                                <input name="dob" type="date" placeholder="Select DOB"
+                                    className={`border p-[9.85px] w-full rounded-lg`}
+                                    onChange={handleChange} value={vendorData.dob} />
                             </div>
                             {/* Business Type Dropdown */}
                             <div className="col-span-1 mt-3">
@@ -317,6 +329,77 @@ const BecomeTerritoryHead = () => {
                                     className={`border p-[9.85px] w-full rounded-lg ${errors.alt_mobile ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.alt_mobile} />
                                 {errors.alt_mobile && <div className="text-red-800">{errors.alt_mobile}</div>}
+                            </div>
+                            <div className="col-span-1 mt-3">
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Education Qualification</label>
+                                <input name="education_qualify" type="text" placeholder="Education Qualification"
+                                    className={`border p-[9.85px] w-full rounded-lg ${errors.education_qualify ? 'border-red-700' : ''}`}
+                                    onChange={handleChange} value={vendorData.education_qualify} />
+                                {errors.education_qualify && <div className="text-red-800">{errors.education_qualify}</div>}
+                            </div>
+                            
+                            <div className="col-span-1 mt-3">
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Work Experience</label>
+                                <input name="work_experience" type="text" placeholder="Work Experience"
+                                    className={`border p-[9.85px] w-full rounded-lg ${errors.work_experience ? 'border-red-700' : ''}`}
+                                    onChange={handleChange} value={vendorData.work_experience} />
+                                {errors.work_experience && <div className="text-red-800">{errors.work_experience}</div>}
+                            </div>
+
+                            <div className="col-span-1 mt-3 relative">
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Self Declaration <Link to="/files/SelfDeclarationForm.pdf" target="blank">(Download)</Link></label>
+                                <input 
+                                    type="file" 
+                                    name="self_declaration"
+                                    className={`border p-[9.85px] w-full rounded-lg ${errors.self_declaration ? 'border-red-700' : ''}`}
+                                    onChange={handleImageChange} 
+                                />
+                                {/* Preview Button */}
+                                {imagePreviews['self_declaration'] && (
+                                <button 
+                                    className="mt-2 px-3 py-1 bg-blue-500 text-white text-center rounded-md absolute right-3"
+                                    onClick={() => window.open(imagePreviews['self_declaration'], '_blank')}
+                                >
+                                    Preview
+                                </button>
+                                )}
+                                {errors.self_declaration && <div className="text-red-800">{errors.self_declaration}</div>}
+                            </div>
+
+                            <div className="col-span-1 mt-3 relative">
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Criminal History</label>
+                                <input 
+                                    type="file" 
+                                    name="criminal_history"
+                                    className={`border p-[9.85px] w-full rounded-lg ${errors.criminal_history ? 'border-red-700' : ''}`}
+                                    onChange={handleImageChange} 
+                                />
+                                {/* Preview Button */}
+                                {imagePreviews['criminal_history'] && (
+                                <button 
+                                    className="mt-2 px-3 py-1 bg-blue-500 text-white text-center rounded-md absolute right-3"
+                                    onClick={() => window.open(imagePreviews['criminal_history'], '_blank')}
+                                >
+                                    Preview
+                                </button>
+                                )}
+                                {errors.criminal_history && <div className="text-red-800">{errors.criminal_history}</div>}
+                            </div>
+
+                            <div className="col-span-1 mt-3">
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Referral Details</label>
+                                <input name="referral_details" type="text" placeholder="Referral Details"
+                                    className={`border p-[9.85px] w-full rounded-lg ${errors.referral_details ? 'border-red-700' : ''}`}
+                                    onChange={handleChange} value={vendorData.referral_details} />
+                                {errors.referral_details && <div className="text-red-800">{errors.referral_details}</div>}
+                            </div>
+                            
+                            <div className="col-span-1 mt-3">
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Language Proficiency</label>
+                                <input name="lang_proficiency" type="text" placeholder="Work Experience"
+                                    className={`border p-[9.85px] w-full rounded-lg ${errors.lang_proficiency ? 'border-red-700' : ''}`}
+                                    onChange={handleChange} value={vendorData.lang_proficiency} />
+                                {errors.lang_proficiency && <div className="text-red-800">{errors.lang_proficiency}</div>}
                             </div>
 
                             <h3 className="col-span-2 block text-[18px] font-medium text-primary mt-[20px]  mb-[8px]">Register Business Address </h3>

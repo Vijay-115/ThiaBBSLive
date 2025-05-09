@@ -34,7 +34,7 @@ import VendorRequest from './components/admin/VendorRequest';
 import BecomeAgent from './components/auth/BecomeAgent'; 
 import BecomeFranchiseHead from './components/auth/BecomeFranchiseHead'; 
 import BecomeTerritoryHead from './components/auth/BecomeTerritoryHead'; 
-
+import CustomerOrders from './components/auth/Orders'; 
 
 import AboutPage from './components/pages/AboutPage';
 import TermsOfUse from './components/pages/TermsOfUse';
@@ -133,6 +133,8 @@ function App() {
         <Route path="/buyback-policy" element={<BuybackPolicy />} />
         <Route path="/bank-cashback-policy" element={<BankCashbackPolicy />} />
         <Route path="/contact" element={<ContactUs />} />
+        <Route path="/orders" element={<CustomerOrders />} />
+        
 
          {/* ✅ Admin Routes */}
          <Route path="/admin" element={<AdminRoutes />}>
