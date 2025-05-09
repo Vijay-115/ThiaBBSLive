@@ -4,6 +4,9 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
 function SingleProductGallery({ images }) {
+  // ✅ Normalize images: if it's a string, convert it to an array
+  const normalizedImages = Array.isArray(images) ? images : images ? [images] : [];
+
   const [currentImage, setCurrentImage] = useState(0);
   const [zoomStyle, setZoomStyle] = useState({});
   const [isZoomed, setIsZoomed] = useState(false);
@@ -39,7 +42,6 @@ function SingleProductGallery({ images }) {
     mainSliderRef.current.slickGoTo(index);
   };
 
-  // 📌 **Desktop Hover Zoom Effect**
   const handleMouseMove = (e) => {
     if (isMobile) return;
 
@@ -58,14 +60,12 @@ function SingleProductGallery({ images }) {
     setZoomStyle({});
   };
 
-  // 📌 **Mobile Tap-to-Zoom with Dragging**
   const handleTapZoom = () => {
     if (!isMobile) return;
     setIsZoomed(!isZoomed);
     if (!isZoomed) setPosition({ x: 0, y: 0 });
   };
 
-  // 📌 **Mobile Dragging (Pan)**
   const handleTouchStart = (e) => {
     if (!isZoomed || !isMobile) return;
     const touch = e.touches[0];
@@ -87,7 +87,7 @@ function SingleProductGallery({ images }) {
         {/* Main Image with Zoom Effect */}
         <div className="relative mb-4 border border-gray-200 rounded-lg overflow-hidden">
           <Slider ref={mainSliderRef} {...sliderSettings}>
-            {images.map((img, index) => (
+            {normalizedImages.map((img, index) => (
               <div key={index} className="relative">
                 <div
                   className="w-full h-auto max-h-[500px] overflow-hidden flex justify-center items-center touch-none"
@@ -106,8 +106,8 @@ function SingleProductGallery({ images }) {
                         ? isZoomed
                           ? `scale(2) translate(${position.x}px, ${position.y}px)`
                           : "scale(1)"
-                        : zoomStyle.transform, // Desktop hover zoom
-                      transformOrigin: isMobile ? "center center" : zoomStyle.transformOrigin, // Desktop hover
+                        : zoomStyle.transform,
+                      transformOrigin: isMobile ? "center center" : zoomStyle.transformOrigin,
                       cursor: isZoomed ? "grab" : "pointer",
                     }}
                   />
@@ -118,23 +118,25 @@ function SingleProductGallery({ images }) {
         </div>
 
         {/* Thumbnail Slider */}
-        <Slider {...thumbnailsSettings} className="thumbnail-slider">
-          {images.map((img, index) => (
-            <div
-              key={index}
-              className={`px-2 ${
-                currentImage === index ? "border rounded-md border-primary" : ""
-              }`}
-              onClick={() => handleThumbnailClick(index)}
-            >
-              <img
-                src={import.meta.env.VITE_API_URL + img}
-                alt={`thumbnail-${index + 1}`}
-                className="rounded-lg mx-auto max-h-[100px] object-contain cursor-pointer"
-              />
-            </div>
-          ))}
-        </Slider>
+        {normalizedImages.length > 1 && (
+          <Slider {...thumbnailsSettings} className="thumbnail-slider">
+            {normalizedImages.map((img, index) => (
+              <div
+                key={index}
+                className={`px-2 ${
+                  currentImage === index ? "border rounded-md border-primary" : ""
+                }`}
+                onClick={() => handleThumbnailClick(index)}
+              >
+                <img
+                  src={import.meta.env.VITE_API_URL + img}
+                  alt={`thumbnail-${index + 1}`}
+                  className="rounded-lg mx-auto max-h-[100px] object-contain cursor-pointer"
+                />
+              </div>
+            ))}
+          </Slider>
+        )}
       </div>
     </div>
   );

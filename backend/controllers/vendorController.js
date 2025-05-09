@@ -19,13 +19,20 @@ exports.registerVendor = async (req, res) => {
         };
 
         const {
-            vendor_name,
+            vendor_fname,
+            vendor_lname,
+            dob,
             business_type,
             brand_name,
             contact_person,
             email,
             mobile,
             alt_mobile,
+            education_qualify,
+            work_experience,
+            referral_details,
+            lang_proficiency,
+            aadhar_number,
             pan_number,
             gst_number,
             fssai_license,
@@ -53,6 +60,9 @@ exports.registerVendor = async (req, res) => {
 
         // Extract uploaded file paths
         const pan_pic =  req.files.find(file => file.fieldname === "pan_pic") ? `/uploads/${req.files.find(file => file.fieldname === "pan_pic").filename}` : null;
+        const aadhar_pic =  req.files.find(file => file.fieldname === "aadhar_pic") ? `/uploads/${req.files.find(file => file.fieldname === "aadhar_pic").filename}` : null;
+        const self_declaration =  req.files.find(file => file.fieldname === "self_declaration") ? `/uploads/${req.files.find(file => file.fieldname === "self_declaration").filename}` : null;
+        const criminal_history =  req.files.find(file => file.fieldname === "criminal_history") ? `/uploads/${req.files.find(file => file.fieldname === "criminal_history").filename}` : null;
         const gst_pic = req.files.find(file => file.fieldname === "gst_pic") ? `/uploads/${req.files.find(file => file.fieldname === "gst_pic").filename}` : null;
         const fssai_pic = req.files.find(file => file.fieldname === "fssai_pic") ? `/uploads/${req.files.find(file => file.fieldname === "fssai_pic").filename}` : null;
         const shop_establish_pic = req.files.find(file => file.fieldname === "shop_establish_pic") ? `/uploads/${req.files.find(file => file.fieldname === "shop_establish_pic").filename}` : null;
@@ -65,7 +75,7 @@ exports.registerVendor = async (req, res) => {
         
 
         // Ensure required fields are present
-        if (!vendor_name || !business_type || !contact_person || !email || !mobile || !pan_number || !outlet_manager_name || !outlet_contact_no || !bank_name || !account_holder_name || !account_no || !ifcs_code || !branch_name) {
+        if (!vendor_fname || !business_type || !contact_person || !email || !mobile || !pan_number || !outlet_manager_name || !outlet_contact_no || !bank_name || !account_holder_name || !account_no || !ifcs_code || !branch_name) {
             return res.status(400).json({ success: false, message: "Missing required fields" });
         }
 
@@ -93,15 +103,25 @@ exports.registerVendor = async (req, res) => {
 
         // Create new vendor
         const newVendor = new Vendor({
-            vendor_name,
+            vendor_fname,
+            vendor_lname,
+            dob,
             business_type,
             brand_name,
             contact_person,
             email,
             mobile,
             alt_mobile,
+            education_qualify,
+            work_experience,
+            referral_details,
+            lang_proficiency,
             register_business_address,
             operational_address,
+            aadhar_number,
+            aadhar_pic,
+            self_declaration,
+            criminal_history,
             pan_number,
             pan_pic,
             gst_number,
@@ -179,7 +199,7 @@ exports.approveVendor = async (req, res) => {
 
         // Create a new user for the vendor
         const newUser = new User({
-            name: vendor.vendor_name,
+            name: vendor.vendor_fname,
             email: vendor.email,
             password: hashedPassword, // Store hashed password
             role: vendor.role,
@@ -205,7 +225,7 @@ exports.approveVendor = async (req, res) => {
             from: process.env.EMAIL_USER,
             to: vendor.email,
             subject: 'Vendor Approval - Account Created',
-            text: `Dear ${vendor.vendor_name},\n\nYour vendor account has been approved.\n\nLogin Details:\nEmail: ${vendor.email}\nPassword: ${randomPassword}\n\nPlease log in and change your password immediately.\n\nRegards,\nBBSCart`
+            text: `Dear ${vendor.vendor_fname},\n\nYour vendor account has been approved.\n\nLogin Details:\nEmail: ${vendor.email}\nPassword: ${randomPassword}\n\nPlease log in and change your password immediately.\n\nRegards,\nBBSCart`
         };
 
         await transporter.sendMail(mailOptions);

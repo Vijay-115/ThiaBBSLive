@@ -37,7 +37,7 @@ const Orders = () => {
     console.log('Seller Orders - ',orders);
 
     if (loading) return <p>Loading...</p>;
-    if (error) return <p>Error: {error}</p>;
+    if (error) return <p className="m-auto pt-8 font-medium text-center text-red-600">Error: {error}</p>;
 
     return (
 

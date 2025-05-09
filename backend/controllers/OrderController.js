@@ -199,6 +199,21 @@ exports.getOrdersBySellerId = async (req, res) => {
 };
 
 // Get orders by status
+exports.getOrdersByUserId = async (req, res) => {
+  try {
+    const { user_id } = req.params;
+    const orders = await Order.find({ user_id })
+      .populate("user_id", "name email phone")
+      .populate("orderItems.product", "name price image")
+      .populate("orderItems.variant", "name options");
+
+    res.status(200).json({ success: true, orders });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error fetching orders', error: error.message });
+  }
+};
+
+// Get orders by status
 exports.getOrdersByStatus = async (req, res) => {
   try {
     const { status } = req.params;
