@@ -26,7 +26,7 @@ const VendorSchema = new mongoose.Schema({
     aadhar_number: { type: String, required: true },
     aadhar_pic: { type: String, required: null },
     self_declaration: { type: String, required: true }, 
-    criminal_history: { type: String, required: true }, 
+    criminal_history: { type: String, required: null }, 
     referral_details: { type: String, required: null },
     lang_proficiency: { type: String, required: null },
     pan_number: { type: String, required: true },

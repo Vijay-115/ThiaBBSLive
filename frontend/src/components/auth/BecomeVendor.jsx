@@ -366,7 +366,7 @@ const BecomeVendor = () => {
                                 {errors.self_declaration && <div className="text-red-800">{errors.self_declaration}</div>}
                             </div>
 
-                            <div className="col-span-1 mt-3 relative">
+                            {/* <div className="col-span-1 mt-3 relative">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Criminal History</label>
                                 <input 
                                     type="file" 
@@ -374,7 +374,7 @@ const BecomeVendor = () => {
                                     className={`border p-[9.85px] w-full rounded-lg ${errors.criminal_history ? 'border-red-700' : ''}`}
                                     onChange={handleImageChange} 
                                 />
-                                {/* Preview Button */}
+                                
                                 {imagePreviews['criminal_history'] && (
                                 <button 
                                     className="mt-2 px-3 py-1 bg-blue-500 text-white text-center rounded-md absolute right-3"
@@ -384,7 +384,7 @@ const BecomeVendor = () => {
                                 </button>
                                 )}
                                 {errors.criminal_history && <div className="text-red-800">{errors.criminal_history}</div>}
-                            </div>
+                            </div> */}
 
                             <div className="col-span-1 mt-3">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Referral Details</label>
