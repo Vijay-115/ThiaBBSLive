@@ -68,6 +68,10 @@ const BecomeTerritoryHead = () => {
         if (!vendorData.ifcs_code) formErrors.ifcs_code = "IFSC code is required";
         if (!vendorData.branch_name) formErrors.branch_name = "Branch name is required";
         if (!files.address_proof) formErrors.address_proof = "Address proof is required";
+
+        if (!vendorData.aadhar_number) formErrors.aadhar_number = "Aadhar number is required";
+        if (!files.aadhar_pic) formErrors.aadhar_pic = "Aadhar picture is required";
+        if (!files.self_declaration) formErrors.self_declaration = "Self declaration is required";
     
         // Initialize nested objects if needed
         formErrors.register_business_address = {};
