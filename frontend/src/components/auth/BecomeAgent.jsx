@@ -592,7 +592,6 @@ const BecomeAgent = () => {
                                             className={`border p-[9.85px] w-full rounded-lg ${errors[fileKey] ? 'border-red-700' : ''}`}
                                             onChange={handleImageChange} 
                                         />
-                                        {errors[fileKey] && <div className="text-red-800">{errors[fileKey]}</div>}
                                         {/* Preview Button */}
                                         {imagePreviews[fileKey] && (
                                             <button 
@@ -602,6 +601,7 @@ const BecomeAgent = () => {
                                                 Preview
                                             </button>
                                         )}
+                                        {errors[fileKey] && <div className="text-red-800">{errors[fileKey]}</div>}
                                     </div>
                                     </>
                                 );
