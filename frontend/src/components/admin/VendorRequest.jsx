@@ -41,14 +41,14 @@ const VendorRequest = () => {
   const [roleFilter, setRoleFilter] = useState("all");
 
 // Update the filter logic to show only selected roles
-// const filterAndSortUsers = () => {
-//     let filtered = vendors.filter((vendor) => 
-//         vendor?.vendor_fname?.toLowerCase().includes(searchQuery.toLowerCase()),
-//         vendor?.vendor_lname?.toLowerCase().includes(searchQuery.toLowerCase())
-//     );
+const filterAndSortUsers = () => {
+    let filtered = vendors.filter((vendor) => 
+        vendor?.vendor_fname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        vendor?.vendor_lname?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
-//     setFilteredvendors(filtered);
-// };
+    setFilteredvendors(filtered);
+};
 
   const fetchRequest = async () => {
     try {
@@ -70,7 +70,7 @@ const VendorRequest = () => {
   useEffect(() => {
     const filterAndSortUsers = () => {
       let filtered = vendors.filter((vendor) =>
-        vendor?.vendor_fname?.toLowerCase().includes(searchQuery.toLowerCase()),
+        vendor?.vendor_fname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         vendor?.vendor_lname?.toLowerCase().includes(searchQuery.toLowerCase())
       );
 
