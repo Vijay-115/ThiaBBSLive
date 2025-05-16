@@ -65,16 +65,16 @@ const Sidebar = ({ isSidebarHidden, toggleSidebar }) => {
                             </li>
                         </ul>
                     </li>
-                    <li>
-                        <NavLink to="#">
-                            <i className="bx bxs-doughnut-chart bx-sm" />
-                            <span className="text">Customers</span>
-                        </NavLink>
-                    </li>
                     <li className={location.pathname === "/admin/orders" ? "active" : ""}>
                         <NavLink to="/admin/orders">
                             <i className="bx bxs-message-dots bx-sm" />
                             <span className="text">Orders</span>
+                        </NavLink>
+                    </li>
+                    <li className={location.pathname === "/admin/customers" ? "active" : ""}>
+                        <NavLink to="/admin/customers">
+                            <i className="bx bxs-doughnut-chart bx-sm" />
+                            <span className="text">Customers</span>
                         </NavLink>
                     </li>
                     <li className={location.pathname === "/admin/seller" ? "active" : ""}>
