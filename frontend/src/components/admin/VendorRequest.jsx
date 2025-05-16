@@ -213,31 +213,14 @@ const filterAndSortUsers = () => {
 
                         
                         <Modal
-                            isOpen={isApproveModalOpen}
-                            onRequestClose={() => setIsApproveModalOpen(false)}
-                            contentLabel="Confirm Deletion"
-                            className="modal-content"
-                            overlayClassName="modal-overlay"
+                          isOpen={isApproveModalOpen}
+                          onRequestClose={() => setIsApproveModalOpen(false)}
+                          shouldCloseOnOverlayClick={true}
+                          shouldCloseOnEsc={true}
+                          className="modal-content"
+                          overlayClassName="modal-overlay"
                         >
-                            {/* <div className="p-8 bg-white rounded-lg">
-                                <h3 className="text-lg">Are you sure you want to approve this vendor?</h3>
-                                <p className="mt-2">This action cannot be undone.</p>
-                                <div className="mt-4">
-                                    <button
-                                    onClick={handleApproveUser}
-                                    className="bg-red-500 text-white px-4 py-2 rounded-md mr-2"
-                                    >
-                                    Yes, Approve
-                                    </button>
-                                    <button
-                                    onClick={() => setIsDeleteModalOpen(false)}
-                                    className="bg-gray-500 text-white px-4 py-2 rounded-md"
-                                    >
-                                    Cancel
-                                    </button>
-                                </div>
-                              </div> */}
-                              <ViewVendorRequest vendorData={editVendor} onApprove={handleApproveUser}/>
+                          <ViewVendorRequest vendorData={editVendor} onApprove={handleApproveUser} />
                         </Modal>
 
                         <Modal
