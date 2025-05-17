@@ -27,12 +27,38 @@ function FooterTop() {
 
     return (
         <>
+            <div className="bg-[#cf1717] py-10">
+                <div className="container mx-auto px-4">
+                    <div className="flex flex-col md:flex-row items-center justify-between">
+                        <div className="mb-6 md:mb-0 text-center md:text-left">
+                            <h3 className="text-2xl font-bold text-white">Get the Latest Updates</h3>
+                            <p className="text-white/80 mt-2">
+                                Subscribe to our newsletter for exclusive offers and updates
+                            </p>
+                        </div>
+                        <form className="w-full md:w-auto flex flex-col sm:flex-row gap-2">
+                            <input
+                                type="email"
+                                placeholder="Your email address"
+                                className="px-4 py-3 rounded-md text-gray-800 w-full md:w-72 focus:outline-none focus:ring-2 focus:ring-white/50"
+                                required
+                            />
+                            <button
+                                type="submit"
+                                className="bg-white text-[#cf1717] px-6 py-3 rounded-md font-semibold hover:bg-gray-200 transition-colors duration-200"
+                            >
+                                Subscribe
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
             <div className="footer-top bbscontainer py-[50px] max-[1199px]:py-[35px]">
                 <div className="flex flex-wrap justify-between relative items-center">
                     <div className="flex flex-wrap w-full max-[991px]:mb-[-30px]" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="200">
                         <div className="min-[992px]:w-[25%] max-[991px]:w-full w-full px-[12px] bb-footer-toggle bb-footer-cat">
                             <div className="bb-footer-widget bb-footer-company flex flex-col max-[991px]:mb-[24px]">
-                                <Link to="/"><img src="/img/logo/bbscartLogo.png" className="bb-footer-logo max-w-[144px] mb-[10px] max-[767px]:max-w-[100px]" alt="footer logo" /></Link>
+                                <Link to="/"><img src="/img/logo/BBSCART_LOGO.PNG" className="bb-footer-logo max-w-[144px] mb-[10px] max-[767px]:max-w-[100px]" alt="footer logo" /></Link>
                                 <p className="bb-footer-detail max-w-[400px] mb-[30px] p-[0] font-Poppins text-[14px] leading-[27px] font-normal text-secondary inline-block relative max-[1399px]:text-[15px] max-[1199px]:text-[14px]">BSS Cart is the biggest market of grocery products. Get
                                     your daily needs from our store.</p>
                                 <div className="bb-app-store m-[-7px] flex flex-wrap">
@@ -124,18 +150,18 @@ function FooterTop() {
                                     <div className="bb-footer-links bb-footer-dropdown  max-[991px]:mb-[35px]">
                                         <ul className="align-items-center">
                                             <li className="bb-footer-link bb-foo-location flex items-start max-[991px]:mb-[15px] mb-[16px]">
-                                                <span className="mt-[5px] w-[25px] basis-[auto] grow-[0] shrink-[0]">
+                                                <span className="mt-[3px] w-[25px] basis-[auto] grow-[0] shrink-[0]">
                                                     <i className="ri-map-pin-line leading-[0] text-[18px] text-primary"></i>
                                                 </span>
-                                                <p className="m-[0] font-Poppins text-[14px] text-secondary font-normal leading-[28px] tracking-[0.03rem]">No: 20, 100 Feet Road, Ellaipillaichavady, Puducherry, 605005, India</p>
+                                                <p className="m-[0] font-Poppins text-[14px] text-secondary font-normal leading-[28px] tracking-[0.03rem]">Floor, 1st, 5, 2nd, Cross, Bharathy Street, extension Ellaipillaichavady, Anna Nagar, Puducherry, 605005</p>
                                             </li>
-                                            <li className="bb-footer-link bb-foo-call flex items-start max-[991px]:mb-[15px] mb-[16px]">
+                                            <li className="bb-footer-link bb-foo-call flex items-center max-[991px]:mb-[15px] mb-[16px]">
                                                 <span className="w-[25px] basis-[auto] grow-[0] shrink-[0]">
                                                     <i className="ri-whatsapp-line leading-[0] text-[18px] text-primary"></i>
                                                 </span>
                                                 <Link to="tel:+009876543210" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary inline-block relative break-all tracking-[0] font-normal max-[1399px]:text-[15px] max-[1199px]:text-[14px]">+91 9600729596</Link>
                                             </li>
-                                            <li className="bb-footer-link bb-foo-mail flex">
+                                            <li className="bb-footer-link bb-foo-mail flex items-cente">
                                                 <span className="w-[25px] basis-[auto] grow-[0] shrink-[0]">
                                                     <i className="ri-mail-line leading-[0] text-[18px] text-primary"></i>
                                                 </span>
@@ -187,9 +213,9 @@ function FooterTop() {
             <div>
                 {isVisible && (
                     <button
-                    onClick={scrollToTop}
-                    className="fixed bottom-5 right-5 p-1 px-2 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-800 transition bg-gradient-to-r from-logoSecondary to-logoPrimary hover:from-logoPrimary hover:to-logoSecondary"
-                  >
+                        onClick={scrollToTop}
+                        className="fixed bottom-5 right-5 p-1 px-2 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-800 transition bg-gradient-to-r from-logoSecondary to-logoPrimary hover:from-logoPrimary hover:to-logoSecondary"
+                    >
                         <i className="ri-arrow-up-fill"></i>
                     </button>
                 )}

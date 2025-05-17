@@ -70,6 +70,7 @@ function NavItems({ menuOpen, closeMenu }) {
     }, [categories]);
 
     return (
+        <>
         <div className={`nav-items-sec md:justify-center absolute ${menuOpen ? 'left-0' : 'left-[-100%]'} top-0 bottom-0 md:left-0 pt-20  md:pt-0 pl-10 md:pl-0 m-auto md:relative md flex flex-col md:flex-row md:flex-wrap md:gap-10 gap-y-3 bg-slate-100 w-[300px] md:w-full h-full z-30 ease-in-out duration-300`}>
             <button className='absolute top-5 right-5' onClick={closeMenu}>
                 <i className="text-2xl text-red-600 md:hidden ri-close-circle-line"></i>
@@ -122,7 +123,8 @@ function NavItems({ menuOpen, closeMenu }) {
                         </div>
                     </div>
             )}
-        </div>
+        </div>        
+        </>
     );
 }
 
