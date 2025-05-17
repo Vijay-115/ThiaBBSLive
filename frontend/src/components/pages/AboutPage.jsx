@@ -2,36 +2,75 @@ const About = () => {
     return (
         <div className="bbscontainer py-[50px] max-[1199px]:py-[35px]">
             <div className="w-full px-[12px]">
-                <h1 className="text-2xl font-bold text-gray-800 mb-4">Welcome to Thiaworld Jewellery</h1>
+                <h1 className="text-2xl font-bold text-gray-800 mb-4">About Us</h1>
                 <p className="text-sm text-gray-600 mb-6">
-                    Your go-to destination for affordable, high-quality jewellery online! As a proud subsidiary of BBSOCEAN Online Shopping, we're dedicated to offering an extensive selection of stunning jewellery pieces suited for every occasion.
+                    Welcome to <strong>BBSCART.COM</strong>, the next-generation online marketplace from the visionary team at <strong>BBSOCEAN Online Shopping Group</strong> — designed to <strong>transform how India shops, invests, and grows</strong>.
                 </p>
-                <h2 className="text-xl font-semibold text-gray-700 mt-6">Explore Our Collection</h2>
                 <p className="text-sm text-gray-600 mb-6">
-                    Discover a wide range of jewellery options, including engagement rings, wedding bands, necklaces, earrings, bracelets, and more. Each piece is meticulously crafted to ensure both beauty and durability.
+                    We are proud to introduce a powerful, all-in-one platform that connects <strong>products, jewellery, services, and financial empowerment</strong> under one unified brand.
                 </p>
-                <h2 className="text-xl font-semibold text-gray-700">What Makes Us Different</h2>
-                <ul className="text-sm text-gray-600 text-left list-disc list-inside mb-6">
-                    <li><strong>Extensive Variety:</strong> We take pride in curating a diverse collection of jewellery, ensuring there's something for every taste and style preference.</li>
-                    <li><strong>Affordable Luxury:</strong> Enjoy luxury without breaking the bank. Our competitive prices make it easy to indulge in elegant jewellery pieces without compromise.</li>
-                    <li><strong>User-Friendly Experience:</strong> Our website is designed to provide a seamless shopping experience, allowing you to browse and purchase your favorite pieces with ease.</li>
-                    <li><strong>Convenient Services:</strong> Benefit from our customer-centric services, including free shipping, hassle-free returns, and a satisfaction guarantee. Your happiness is our top priority.</li>
+                <p className="text-sm text-gray-600 mb-6">
+                    At BBSCART, we bring together a vibrant world of products across fashion, electronics, groceries, jewellery, lifestyle, automotive services, and more — all sourced directly from local businesses and trusted vendors nationwide.
+                </p>
+                <p className="text-sm text-gray-600 mb-6 font-semibold">
+                    Our promise: Superior Quality. Unbeatable Prices. Lightning-Fast Delivery.
+                </p>
+                <h2 className="text-xl font-semibold text-gray-700 mt-6">Key Highlights:</h2>
+                <ul className="text-sm text-gray-600 list-disc list-inside mb-6">
+                    <li>Exciting Daily Deals, Festival Offers, and Discount Coupons to maximize savings</li>
+                    <li>Vendor Cross-Selling Model: Every vendor can promote other products and services from the BBSCART network</li>
+                    <li>Smart and Secure Payments with our soon-to-launch Golldex Wallet, offering easy checkout, loyalty rewards, and integrated gold investment opportunities</li>
+                    <li>Empowering Local Sellers Nationwide through our Franchise, Territory Head, and Agent business model</li>
+                    <li>Real Gold Ownership Made Easy with our exclusive Thia Secure Plan — enabling customers to buy jewelry with 40% upfront payment and flexible gold-backed installment options, fully secured through trusted banking partners</li>
                 </ul>
-                <h2 className="text-xl font-semibold text-gray-700">Why Choose Thiaworld Jewellery?</h2>
                 <p className="text-sm text-gray-600 mb-6">
-                    At Thiaworld Jewellery, we're committed to providing an exceptional shopping experience tailored to your needs. Whether you're searching for the perfect gift or treating yourself to something special, we're here to assist you every step of the way.
+                    ✨ We are thrilled to also unveil <strong>THIAWORLD Jewellery</strong> now exclusively on BBSCART — where tradition meets modern craftsmanship.
                 </p>
-                <h2 className="text-xl font-semibold text-gray-700">Get in Touch</h2>
                 <p className="text-sm text-gray-600 mb-6">
-                    Questions or need assistance? Our dedicated customer support team is readily available to help you find the ideal jewellery piece to suit your needs and preferences.
+                    Explore a handpicked collection of BIS-certified gold and diamond jewelry, backed by ethical sourcing and innovative ownership plans.
                 </p>
-                <h2 className="text-xl font-semibold text-gray-700">Shop with Confidence</h2>
+                <h2 className="text-xl font-semibold text-gray-700">Our Vision:</h2>
                 <p className="text-sm text-gray-600 mb-6">
-                    Shop with confidence knowing that each Thiaworld Jewellery piece is crafted with care and backed by our commitment to quality and customer satisfaction.
+                    "To create India’s most trusted digital marketplace, empowering millions of customers and businesses with smarter shopping, secure investing, and endless possibilities."
                 </p>
-                <h2 className="text-xl font-semibold text-gray-700">Conclusion</h2>
+                <p className="text-sm text-gray-600 mb-6">
+                    With <strong>BBSCART.COM</strong>, shopping isn't just about buying — it’s about building a future, securing assets, and creating new business opportunities.
+                </p>
+                <p className="text-sm text-gray-600 mb-6">
+                    We are gearing up for a grand launch across India — and <strong>YOU</strong> are at the heart of our revolution.
+                </p>
+                <h2 className="text-xl font-semibold text-gray-700 mt-6">BBSCART.COM’s Social Media Links:</h2>
+                <ul className="text-sm text-blue-600 list-disc list-inside mb-6">
+                    <li>
+                        <a href="https://www.linkedin.com/in/pavarasu-mayavan-50a171355/" target="_blank" rel="noopener noreferrer">
+                            LinkedIn
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.instagram.com/bbscart/?hl=en" target="_blank" rel="noopener noreferrer">
+                            Instagram
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.facebook.com/profile.php?id=100090804256179" target="_blank" rel="noopener noreferrer">
+                            Facebook
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.youtube.com/channel/UCNiBeRvAW1bQOUEcaqc0hYA" target="_blank" rel="noopener noreferrer">
+                            YouTube
+                        </a>
+                    </li>
+                </ul>
+                <h2 className="text-xl font-semibold text-gray-700">Contact Information</h2>
+                <p className="text-sm text-gray-600 mb-2">
+                    <strong>Address:</strong> No.7, II Floor, Bharathi Street, Ist Cross, Anna Nagar Extension, Puducherry – 605 005.
+                </p>
+                <p className="text-sm text-gray-600 mb-2">
+                    <strong>Landline:</strong> +91 413 291 5916
+                </p>
                 <p className="text-sm text-gray-600">
-                    Elevate your style and celebrate life's moments with exquisite jewellery from Thiaworld Jewellery. Explore our collection today and find the perfect accessory to adorn yourself or someone special.
+                    <strong>Mobile:</strong> +91 96007 29596
                 </p>
             </div>
         </div>

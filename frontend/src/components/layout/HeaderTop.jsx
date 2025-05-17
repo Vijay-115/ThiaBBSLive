@@ -61,7 +61,7 @@ function HeaderTop(props) {
                                         <Link to="/">
                                             {/* <img src="/img/logo/logo.png" alt="logo" className="light w-[125px] max-[991px]:w-[115px] block"/>
                                                 <img src="/img/logo/logo-dark.png" alt="logo" className="dark w-[125px] max-[991px]:w-[115px] hidden"/> */}
-                                            <img src="/img/logo/bbscartLogo.png" className="max-w-[150px]" alt="header logo" />
+                                            <img src="/img/logo/BBSCART_LOGO.PNG" className="max-w-[150px]" alt="header logo" />
                                         </Link>
                                     </div>
                                     {/* <!-- Header Logo End --> */}

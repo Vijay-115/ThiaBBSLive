@@ -10,6 +10,7 @@ import WhatsAppChat from "../home/WhatsAppChat";
 import ProductList from "../products/ProductList";
 import BannerOne from "../home/BannerOne";
 import Services from "../home/Services";
+import CallToActionSection from "../home/CallToActionSection";
 import { useLocation } from 'react-router-dom';
 
 function HomePage() {
@@ -33,9 +34,12 @@ function HomePage() {
               <AnimationCards/>
               <OfferSection/>
               <HeroVideoCarousel/>
+              <WhatsAppChat />
+            </div>
+            <CallToActionSection />
+            <div className="homepage bbscontainer">
               <BannerOne/>
               <Services/>
-              <WhatsAppChat />
             </div>
             {/* Page Content */}
         
