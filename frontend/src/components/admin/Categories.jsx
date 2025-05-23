@@ -35,7 +35,7 @@ const Categories = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: "", direction: "" });
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 25;
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -219,7 +219,7 @@ const Categories = () => {
                             className="modal-content"
                             overlayClassName="modal-overlay"
                         >
-                            <CategoryForm category={editCategory} onSave={handleAddCategory} />
+                            <CategoryForm category={editCategory} setIsAddEditModalOpen={setIsAddEditModalOpen} onSave={handleAddCategory} />
                         </Modal>
 
                         <Modal

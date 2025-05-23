@@ -105,7 +105,7 @@ const Orders = () => {
                                             {/* <p>Order #{order._id}</p> */}
                                             <p>{order.user_id.name}</p>
                                         </td>
-                                        <td>{moment(order.created_at).format("DD-MM-YYYY")}</td>
+                                        <td>{moment(order.created_at).format("DD-MM-YYYY h:mm A")}</td>
                                         <td>
                                             <span className="status completed">{order.status}</span>
                                         </td>

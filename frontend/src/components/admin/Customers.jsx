@@ -36,7 +36,7 @@ const Customers = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: "", direction: "" });
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 25;
 
   // Fetch Sellers
   const fetchUsers = async () => {
@@ -221,7 +221,7 @@ const Customers = () => {
                             className="modal-content"
                             overlayClassName="modal-overlay"
                         >
-                            <CustomersForm customer={editSeller} onSave={handleAddUser}/>
+                            <CustomersForm customer={editSeller} onSave={handleAddUser} setIsAddEditModalOpen={setIsAddEditModalOpen}/>
                         </Modal>
 
                         <Modal
@@ -296,6 +296,12 @@ const Customers = () => {
                                         >
                                           Phone
                                         </th>
+                                        <th
+                                          className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize cursor-pointer"
+                                          onClick={() => handleSort("created_at")}
+                                        >
+                                          Date & Time
+                                        </th>
                                         <th className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize">
                                           Actions
                                         </th>
@@ -320,6 +326,9 @@ const Customers = () => {
                                           </td>
                                           <td data-label="Phone" className="p-[12px]">
                                             {user?.userdetails?.phone || "-"}
+                                          </td>
+                                          <td data-label="Date & Time" className="p-[12px]">
+                                            {moment(user?.created_at).format("DD-MM-YYYY h:mm A") || "-"}
                                           </td>
                                           <td data-label="Action" className="p-[12px]">
                                             <button

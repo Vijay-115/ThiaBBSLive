@@ -26,57 +26,39 @@ const Vendor = () => {
     toggleProfileMenu,
   } = useDashboardLogic();
 
-  const [vendors, setVendors] = useState([]);
-  const [filteredvendors, setFilteredvendors] = useState([]);
-  const [editVendor, setEditVendor] = useState(null);
+  const [sellers, setSellers] = useState([]);
+  const [filteredSellers, setFilteredSellers] = useState([]);
+  const [editSeller, setEditSeller] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [isAddEditModalOpen, setIsAddEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [vendorToDelete, setvendorToDelete] = useState(null);
+  const [sellerToDelete, setSellerToDelete] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: "", direction: "" });
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 25;
 
-  const [roleFilter, setRoleFilter] = useState("all");
-
-// Update the filter logic to show only selected roles
-const filterAndSortUsers = () => {
-    let filtered = vendors.filter((vendor) => 
-        vendor?.name?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-    if (roleFilter !== "all") {
-        filtered = filtered.filter((user) => user.role === roleFilter);
-    }
-
-    setFilteredvendors(filtered);
-};
-
-  // Fetch vendors
-  const roles = ["customer", "agent", "territory_head", "franchise_head"];
-
-  const fetchUsers = async (roles) => {
+  // Fetch Sellers
+  const fetchUsers = async () => {
     try {
-      const data = await UserService.getUserRole(roles);
-      // const data = await Promise.all(roles.map((role) => UserService.getUserRole(role)));
-      setVendors(data);
-      setFilteredvendors(data);
-      console.log("Fetching vendors:", data); // Fixed stale state issue
+      const data = await UserService.getUserRole("seller");
+      setSellers(data);
+      setFilteredSellers(data);
+      console.log("Fetching sellers:", data); // Fixed stale state issue
     } catch (error) {
-      console.error("Error fetching vendors:", error);
-      setErrorMessage(error.message || "Failed to fetch vendors.");
+      console.error("Error fetching sellers:", error);
+      setErrorMessage(error.message || "Failed to fetch sellers.");
     }
   };
 
   useEffect(() => {
-    fetchUsers(roles);
+    fetchUsers();
   }, []);
 
   useEffect(() => {
     const filterAndSortUsers = () => {
-      let filtered = vendors.filter((vendor) =>
-        vendor?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+      let filtered = sellers.filter((seller) =>
+        seller?.name?.toLowerCase().includes(searchQuery.toLowerCase())
       );
 
       // Sorting logic
@@ -90,80 +72,78 @@ const filterAndSortUsers = () => {
           }
           return 0;
         });
-        setFilteredvendors(sortedUsers);
+        setFilteredSellers(sortedUsers);
       } else {
-        setFilteredvendors(filtered);
+        setFilteredSellers(filtered);
       }
     };
 
     filterAndSortUsers();
-  }, [searchQuery, sortConfig, vendors]); // Optimized dependencies
+  }, [searchQuery, sortConfig, sellers]); // Optimized dependencies
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value || ""); // Ensures controlled input
   };
 
-  const handleAddUser = async (vendorData) => {
-  
+  const handleAddUser = async (sellerData) => {
+    console.log("sellerData", sellerData);
     try {
-      if (editVendor) {
-        // Update existing vendor
-        const updatedVendor = await UserService.updateUser(editVendor._id, vendorData);
-
-        // Update state with the edited vendor
-        setVendors((prev) =>
-          prev.map((vendor) => (vendor._id === updatedVendor._id ? updatedVendor : vendor))
+      if (editSeller) {
+        const updatedSeller = await UserService.updateUser(
+          editSeller._id,
+          sellerData
         );
-
-        setEditVendor(null);
+        setSellers((prev) =>
+          prev.map((seller) =>
+            seller._id === updatedSeller._id ? updatedSeller : seller
+          )
+        );
+        setEditSeller(null);
         toast.success("Vendor updated successfully!");
       } else {
-        // Create a new vendor
-        const newVendor = await UserService.createVendor(vendorData);
-
-        // Update state with the new vendor
-        setVendors((prev) => [...prev, newVendor]);
+        const newSeller = await UserService.createUser(sellerData);
+        setSellers((prev) => [...prev, newSeller]);
         toast.success("Vendor created successfully!");
       }
-
       setErrorMessage("");
       setIsAddEditModalOpen(false);
-      fetchUsers(roles);
+      fetchUsers();
     } catch (error) {
-      console.error("Error saving vendor:", error);
-      
-      setErrorMessage(error.message || "An error occurred while saving the vendor.");
-      toast.error("Failed to save the vendor. Please try again.");
+      console.error("Error saving seller:", error);
+      setErrorMessage(
+        error.message || "An error occurred while saving the seller."
+      );
+      toast.error("Failed to save the seller. Please try again.");
     }
   };
 
   const handleDeleteUser = async () => {
     try {
-      await UserService.deleteUser(vendorToDelete._id);
-      setvendors((prev) =>
-        prev.filter((vendor) => vendor._id !== vendorToDelete._id)
+      await UserService.deleteUser(sellerToDelete._id);
+      setSellers((prev) =>
+        prev.filter((seller) => seller._id !== sellerToDelete._id)
       );
-      setvendorToDelete(null);
+      setSellerToDelete(null);
       setErrorMessage("");
       setIsDeleteModalOpen(false);
     } catch (error) {
-      console.error("Error deleting vendor:", error);
-      setErrorMessage(error.message || "Failed to delete the vendor.");
+      console.error("Error deleting seller:", error);
+      setErrorMessage(error.message || "Failed to delete the seller.");
     }
   };
 
-  const handleEditUser = (vendor) => {
-    setEditVendor(vendor);
+  const handleEditUser = (seller) => {
+    setEditSeller(seller);
     setIsAddEditModalOpen(true);
   };
 
-  const openDeleteModal = (vendor) => {
-    setvendorToDelete(vendor);
+  const openDeleteModal = (seller) => {
+    setSellerToDelete(seller);
     setIsDeleteModalOpen(true);
   };
 
   const openAddUserModal = () => {
-    setEditVendor(null);
+    setEditSeller(null);
     setIsAddEditModalOpen(true);
   };
 
@@ -175,12 +155,12 @@ const filterAndSortUsers = () => {
     setSortConfig({ key, direction });
   };
 
-  const paginatedUsers = filteredvendors.slice(
+  const paginatedUsers = filteredSellers.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
-  const totalPages = Math.ceil(filteredvendors.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredSellers.length / itemsPerPage);
 
     return (
         <>
@@ -237,11 +217,11 @@ const filterAndSortUsers = () => {
                         <Modal
                             isOpen={isAddEditModalOpen}
                             onRequestClose={() => setIsAddEditModalOpen(false)}
-                            contentLabel="vendor Form"
+                            contentLabel="Vendor Form"
                             className="modal-content"
                             overlayClassName="modal-overlay"
                         >
-                            <VendorForm vendor={editVendor} onSave={handleAddUser}/>
+                            <VendorForm seller={editSeller} onSave={handleAddUser} setIsAddEditModalOpen={setIsAddEditModalOpen}/>
                         </Modal>
 
                         <Modal
@@ -252,7 +232,7 @@ const filterAndSortUsers = () => {
                             overlayClassName="modal-overlay"
                         >
                             <div className="p-8 bg-white rounded-lg">
-                              <h3 className="text-lg">Are you sure you want to delete this vendor?</h3>
+                              <h3 className="text-lg">Are you sure you want to delete this seller?</h3>
                               <p className="mt-2">This action cannot be undone.</p>
                               <div className="mt-4">
                                   <button
@@ -280,7 +260,7 @@ const filterAndSortUsers = () => {
                             </button>
                             <input
                             type="text"
-                            placeholder="Search Vendor..."
+                            placeholder="Search sellers..."
                             className="border p-2 rounded-md text-sm"
                             value={searchQuery}
                             onChange={handleSearchChange}
@@ -293,7 +273,7 @@ const filterAndSortUsers = () => {
                             <div className="w-full px-[12px] mb-[24px]">
                                 <div className="bb-table border-none border-[1px] md:border-solid border-[#eee] rounded-none md:rounded-[20px] overflow-hidden max-[1399px]:overflow-y-auto aos-init aos-animate" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="400">
                                 {paginatedUsers.length === 0 ? (
-                                <p className="text-gray-500">No Vendors available.</p>
+                                <p className="text-gray-500">No sellers available.</p>
                                 ) : (
                                   <table className="w-full table-auto border-collapse">
                                     <thead className="hidden md:table-header-group">
@@ -318,9 +298,9 @@ const filterAndSortUsers = () => {
                                         </th>
                                         <th
                                           className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize cursor-pointer"
-                                          onClick={() => handleSort("userdetails.role")}
+                                          onClick={() => handleSort("created_at")}
                                         >
-                                          Role
+                                          Date & Time
                                         </th>
                                         <th className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize">
                                           Actions
@@ -331,7 +311,7 @@ const filterAndSortUsers = () => {
                                       {paginatedUsers.map((user) => (
                                         <tr key={user._id} className="border-b-[1px] border-solid border-[#eee]">
                                           <td data-label="Vendor Name" className="p-[12px]">
-                                            <div className="Vendor flex justify-end md:justify-normal md:items-center">
+                                            <div className="Seller flex justify-end md:justify-normal md:items-center">
                                               <div>
                                                 <span className="ml-[10px] block font-Poppins text-[14px] font-semibold leading-[24px] tracking-[0.03rem] text-secondary">
                                                   {user?.name ?? "-"}
@@ -347,8 +327,8 @@ const filterAndSortUsers = () => {
                                           <td data-label="Phone" className="p-[12px]">
                                             {user?.userdetails?.phone || "-"}
                                           </td>
-                                          <td data-label="Role" className="p-[12px]">
-                                            {user?.role || "-"}
+                                          <td data-label="Date & Time" className="p-[12px]">
+                                            {moment(user?.created_at).format("DD-MM-YYYY h:mm A") || "-"}
                                           </td>
                                           <td data-label="Action" className="p-[12px]">
                                             <button
@@ -393,7 +373,6 @@ const filterAndSortUsers = () => {
                             </button>
                             </div>
                         </div>
-
                         </div>
                     </main>
                 </section>

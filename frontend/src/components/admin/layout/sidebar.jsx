@@ -77,22 +77,22 @@ const Sidebar = ({ isSidebarHidden, toggleSidebar }) => {
                             <span className="text">Customers</span>
                         </NavLink>
                     </li>
-                    <li className={location.pathname === "/admin/seller" ? "active" : ""}>
-                        <NavLink to="/admin/seller">
-                            <i className="bx bxs-group bx-sm" />
-                            <span className="text">Seller</span>
-                        </NavLink>
-                    </li>   
-                    <li className={location.pathname === "/admin/vendor" ? "active" : ""}>
-                        <NavLink to="/admin/vendor">
+                    <li className={location.pathname === "/admin/vendors" ? "active" : ""}>
+                        <NavLink to="/admin/vendors">
                             <i className="bx bxs-group bx-sm" />
                             <span className="text">Vendors</span>
                         </NavLink>
-                    </li>     
-                    <li className={location.pathname === "/admin/vendor-request" ? "active" : ""}>
-                        <NavLink to="/admin/vendor-request">
+                    </li>   
+                    <li className={location.pathname === "/admin/other-users" ? "active" : ""}>
+                        <NavLink to="/admin/other-users">
                             <i className="bx bxs-group bx-sm" />
-                            <span className="text">Vendors Request</span>
+                            <span className="text">Other User's</span>
+                        </NavLink>
+                    </li>     
+                    <li className={location.pathname === "/admin/users-request" ? "active" : ""}>
+                        <NavLink to="/admin/users-request">
+                            <i className="bx bxs-group bx-sm" />
+                            <span className="text">User's Request</span>
                         </NavLink>
                     </li>                   
                 </ul>
