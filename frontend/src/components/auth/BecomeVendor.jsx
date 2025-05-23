@@ -257,7 +257,7 @@ const BecomeVendor = () => {
                 <div id="back-div" className="bg-gradient-to-r from-logoSecondary to-logoPrimary rounded-[26px] m-4">
                     <div className="border-[20px] border-transparent rounded-[20px] dark:bg-gray-900 bg-white shadow-lg p-5 m-2">
                         <h1 className="pt-8 pb-6 font-bold dark:text-gray-400 text-3xl text-center">
-                            Become a Seller
+                            Become a Vendor
                         </h1>
                         <form className="grid grid-cols-2 gap-x-4" onSubmit={handleVendorSubmit} encType="multipart/form-data">
                             {/* Vendor Name */}

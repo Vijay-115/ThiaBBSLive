@@ -173,7 +173,6 @@ exports.getRequest = async (req, res) => {
     }
 };
 
-
 exports.approveVendor = async (req, res) => {
     try {
         console.log('approveVendor', req.params);

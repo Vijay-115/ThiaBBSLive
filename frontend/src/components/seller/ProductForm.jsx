@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Select from "react-select";
 
-const ProductForm = ({ product, categories, subCategories, onSave }) => {
+const ProductForm = ({ product, categories, subCategories, onSave, setIsAddEditModalOpen }) => {
 
   console.log('ProductForm categories - ', categories);
   console.log('ProductForm subCategories - ',subCategories);
@@ -279,16 +279,14 @@ const ProductForm = ({ product, categories, subCategories, onSave }) => {
 
         // If category is selected, filter subcategories
         if (name === "category_id") {
-            console.log(name);
             const filteredSubcategories = subCategories.filter(
-                (subcategory) => subcategory.category_id === selectedOption.value
+                (subcategory) => subcategory.category_id._id === selectedOption.value
             ).map((subcategory) => ({
                 value: subcategory._id,
                 label: subcategory.name,
             }));
 
             setSubcategoriesOptions(filteredSubcategories);
-            console.log('handleSelectChange SubcategoriesOptions - ', subcategoriesOptions)
             updatedData.subcategory_id = ""; // Reset subcategory when category changes
         }
 
@@ -300,7 +298,8 @@ const ProductForm = ({ product, categories, subCategories, onSave }) => {
 
 
   return (
-    <div className="formSec bg-white p-2 shadow-md rounded-lg-md h-[85%]">
+    <div className="formSec bg-white p-2 shadow-md rounded-lg-md h-[85%] relative">
+      <span className="popup-close" onClick={() => setIsAddEditModalOpen(false)}><i class="ri-close-circle-line"></i></span>
       <div className="input-box-form p-3 overflow-y-auto h-full">
         <form onSubmit={handleSubmit} className="max-w-2xl p-3 mx-auto">
           <h2 className="text-2xl font-semibold text-center mb-6">{product ? "Edit Product" : "Add Product"}</h2>

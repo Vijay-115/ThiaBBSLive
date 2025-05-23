@@ -34,7 +34,7 @@ const Orders = () => {
         }
     }, [user]);
 
-    console.log('Seller Orders - ',orders);
+    console.log('Vendor Orders - ',orders);
 
     if (loading) return <p>Loading...</p>;
     if (error) return <p className="m-auto pt-8 font-medium text-center text-red-600">Error: {error}</p>;

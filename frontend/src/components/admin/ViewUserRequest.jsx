@@ -1,12 +1,32 @@
-const ViewVendorRequest = ({vendorData , onApprove}) => {    
-    console.log('ViewVendorRequest',vendorData);
+const ViewUserRequest = ({vendorData , onApprove, onDecline, setIsApproveModalOpen}) => {    
+    console.log('ViewUserRequest',vendorData);
+    const downloadImage = async (imageSrc) => {
+        try {
+            const response = await fetch(imageSrc, { mode: 'cors' });
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = imageSrc.split('/').pop() || 'download';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Image download failed:', error);
+        }
+    };
+
     return (
         <>
-            <div className="flex justify-center items-center dark:bg-gray-900 py-10">
+            <div className="flex justify-center items-center dark:bg-gray-900 py-10 ">
                 <div className="grid gap-8 max-w-[991px] w-full">
                     <div id="back-div" className="bg-gradient-to-r from-logoSecondary to-logoPrimary rounded-[26px] m-4">
                         <div className="border-[20px] border-transparent rounded-[20px] dark:bg-gray-900 bg-white shadow-lg p-5 m-2">
-                            <div className="h-[85vh] overflow-auto">                            
+                            <div className="h-[85vh] overflow-auto relative">
+                                <span className="popup-close" onClick={() => setIsApproveModalOpen(false)}><i class="ri-close-circle-line"></i></span>       
                                 <h1 className="pt-8 pb-6 font-bold dark:text-gray-400 text-3xl text-center">
                                     Vendor Request
                                 </h1>
@@ -76,7 +96,11 @@ const ViewVendorRequest = ({vendorData , onApprove}) => {
                                     </div>
                                     {vendorData?.pan_pic && (  
                                         <div className="col-span-1 mt-3">
-                                            <span className="block text-[14px] font-medium text-secondary">PAN PIC - <img onClick={() => window.open(import.meta.env.VITE_API_URL+''+vendorData?.pan_pic, '_blank')} src={import.meta.env.VITE_API_URL+''+vendorData?.pan_pic ?? ''} alt="new-product-1" className="w-[50px] h-[50px] border-[1px] border-solid border-[#eee] rounded-[10px] inline mx-2 p-1"/></span>
+                                            <span className="block text-[14px] font-medium text-secondary">PAN PIC - <img onClick={() => window.open(import.meta.env.VITE_API_URL+''+vendorData?.pan_pic, '_blank')} src={import.meta.env.VITE_API_URL+''+vendorData?.pan_pic ?? ''} alt="new-product-1" className="w-[50px] h-[50px] border-[1px] border-solid border-[#eee] rounded-[10px] inline mx-2 p-1"/>
+                                            <span title="download" onClick={() => downloadImage(import.meta.env.VITE_API_URL + vendorData?.pan_pic)}>
+                                                <i className="ri-download-fill"></i>
+                                            </span>
+                                            </span>
                                         </div>
                                     )}
                                     <div className="col-span-1 mt-3">
@@ -84,7 +108,10 @@ const ViewVendorRequest = ({vendorData , onApprove}) => {
                                     </div>
                                     {vendorData?.gst_pic && (  
                                         <div className="col-span-1 mt-3">
-                                            <span className="block text-[14px] font-medium text-secondary">GST PIC - <img onClick={() => window.open(import.meta.env.VITE_API_URL+''+vendorData?.gst_pic, '_blank')} src={import.meta.env.VITE_API_URL+''+vendorData?.gst_pic ?? ''} alt="new-product-1" className="w-[50px] h-[50px] border-[1px] border-solid border-[#eee] rounded-[10px] inline mx-2 p-1"/></span>
+                                            <span className="block text-[14px] font-medium text-secondary">GST PIC - <img onClick={() => window.open(import.meta.env.VITE_API_URL+''+vendorData?.gst_pic, '_blank')} src={import.meta.env.VITE_API_URL+''+vendorData?.gst_pic ?? ''} alt="new-product-1" className="w-[50px] h-[50px] border-[1px] border-solid border-[#eee] rounded-[10px] inline mx-2 p-1"/>
+                                            <span title="download" onClick={() => downloadImage(import.meta.env.VITE_API_URL + vendorData?.gst_pic)}>
+                                                <i className="ri-download-fill"></i>
+                                            </span></span>
                                         </div>
                                     )}
                                     <div className="col-span-1 mt-3">
@@ -92,7 +119,10 @@ const ViewVendorRequest = ({vendorData , onApprove}) => {
                                     </div>
                                     {vendorData?.fssai_pic && (  
                                         <div className="col-span-1 mt-3">
-                                            <span className="block text-[14px] font-medium text-secondary">FSSAI PIC - <img onClick={() => window.open(import.meta.env.VITE_API_URL+''+vendorData?.fssai_pic, '_blank')} src={import.meta.env.VITE_API_URL+''+vendorData?.fssai_pic ?? ''} alt="new-product-1" className="w-[50px] h-[50px] border-[1px] border-solid border-[#eee] rounded-[10px] inline mx-2 p-1"/></span>
+                                            <span className="block text-[14px] font-medium text-secondary">FSSAI PIC - <img onClick={() => window.open(import.meta.env.VITE_API_URL+''+vendorData?.fssai_pic, '_blank')} src={import.meta.env.VITE_API_URL+''+vendorData?.fssai_pic ?? ''} alt="new-product-1" className="w-[50px] h-[50px] border-[1px] border-solid border-[#eee] rounded-[10px] inline mx-2 p-1"/>
+                                            <span title="download" onClick={() => downloadImage(import.meta.env.VITE_API_URL + vendorData?.fssai_pic)}>
+                                                <i className="ri-download-fill"></i>
+                                            </span></span>
                                         </div>
                                     )}
                                     <div className="col-span-1 mt-3">
@@ -100,7 +130,10 @@ const ViewVendorRequest = ({vendorData , onApprove}) => {
                                     </div>
                                     {vendorData?.shop_establish_pic && (  
                                         <div className="col-span-1 mt-3">
-                                            <span className="block text-[14px] font-medium text-secondary">SHOP ESTABLISH PIC - <img onClick={() => window.open(import.meta.env.VITE_API_URL+''+vendorData?.shop_establish_pic, '_blank')} src={import.meta.env.VITE_API_URL+''+vendorData?.shop_establish_pic ?? ''} alt="new-product-1" className="w-[50px] h-[50px] border-[1px] border-solid border-[#eee] rounded-[10px] inline mx-2 p-1"/></span>
+                                            <span className="block text-[14px] font-medium text-secondary">SHOP ESTABLISH PIC - <img onClick={() => window.open(import.meta.env.VITE_API_URL+''+vendorData?.shop_establish_pic, '_blank')} src={import.meta.env.VITE_API_URL+''+vendorData?.shop_establish_pic ?? ''} alt="new-product-1" className="w-[50px] h-[50px] border-[1px] border-solid border-[#eee] rounded-[10px] inline mx-2 p-1"/>
+                                            <span title="download" onClick={() => downloadImage(import.meta.env.VITE_API_URL + vendorData?.shop_establish_pic)}>
+                                                <i className="ri-download-fill"></i>
+                                            </span></span>
                                         </div>
                                     )}
                                     
@@ -148,19 +181,28 @@ const ViewVendorRequest = ({vendorData , onApprove}) => {
                                     </div>
                                     {vendorData?.cancel_cheque_passbook && (  
                                     <div className="col-span-3 mt-3">
-                                        <span className="block text-[14px] font-medium text-secondary">Cancelled Cheque/Passbook Upload - <img onClick={() => window.open(import.meta.env.VITE_API_URL+''+vendorData?.cancel_cheque_passbook, '_blank')} src={import.meta.env.VITE_API_URL+''+vendorData?.cancel_cheque_passbook ?? ''} alt="new-product-1" className="w-[50px] h-[50px] border-[1px] border-solid border-[#eee] rounded-[10px] inline mx-2 p-1"/></span>
+                                        <span className="block text-[14px] font-medium text-secondary">Cancelled Cheque/Passbook Upload - <img onClick={() => window.open(import.meta.env.VITE_API_URL+''+vendorData?.cancel_cheque_passbook, '_blank')} src={import.meta.env.VITE_API_URL+''+vendorData?.cancel_cheque_passbook ?? ''} alt="new-product-1" className="w-[50px] h-[50px] border-[1px] border-solid border-[#eee] rounded-[10px] inline mx-2 p-1"/>
+                                            <span title="download" onClick={() => downloadImage(import.meta.env.VITE_API_URL + vendorData?.cancel_cheque_passbook)}>
+                                                <i className="ri-download-fill"></i>
+                                            </span></span>
                                     </div>
                                     )}
 
                                     <h3 className="col-span-3 block text-[18px] font-medium text-primary mt-[20px]  mb-[8px]">Vendor Profile</h3>
                                     {vendorData?.profile_pic && (  
                                         <div className="col-span-1 mt-3">
-                                            <span className="block text-[14px] font-medium text-secondary">Profile Picture/Logo - <img onClick={() => window.open(import.meta.env.VITE_API_URL+''+vendorData?.profile_pic, '_blank')} src={import.meta.env.VITE_API_URL+''+vendorData?.profile_pic ?? ''} alt="new-product-1" className="w-[50px] h-[50px] border-[1px] border-solid border-[#eee] rounded-[10px] inline mx-2 p-1"/></span>
+                                            <span className="block text-[14px] font-medium text-secondary">Profile Picture/Logo - <img onClick={() => window.open(import.meta.env.VITE_API_URL+''+vendorData?.profile_pic, '_blank')} src={import.meta.env.VITE_API_URL+''+vendorData?.profile_pic ?? ''} alt="new-product-1" className="w-[50px] h-[50px] border-[1px] border-solid border-[#eee] rounded-[10px] inline mx-2 p-1"/>
+                                            <span title="download" onClick={() => downloadImage(import.meta.env.VITE_API_URL + vendorData?.profile_pic)}>
+                                                <i className="ri-download-fill"></i>
+                                            </span></span>
                                         </div>
                                     )}
                                     {vendorData?.cover_pic && (  
                                     <div className="col-span-1 mt-3">
-                                        <span className="block text-[14px] font-medium text-secondary">Cover Image for Vendor Storefron - <img onClick={() => window.open(import.meta.env.VITE_API_URL+''+vendorData?.cover_pic, '_blank')} src={import.meta.env.VITE_API_URL+''+vendorData?.cover_pic ?? ''} alt="new-product-1" className="w-[50px] h-[50px] border-[1px] border-solid border-[#eee] rounded-[10px] inline mx-2 p-1"/></span>
+                                        <span className="block text-[14px] font-medium text-secondary">Cover Image for Vendor Storefron - <img onClick={() => window.open(import.meta.env.VITE_API_URL+''+vendorData?.cover_pic, '_blank')} src={import.meta.env.VITE_API_URL+''+vendorData?.cover_pic ?? ''} alt="new-product-1" className="w-[50px] h-[50px] border-[1px] border-solid border-[#eee] rounded-[10px] inline mx-2 p-1"/>
+                                            <span title="download" onClick={() => downloadImage(import.meta.env.VITE_API_URL + vendorData?.cover_pic)}>
+                                                <i className="ri-download-fill"></i>
+                                            </span></span>
                                     </div>
                                     )}
                                     <div className="col-span-1 mt-3">
@@ -174,16 +216,27 @@ const ViewVendorRequest = ({vendorData , onApprove}) => {
                                     </div>     
                                     {vendorData?.address_proof && (                  
                                         <div className="col-span-1 mt-3">
-                                            <span className="block text-[14px] font-medium text-secondary">Address Proof (Utility Bill/Rent Agreement) - <img onClick={() => window.open(import.meta.env.VITE_API_URL+''+vendorData?.address_proof, '_blank')} src={import.meta.env.VITE_API_URL+''+vendorData?.address_proof ?? ''} alt="new-product-1" className="w-[50px] h-[50px] border-[1px] border-solid border-[#eee] rounded-[10px] inline mx-2 p-1"/></span>
+                                            <span className="block text-[14px] font-medium text-secondary">Address Proof (Utility Bill/Rent Agreement) - <img onClick={() => window.open(import.meta.env.VITE_API_URL+''+vendorData?.address_proof, '_blank')} src={import.meta.env.VITE_API_URL+''+vendorData?.address_proof ?? ''} alt="new-product-1" className="w-[50px] h-[50px] border-[1px] border-solid border-[#eee] rounded-[10px] inline mx-2 p-1"/>
+                                            <span title="download" onClick={() => downloadImage(import.meta.env.VITE_API_URL + vendorData?.address_proof)}>
+                                                <i className="ri-download-fill"></i>
+                                            </span></span>
                                         </div>
                                     )}
                                 </div>
-                                <button
-                                    className="bg-green-700 text-white block mx-auto my-3 w-min px-4 py-1 rounded-md"
-                                    onClick={() => onApprove(vendorData)}
-                                >
-                                    Approve
-                                </button>
+                                <div className="flex gap-2 max-w-[300px] mx-auto">
+                                    <button
+                                        className="bg-green-700 text-white block mx-auto my-3 w-min px-4 py-1 rounded-md"
+                                        onClick={() => onApprove(vendorData)}
+                                    >
+                                        Approve
+                                    </button>
+                                    <button
+                                        className="bg-red-500 text-white block mx-auto my-3 w-min px-4 py-1 rounded-md"
+                                        onClick={() => onDecline(vendorData)}
+                                    >
+                                        Decline
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -193,4 +246,4 @@ const ViewVendorRequest = ({vendorData , onApprove}) => {
     );
 };
 
-export default ViewVendorRequest;
+export default ViewUserRequest;

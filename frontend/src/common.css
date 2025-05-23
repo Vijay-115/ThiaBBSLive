@@ -585,3 +585,17 @@ background-position: center;
 	grid-gap: 10px;
 	font-weight: 500;
 }
+
+.popup-close {
+  color: red;
+  line-height: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  position: absolute;
+  top: 25px;
+  right: 13px;
+  font-size: 28px;
+  cursor: pointer;
+}

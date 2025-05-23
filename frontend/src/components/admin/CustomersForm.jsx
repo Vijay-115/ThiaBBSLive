@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-const CustomersForm = ({ customer, onSave }) => {
+const CustomersForm = ({ customer, onSave, setIsAddEditModalOpen }) => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -57,9 +57,10 @@ const CustomersForm = ({ customer, onSave }) => {
   };
 
   return (
-    <div className="max-w-[50vw] w-full mx-auto bg-white border border-gray-400 p-8 shadow-md rounded-md">
+    <div className="max-w-[50vw] w-full mx-auto bg-white border border-gray-400 p-8 shadow-md rounded-md relative">
+      <span className="popup-close" onClick={() => setIsAddEditModalOpen(false)}><i class="ri-close-circle-line"></i></span>
       <h2 className="text-2xl font-semibold text-center mb-6">
-        {customer ? "Edit Seller" : "Add Seller"}
+        {customer ? "Edit Vendor" : "Add Vendor"}
       </h2>
       <div className="input-box-form mt-[20px]">
         <form onSubmit={handleSubmit}>
@@ -119,22 +120,24 @@ const CustomersForm = ({ customer, onSave }) => {
             </div>
 
             {/* Password */}
-            <div className="w-full px-[12px]">
-              <div className="input-item mb-[24px]">
-                <label className="block text-[14px] font-medium text-secondary mb-[8px]">
-                  Password *
-                </label>
-                <input
-                  type="password"
-                  name="password"
-                  placeholder="Enter your Password"
-                  className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                />
+            { !customer && (
+              <div className="w-full px-[12px]">
+                <div className="input-item mb-[24px]">
+                  <label className="block text-[14px] font-medium text-secondary mb-[8px]">
+                    Password *
+                  </label>
+                  <input
+                    type="password"
+                    name="password"
+                    placeholder="Enter your Password"
+                    className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Save Button */}
             <div className="w-full px-[12px]">
@@ -143,7 +146,7 @@ const CustomersForm = ({ customer, onSave }) => {
                   type="submit"
                   className="bb-btn-2 inline-block py-[10px] px-[25px] text-[14px] font-medium text-white bg-[#6c7fd8] rounded-[10px] hover:bg-transparent hover:border-[#3d4750] hover:text-secondary border"
                 >
-                  {customer ? "Update Seller" : "Create Seller"}
+                  {customer ? "Update Vendor" : "Create Vendor"}
                 </button>
               </div>
             </div>

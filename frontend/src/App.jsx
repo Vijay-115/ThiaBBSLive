@@ -28,10 +28,10 @@ import Categories from './components/admin/Categories';
 import SubCategories from './components/admin/SubCategories'; 
 import Orders from './components/admin/Orders';  
 import MyAccount from './components/auth/MyAccount';
-import Seller from './components/admin/Seller';
-import Customers from './components/admin/Customers';
 import Vendor from './components/admin/Vendor';
-import VendorRequest from './components/admin/VendorRequest';
+import Customers from './components/admin/Customers';
+import OtherUser from './components/admin/OtherUser';
+import UserRequest from './components/admin/UserRequest';
 import BecomeAgent from './components/auth/BecomeAgent'; 
 import BecomeFranchiseHead from './components/auth/BecomeFranchiseHead'; 
 import BecomeTerritoryHead from './components/auth/BecomeTerritoryHead'; 
@@ -91,7 +91,7 @@ function App() {
 
   useEffect(() => {
     const checkHeaderFooter = () => {
-      const excludeHeaderFooterRoutes = ['/admin/dashboard', '/admin/products', '/admin/orders', '/admin/products/categories', '/admin/products/subcategories', '/admin/seller', '/admin/customers', '/admin/vendor', '/seller/dashboard', '/seller/products', '/seller/orders', '/seller/products/categories', '/seller/products/subcategories', '/admin/vendor-request'];
+      const excludeHeaderFooterRoutes = ['/admin/dashboard', '/admin/products', '/admin/orders', '/admin/products/categories', '/admin/products/subcategories', '/admin/other-users', '/admin/customers', '/admin/vendors', '/seller/dashboard', '/seller/products', '/seller/orders', '/seller/products/categories', '/seller/products/subcategories', '/admin/vendor-request'];
       setShouldRenderHeaderFooter(!excludeHeaderFooterRoutes.includes(location.pathname));
     };
 
@@ -144,10 +144,10 @@ function App() {
             <Route path="products/categories" element={<Categories />} />
             <Route path="products/subcategories" element={<SubCategories />} />
             <Route path="orders" element={<Orders />} />
-            <Route path="seller" element={<Seller />} />
+            <Route path="vendors" element={<Vendor />} />
             <Route path="customers" element={<Customers />} />            
-            <Route path="vendor" element={<Vendor />} />
-            <Route path="vendor-request" element={<VendorRequest />} />            
+            <Route path="other-users" element={<OtherUser />} />
+            <Route path="users-request" element={<UserRequest />} />            
         </Route>
 
         {/* ✅ Seller Routes */}
