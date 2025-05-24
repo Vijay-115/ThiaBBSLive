@@ -119,7 +119,7 @@ function CheckoutPage() {
                     }
 
                     const options = {
-                        key: import.meta.env.RAZORPAY_KEY_ID, // Use your Razorpay key
+                        key: import.meta.env.VITE_RAZORPAY_KEY_ID, // Use your Razorpay key
                         amount: response.payload?.order.total_price,
                         currency: "INR",
                         name: "BBSCart",

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Select from "react-select";
 
-const ProductForm = ({ product, categories, subCategories, onSave }) => {
+const ProductForm = ({ product, categories, subCategories, onSave, setIsAddEditModalOpen }) => {
 
   const [productData, setProductData] = useState({
     _id: product?._id || "",
@@ -294,7 +294,8 @@ const ProductForm = ({ product, categories, subCategories, onSave }) => {
 
 
   return (
-    <div className="formSec bg-white p-2 shadow-md rounded-lg-md h-[85%]">
+    <div className="formSec bg-white p-2 shadow-md rounded-lg-md h-[85%] relative">
+      <span className="popup-close" onClick={() => setIsAddEditModalOpen(false)}><i class="ri-close-circle-line"></i></span>
       <div className="input-box-form p-3 overflow-y-auto h-full">
         <form onSubmit={handleSubmit} className="max-w-2xl p-3 mx-auto">
           <h2 className="text-2xl font-semibold text-center mb-6">{product ? "Edit Product" : "Add Product"}</h2>

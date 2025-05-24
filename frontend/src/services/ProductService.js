@@ -157,22 +157,27 @@ export const ProductService = {
     }
   },
 
-  async exportProducts(){
-    try{
+  async exportProducts() {
+    try {
       const response = await api.get(`${BASE_PRODUCTS_URL}/export`, {
         responseType: "blob",
       });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+  
+      const blob = new Blob([response.data], { type: "application/zip" });
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", "products_export.csv"); // File name
+      link.setAttribute("download", "products_export.zip"); // Updated to .zip
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    }catch (error) {
+  
+      // Optional: Revoke the object URL to free up memory
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
       console.error("Export failed:", error);
     }
-  },
+  },  
 
   async importProducts(formData) {
     try {
@@ -182,6 +187,7 @@ export const ProductService = {
         },
       });
       console.log("importProducts", response);
+      return response;
     } catch (error) {
       console.error("Error in importProducts:", error);
     }

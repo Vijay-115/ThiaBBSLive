@@ -7,10 +7,10 @@ import { GetCountries, GetState, GetCity } from "react-country-state-city";
 import useAddress from "../admin/hooks/useAddress";
 import { vendorRegister } from "../../services/vendorService";
 
-const BecomeVendor = () => {
+const BecomeTerritoryHead = () => {
     
     const [vendorData, setVendorData] = useState({
-        vendor_fname: '', vendor_lname: '', dob: '', education_qualify: '', work_experience: '', referral_details: '', lang_proficiency: '', aadhar_number: '', business_type: '', brand_name: '', contact_person: '', email: '', mobile: '', register_business_address: { street: "", city: "", state: "", postalCode: "", country: "" }, operational_address: { street: "", city: "", state: "", postalCode: "", country: "" }, pan_number: '', gst_number: '', fssai_license: '', shop_establish_license: '', outlet_location: { street: "", city: "", state: "", postalCode: "", country: "" },outlet_manager_name: '', outlet_contact_no: '', bank_name: '', account_holder_name: '', account_no: '', ifcs_code: '', branch_name: '', cancel_cheque_passbook: '', passbook: '', vendor_bio: '', product_category: '', product_category_other: '', address_proof: '', termsConditions: false, privacyPolicy: false, sellerPolicy: false, role: 'seller',
+        vendor_fname: '', vendor_lname: '', dob: '', education_qualify: '', work_experience: '', referral_details: '', lang_proficiency: '', aadhar_number: '', business_type: '', brand_name: '', contact_person: '', email: '', mobile: '', register_business_address: { street: "", city: "", state: "", postalCode: "", country: "" }, operational_address: { street: "", city: "", state: "", postalCode: "", country: "" }, pan_number: '', gst_number: '', fssai_license: '', shop_establish_license: '', outlet_location: { street: "", city: "", state: "", postalCode: "", country: "" },outlet_manager_name: '', outlet_contact_no: '', bank_name: '', account_holder_name: '', account_no: '', ifcs_code: '', branch_name: '', cancel_cheque_passbook: '', passbook: '', vendor_bio: '', product_category: '', product_category_other: '', address_proof: '', termsConditions: false, privacyPolicy: false, sellerPolicy: false, role: 'territory_head',
     });
 
     // const [files, setFiles] = useState({
@@ -68,11 +68,11 @@ const BecomeVendor = () => {
         if (!vendorData.ifcs_code) formErrors.ifcs_code = "IFSC code is required";
         if (!vendorData.branch_name) formErrors.branch_name = "Branch name is required";
         if (!files.address_proof) formErrors.address_proof = "Address proof is required";
-    
+
         if (!vendorData.aadhar_number) formErrors.aadhar_number = "Aadhar number is required";
         if (!files.aadhar_pic) formErrors.aadhar_pic = "Aadhar picture is required";
         if (!files.self_declaration) formErrors.self_declaration = "Self declaration is required";
-
+    
         // Initialize nested objects if needed
         formErrors.register_business_address = {};
         formErrors.outlet_location = {};
@@ -257,7 +257,7 @@ const BecomeVendor = () => {
                 <div id="back-div" className="bg-gradient-to-r from-logoSecondary to-logoPrimary rounded-[26px] m-4">
                     <div className="border-[20px] border-transparent rounded-[20px] dark:bg-gray-900 bg-white shadow-lg p-5 m-2">
                         <h1 className="pt-8 pb-6 font-bold dark:text-gray-400 text-3xl text-center">
-                            Become a Vendor
+                            Become a Territory Head
                         </h1>
                         <form className="grid grid-cols-2 gap-x-4" onSubmit={handleVendorSubmit} encType="multipart/form-data">
                             {/* Vendor Name */}
@@ -870,7 +870,7 @@ const BecomeVendor = () => {
 
                             <div className="col-span-2">
                                 <button className="bg-gradient-to-r from-logoSecondary to-logoPrimary shadow-lg mt-6 p-[9.85px] text-white rounded-lg w-full">
-                                    REGISTER AS SELLER
+                                    REGISTER AS TERRITORY HEAD
                                 </button>
                             </div>
                         </form>
@@ -884,4 +884,4 @@ const BecomeVendor = () => {
     );
 };
 
-export default BecomeVendor;
+export default BecomeTerritoryHead;

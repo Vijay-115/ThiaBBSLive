@@ -35,7 +35,7 @@ const Orders = () => {
     console.log(orders);
 
     if (loading) return <p>Loading...</p>;
-    if (error) return <p>Error: {error}</p>;
+    if (error) return <p className="m-auto pt-8 font-medium text-center text-red-600">Error: {error}</p>;
 
     return (
 
@@ -105,7 +105,7 @@ const Orders = () => {
                                             {/* <p>Order #{order._id}</p> */}
                                             <p>{order.user_id.name}</p>
                                         </td>
-                                        <td>{moment(order.created_at).format("DD-MM-YYYY")}</td>
+                                        <td>{moment(order.created_at).format("DD-MM-YYYY h:mm A")}</td>
                                         <td>
                                             <span className="status completed">{order.status}</span>
                                         </td>

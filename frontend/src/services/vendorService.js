@@ -11,7 +11,7 @@ export const vendorRegister = async (userData, dispatch, navigate) => {
         return response.data;
     } catch (error) {
         console.error("Registration Error:", error.response?.data || error.message);
-        throw new Error(error.response?.data?.msg || "Registration failed");
+        throw new Error("Registration failed, "+error.response?.data.message || "Registration failed, "+error.message);
     }
 };
 

@@ -65,39 +65,39 @@ const Sidebar = ({ isSidebarHidden, toggleSidebar }) => {
                             </li>
                         </ul>
                     </li>
-                    <li>
-                        <NavLink to="#">
-                            <i className="bx bxs-doughnut-chart bx-sm" />
-                            <span className="text">Customers</span>
-                        </NavLink>
-                    </li>
                     <li className={location.pathname === "/admin/orders" ? "active" : ""}>
                         <NavLink to="/admin/orders">
                             <i className="bx bxs-message-dots bx-sm" />
                             <span className="text">Orders</span>
                         </NavLink>
                     </li>
-                    <li className={location.pathname === "/admin/seller" ? "active" : ""}>
-                        <NavLink to="/admin/seller">
-                            <i className="bx bxs-group bx-sm" />
-                            <span className="text">Seller</span>
+                    <li className={location.pathname === "/admin/customers" ? "active" : ""}>
+                        <NavLink to="/admin/customers">
+                            <i className="bx bxs-doughnut-chart bx-sm" />
+                            <span className="text">Customers</span>
                         </NavLink>
-                    </li>   
-                    <li className={location.pathname === "/admin/vendor" ? "active" : ""}>
-                        <NavLink to="/admin/vendor">
+                    </li>
+                    <li className={location.pathname === "/admin/vendors" ? "active" : ""}>
+                        <NavLink to="/admin/vendors">
                             <i className="bx bxs-group bx-sm" />
                             <span className="text">Vendors</span>
                         </NavLink>
-                    </li>     
-                    <li className={location.pathname === "/admin/vendor-request" ? "active" : ""}>
-                        <NavLink to="/admin/vendor-request">
+                    </li>   
+                    <li className={location.pathname === "/admin/other-users" ? "active" : ""}>
+                        <NavLink to="/admin/other-users">
                             <i className="bx bxs-group bx-sm" />
-                            <span className="text">Vendors Request</span>
+                            <span className="text">Other User's</span>
+                        </NavLink>
+                    </li>     
+                    <li className={location.pathname === "/admin/users-request" ? "active" : ""}>
+                        <NavLink to="/admin/users-request">
+                            <i className="bx bxs-group bx-sm" />
+                            <span className="text">User's Request</span>
                         </NavLink>
                     </li>                   
                 </ul>
                 <ul className="side-menu bottom">
-                    <li onClick={ async () => { await logout(dispatch); window.location.reload(); }}>
+                    <li onClick={ async () => { await logout(dispatch);}}>
                         <NavLink className="logout">
                             <i className="bx bx-power-off bx-sm bx-burst-hover" />
                             <span className="text">Logout</span>

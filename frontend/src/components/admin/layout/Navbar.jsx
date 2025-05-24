@@ -1,4 +1,6 @@
 import React from "react";
+import { useDispatch } from "react-redux";
+import { logout } from "../../../services/authService";
 
 const Navbar = ({
     isDarkMode,
@@ -13,6 +15,7 @@ const Navbar = ({
     toggleSearchForm,
 }) => {
 
+    const dispatch = useDispatch();
     const userName = localStorage.getItem('userName') || 'Admin';
     const userRole = localStorage.getItem('userRole') || 'admin';
 
@@ -68,7 +71,7 @@ const Navbar = ({
                         <li>
                             <a href="#">Settings</a>
                         </li>
-                        <li onClick={() => { localStorage.clear(); window.location.reload(); }}>
+                        <li onClick={ async () => { await logout(dispatch); }}>
                             <a>Log Out</a>
                         </li>
                     </ul>

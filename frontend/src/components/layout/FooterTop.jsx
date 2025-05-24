@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import { Link } from 'react-router-dom';
+
 
 function FooterTop() {
 
     const [isVisible, setIsVisible] = useState(false);
+    const { user, isAuthenticated } = useSelector((state) => state.auth);
 
     useEffect(() => {
         const toggleVisibility = () => {
@@ -130,14 +133,27 @@ function FooterTop() {
                                         <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
                                             <Link to="/cart" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">View Cart</Link>
                                         </li>
-                                        <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
-                                            <Link to="/" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Order History</Link>
-                                        </li>
+                                        {
+                                            isAuthenticated && (
+                                                <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
+                                                    <Link to="/orders" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Order History</Link>
+                                                </li>
+                                            )
+                                        }
                                         <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
                                             <Link to="/wishlist" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Wish List</Link>
                                         </li>
                                         <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
-                                            <Link to="/become-a-vendor" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Become a Vendor</Link>
+                                            <Link to="/become-a-vendor" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Customer Become a Vendor in Vendors</Link>
+                                        </li>
+                                        <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
+                                            <Link to="/become-a-agent" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Become a Agent</Link>
+                                        </li>
+                                        <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
+                                            <Link to="/become-a-territory-head" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Become a Territory Head</Link>
+                                        </li>
+                                        <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
+                                            <Link to="/become-a-franchise-head " className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Become a Franchise Head</Link>
                                         </li>
                                     </ul>
                                 </div>
@@ -157,9 +173,15 @@ function FooterTop() {
                                             </li>
                                             <li className="bb-footer-link bb-foo-call flex items-center max-[991px]:mb-[15px] mb-[16px]">
                                                 <span className="w-[25px] basis-[auto] grow-[0] shrink-[0]">
+                                                    <i className="ri-phone-fill leading-[0] text-[18px] text-primary"></i>
+                                                </span>
+                                                <Link to="tel:04132915916" target="_blank" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary inline-block relative break-all tracking-[0] font-normal max-[1399px]:text-[15px] max-[1199px]:text-[14px]">0413 291 5916</Link>
+                                            </li>
+                                            <li className="bb-footer-link bb-foo-call flex items-start max-[991px]:mb-[15px] mb-[16px]">
+                                                <span className="w-[25px] basis-[auto] grow-[0] shrink-[0]">
                                                     <i className="ri-whatsapp-line leading-[0] text-[18px] text-primary"></i>
                                                 </span>
-                                                <Link to="tel:+009876543210" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary inline-block relative break-all tracking-[0] font-normal max-[1399px]:text-[15px] max-[1199px]:text-[14px]">+91 9600729596</Link>
+                                                <Link to="https://wa.me/9600729596" target="_blank" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary inline-block relative break-all tracking-[0] font-normal max-[1399px]:text-[15px] max-[1199px]:text-[14px]">+91 9600729596</Link>
                                             </li>
                                             <li className="bb-footer-link bb-foo-mail flex items-cente">
                                                 <span className="w-[25px] basis-[auto] grow-[0] shrink-[0]">
@@ -176,16 +198,16 @@ function FooterTop() {
                                     <div className="bb-footer-links bb-footer-dropdown  max-[991px]:mb-[35px]">
                                         <ul className="align-items-center flex flex-wrap items-center">
                                             <li className="bb-footer-link leading-[1.5] flex items-center pr-[5px]">
-                                                <Link to="https://www.facebook.com/bbschoix" target='blank' className="transition-all duration-[0.3s] ease-in-out w-[30px] h-[30px] rounded-[5px] bg-secondary hover:bg-tertiary capitalize flex items-center justify-center text-[15px] leading-[20px] text-secondary relative break-all font-normal"><i className="ri-facebook-fill text-[16px] text-[#fff]"></i></Link>
+                                                <Link to="https://www.facebook.com/profile.php?id=100090804256179" target='blank' className="transition-all duration-[0.3s] ease-in-out w-[30px] h-[30px] rounded-[5px] bg-secondary hover:bg-tertiary capitalize flex items-center justify-center text-[15px] leading-[20px] text-secondary relative break-all font-normal"><i className="ri-facebook-fill text-[16px] text-[#fff]"></i></Link>
                                             </li>
                                             <li className="bb-footer-link leading-[1.5] flex items-center pr-[5px]">
-                                                <Link to="/" className="transition-all duration-[0.3s] ease-in-out w-[30px] h-[30px] rounded-[5px] bg-secondary hover:bg-tertiary capitalize flex items-center justify-center text-[15px] leading-[20px] text-secondary relative break-all font-normal"><i className="ri-twitter-fill text-[16px] text-[#fff]"></i></Link>
+                                                <Link to="https://www.youtube.com/channel/UCNiBeRvAW1bQOUEcaqc0hYA" target='blank' className="transition-all duration-[0.3s] ease-in-out w-[30px] h-[30px] rounded-[5px] bg-secondary hover:bg-tertiary capitalize flex items-center justify-center text-[15px] leading-[20px] text-secondary relative break-all font-normal"><i className="ri-youtube-fill text-[16px] text-[#fff]"></i></Link>
                                             </li>
                                             <li className="bb-footer-link leading-[1.5] flex items-center pr-[5px]">
-                                                <Link to="/" className="transition-all duration-[0.3s] ease-in-out w-[30px] h-[30px] rounded-[5px] bg-secondary hover:bg-tertiary capitalize flex items-center justify-center text-[15px] leading-[20px] text-secondary relative break-all font-normal"><i className="ri-linkedin-fill text-[16px] text-[#fff]"></i></Link>
+                                                <Link to="https://www.linkedin.com/in/pavarasu-mayavan-50a171355/?lipi=urn%3Ali%3Apage%3Ad_flagship3_feed%3B%2FT2G%2FN4ESaqdyBnClTXhtQ%3D%3D" target='blank' className="transition-all duration-[0.3s] ease-in-out w-[30px] h-[30px] rounded-[5px] bg-secondary hover:bg-tertiary capitalize flex items-center justify-center text-[15px] leading-[20px] text-secondary relative break-all font-normal"><i className="ri-linkedin-fill text-[16px] text-[#fff]"></i></Link>
                                             </li>
                                             <li className="bb-footer-link leading-[1.5] flex items-center pr-[5px]">
-                                                <Link to="/" className="transition-all duration-[0.3s] ease-in-out w-[30px] h-[30px] rounded-[5px] bg-secondary hover:bg-tertiary capitalize flex items-center justify-center text-[15px] leading-[20px] text-secondary relative break-all font-normal"><i className="ri-instagram-line text-[16px] text-[#fff]"></i></Link>
+                                                <Link to="https://www.instagram.com/bbscart/?hl=en#" target='blank' className="transition-all duration-[0.3s] ease-in-out w-[30px] h-[30px] rounded-[5px] bg-secondary hover:bg-tertiary capitalize flex items-center justify-center text-[15px] leading-[20px] text-secondary relative break-all font-normal"><i className="ri-instagram-line text-[16px] text-[#fff]"></i></Link>
                                             </li>
                                         </ul>
                                     </div>

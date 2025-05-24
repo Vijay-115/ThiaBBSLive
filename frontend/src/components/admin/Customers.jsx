@@ -8,10 +8,10 @@ import useDashboardLogic from "./hooks/useDashboardLogic";
 import Modal from "react-modal";
 import toast from "react-hot-toast";
 import moment from "moment";
-import VendorForm from "./VendorForm";
+import CustomersForm from "./CustomersForm";
 import { UserService } from "../../services/UserService";
 
-const Vendor = () => {
+const Customers = () => {
 
   const {
     isSidebarHidden,
@@ -41,7 +41,7 @@ const Vendor = () => {
   // Fetch Sellers
   const fetchUsers = async () => {
     try {
-      const data = await UserService.getUserRole("seller");
+      const data = await UserService.getUserRole("user");
       setSellers(data);
       setFilteredSellers(data);
       console.log("Fetching sellers:", data); // Fixed stale state issue
@@ -57,8 +57,8 @@ const Vendor = () => {
 
   useEffect(() => {
     const filterAndSortUsers = () => {
-      let filtered = sellers.filter((seller) =>
-        seller?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+      let filtered = sellers.filter((customer) =>
+        customer?.name?.toLowerCase().includes(searchQuery.toLowerCase())
       );
 
       // Sorting logic
@@ -94,26 +94,26 @@ const Vendor = () => {
           sellerData
         );
         setSellers((prev) =>
-          prev.map((seller) =>
-            seller._id === updatedSeller._id ? updatedSeller : seller
+          prev.map((customer) =>
+            customer._id === updatedSeller._id ? updatedSeller : customer
           )
         );
         setEditSeller(null);
-        toast.success("Vendor updated successfully!");
+        toast.success("Customers updated successfully!");
       } else {
         const newSeller = await UserService.createUser(sellerData);
         setSellers((prev) => [...prev, newSeller]);
-        toast.success("Vendor created successfully!");
+        toast.success("Customers created successfully!");
       }
       setErrorMessage("");
       setIsAddEditModalOpen(false);
       fetchUsers();
     } catch (error) {
-      console.error("Error saving seller:", error);
+      console.error("Error saving customer:", error);
       setErrorMessage(
-        error.message || "An error occurred while saving the seller."
+        error.message || "An error occurred while saving the customer."
       );
-      toast.error("Failed to save the seller. Please try again.");
+      toast.error("Failed to save the customer. Please try again.");
     }
   };
 
@@ -121,24 +121,24 @@ const Vendor = () => {
     try {
       await UserService.deleteUser(sellerToDelete._id);
       setSellers((prev) =>
-        prev.filter((seller) => seller._id !== sellerToDelete._id)
+        prev.filter((customer) => customer._id !== sellerToDelete._id)
       );
       setSellerToDelete(null);
       setErrorMessage("");
       setIsDeleteModalOpen(false);
     } catch (error) {
-      console.error("Error deleting seller:", error);
-      setErrorMessage(error.message || "Failed to delete the seller.");
+      console.error("Error deleting customer:", error);
+      setErrorMessage(error.message || "Failed to delete the customer.");
     }
   };
 
-  const handleEditUser = (seller) => {
-    setEditSeller(seller);
+  const handleEditUser = (customer) => {
+    setEditSeller(customer);
     setIsAddEditModalOpen(true);
   };
 
-  const openDeleteModal = (seller) => {
-    setSellerToDelete(seller);
+  const openDeleteModal = (customer) => {
+    setSellerToDelete(customer);
     setIsDeleteModalOpen(true);
   };
 
@@ -188,7 +188,7 @@ const Vendor = () => {
                     <main>
                         <div className="head-title">
                             <div className="left">
-                                <h1>Vendor</h1>
+                                <h1>Customers</h1>
                                 <ul className="breadcrumb">
                                     <li>
                                         <NavLink className="active" to="/admin/dashboard">Dashboard</NavLink>
@@ -197,7 +197,7 @@ const Vendor = () => {
                                         <i className="bx bx-chevron-right" />
                                     </li>
                                     <li>
-                                        <a> Vendor </a>
+                                        <a> Customers </a>
                                     </li>
                                 </ul>
                             </div>
@@ -217,11 +217,11 @@ const Vendor = () => {
                         <Modal
                             isOpen={isAddEditModalOpen}
                             onRequestClose={() => setIsAddEditModalOpen(false)}
-                            contentLabel="Vendor Form"
+                            contentLabel="Customers Form"
                             className="modal-content"
                             overlayClassName="modal-overlay"
                         >
-                            <VendorForm seller={editSeller} onSave={handleAddUser} setIsAddEditModalOpen={setIsAddEditModalOpen}/>
+                            <CustomersForm customer={editSeller} onSave={handleAddUser} setIsAddEditModalOpen={setIsAddEditModalOpen}/>
                         </Modal>
 
                         <Modal
@@ -232,7 +232,7 @@ const Vendor = () => {
                             overlayClassName="modal-overlay"
                         >
                             <div className="p-8 bg-white rounded-lg">
-                              <h3 className="text-lg">Are you sure you want to delete this seller?</h3>
+                              <h3 className="text-lg">Are you sure you want to delete this customer?</h3>
                               <p className="mt-2">This action cannot be undone.</p>
                               <div className="mt-4">
                                   <button
@@ -256,7 +256,7 @@ const Vendor = () => {
                             onClick={openAddUserModal}
                             className="bg-blue-500 text-white px-4 py-2 rounded-md text-sm"
                             >
-                            Add New Vendor
+                            Add New Customers
                             </button>
                             <input
                             type="text"
@@ -268,7 +268,7 @@ const Vendor = () => {
                         </div>
 
                         <div className="mt-8">
-                            <h2 className="text-2xl font-semibold mb-4">Vendor List</h2>
+                            <h2 className="text-2xl font-semibold mb-4">Customers List</h2>
                             <div className="flex flex-wrap w-full mb-[-24px]">
                             <div className="w-full px-[12px] mb-[24px]">
                                 <div className="bb-table border-none border-[1px] md:border-solid border-[#eee] rounded-none md:rounded-[20px] overflow-hidden max-[1399px]:overflow-y-auto aos-init aos-animate" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="400">
@@ -282,7 +282,7 @@ const Vendor = () => {
                                           className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize cursor-pointer"
                                           onClick={() => handleSort("name")}
                                         >
-                                          Vendor Name
+                                          Customers Name
                                         </th>
                                         <th
                                           className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize cursor-pointer"
@@ -310,8 +310,8 @@ const Vendor = () => {
                                     <tbody>
                                       {paginatedUsers.map((user) => (
                                         <tr key={user._id} className="border-b-[1px] border-solid border-[#eee]">
-                                          <td data-label="Vendor Name" className="p-[12px]">
-                                            <div className="Seller flex justify-end md:justify-normal md:items-center">
+                                          <td data-label="Customers Name" className="p-[12px]">
+                                            <div className="Customers flex justify-end md:justify-normal md:items-center">
                                               <div>
                                                 <span className="ml-[10px] block font-Poppins text-[14px] font-semibold leading-[24px] tracking-[0.03rem] text-secondary">
                                                   {user?.name ?? "-"}
@@ -383,4 +383,4 @@ const Vendor = () => {
     );
 };
 
-export default Vendor;
+export default Customers;

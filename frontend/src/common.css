@@ -443,3 +443,159 @@ background-position: center;
     padding: 10px;
     font-size: 14px;
 }
+
+/* Table CSS */
+
+
+
+.bbs.table-data {
+	display: flex;
+	flex-wrap: wrap;
+	grid-gap: 24px;
+	margin-top: 24px;
+	width: 100%;
+	color: var(--dark);
+}
+.bbs.table-data > div {
+	border-radius: 20px;
+	background: var(--light);
+	padding: 24px;
+	overflow-x: auto;
+}
+.bbs.table-data .head {
+	display: flex;
+	align-items: center;
+	grid-gap: 16px;
+	margin-bottom: 24px;
+}
+.bbs.table-data .head h3 {
+	margin-right: auto;
+	font-size: 24px;
+	font-weight: 600;
+}
+.bbs.table-data .head .bx {
+	cursor: pointer;
+}
+
+.bbs.table-data .order {
+	flex-grow: 1;
+	flex-basis: 500px;
+}
+.bbs.table-data .order table {
+	width: 100%;
+	border-collapse: collapse;
+}
+.bbs.table-data .order table th {
+	padding-bottom: 12px;
+	font-size: 13px;
+	text-align: left;
+	border-bottom: 1px solid var(--grey);
+}
+.bbs.table-data .order table td {
+	padding: 16px 0;
+}
+.bbs.table-data .order table tr td:first-child {
+	display: flex;
+	align-items: center;
+	grid-gap: 12px;
+	padding-left: 6px;
+}
+.bbs.table-data .order table td img {
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	object-fit: cover;
+}
+.bbs.table-data .order table tbody tr:hover {
+	background: var(--grey);
+}
+.bbs.table-data .order table tr td .status {
+	font-size: 10px;
+	padding: 6px 16px;
+	color: var(--light);
+	border-radius: 20px;
+	font-weight: 700;
+}
+.bbs.table-data .order table tr td .status.completed {
+	background: var(--skyblue);
+}
+.bbs.table-data .order table tr td .status.process {
+	background: var(--dblue);
+}
+.bbs.table-data .order table tr td .status.pending {
+	background: var(--brown);
+}
+
+
+.bbs.table-data .todo {
+	flex-grow: 1;
+	flex-basis: 300px;
+}
+.bbs.table-data .todo .todo-list {
+	width: 100%;
+}
+.bbs.table-data .todo .todo-list li {
+	width: 100%;
+	margin-bottom: 16px;
+	background: var(--grey);
+	border-radius: 10px;
+	padding: 14px 20px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+.bbs.table-data .todo .todo-list li .bx {
+	cursor: pointer;
+}
+.bbs.table-data .todo .todo-list li.completed {
+	border-left: 10px solid var(--brown);
+}
+.bbs.table-data .todo .todo-list li.not-completed {
+	border-left: 10px solid var(--dblue);
+}
+.bbs.table-data .todo .todo-list li:last-child {
+	margin-bottom: 0;
+}
+/* breadcrumb */
+.breadcrumb {
+	display: flex;
+	align-items: center;
+	grid-gap: 16px;
+}
+.breadcrumb li {
+	color: var(--dark);
+}
+.breadcrumb li a {
+	color: var(--dark-grey);
+	pointer-events: none;
+}
+.breadcrumb li a.active {
+	color: var(--brown);
+	pointer-events: unset;
+}
+
+.btn-download , .btn-import{
+	height: 36px;
+	padding: 0 16px;
+	border-radius: 36px;
+	color: var(--light);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	grid-gap: 10px;
+	font-weight: 500;
+}
+
+.popup-close {
+  color: red;
+  line-height: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  position: absolute;
+  top: 25px;
+  right: 13px;
+  font-size: 28px;
+  cursor: pointer;
+}

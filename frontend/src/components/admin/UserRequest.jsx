@@ -5,13 +5,11 @@ import Sidebar from './layout/sidebar';
 import Navbar from './layout/Navbar';
 import useDashboardLogic from "./hooks/useDashboardLogic"; 
 import Modal from "react-modal";
-import toast from "react-hot-toast";
-import moment from "moment";
-import VendorForm from "./VendorForm";
 import { vendorApprove, vendorRequest } from "../../services/vendorService";
-import ViewVendorRequest from "./ViewVendorRequest";
+import ViewUserRequest from "./ViewUserRequest";
+import moment from "moment";
 
-const VendorRequest = () => {
+const UserRequest = () => {
 
   const {
     isSidebarHidden,
@@ -36,14 +34,15 @@ const VendorRequest = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: "", direction: "" });
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 25;
 
   const [roleFilter, setRoleFilter] = useState("all");
 
 // Update the filter logic to show only selected roles
 const filterAndSortUsers = () => {
     let filtered = vendors.filter((vendor) => 
-        vendor?.vendor_name?.toLowerCase().includes(searchQuery.toLowerCase())
+        vendor?.vendor_fname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        vendor?.vendor_lname?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     setFilteredvendors(filtered);
@@ -69,7 +68,8 @@ const filterAndSortUsers = () => {
   useEffect(() => {
     const filterAndSortUsers = () => {
       let filtered = vendors.filter((vendor) =>
-        vendor?.vendor_name?.toLowerCase().includes(searchQuery.toLowerCase())
+        vendor?.vendor_fname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        vendor?.vendor_lname?.toLowerCase().includes(searchQuery.toLowerCase())
       );
 
       // Sorting logic
@@ -138,6 +138,7 @@ const filterAndSortUsers = () => {
       );
       setvendorToDelete(null);
       setErrorMessage("");
+      setIsApproveModalOpen(false);
       setIsDeleteModalOpen(false);
     } catch (error) {
       console.error("Error deleting vendor:", error);
@@ -183,7 +184,7 @@ const filterAndSortUsers = () => {
                     <main>
                         <div className="head-title">
                             <div className="left">
-                                <h1>VendorRequest</h1>
+                                <h1>User Request</h1>
                                 <ul className="breadcrumb">
                                     <li>
                                         <NavLink className="active" to="/admin/dashboard">Dashboard</NavLink>
@@ -192,7 +193,7 @@ const filterAndSortUsers = () => {
                                         <i className="bx bx-chevron-right" />
                                     </li>
                                     <li>
-                                        <a> VendorRequest </a>
+                                        <a> User Request </a>
                                     </li>
                                 </ul>
                             </div>
@@ -211,31 +212,14 @@ const filterAndSortUsers = () => {
 
                         
                         <Modal
-                            isOpen={isApproveModalOpen}
-                            onRequestClose={() => setIsApproveModalOpen(false)}
-                            contentLabel="Confirm Deletion"
-                            className="modal-content"
-                            overlayClassName="modal-overlay"
+                          isOpen={isApproveModalOpen}
+                          onRequestClose={() => setIsApproveModalOpen(false)}
+                          shouldCloseOnOverlayClick={true}
+                          shouldCloseOnEsc={true}
+                          className="modal-content"
+                          overlayClassName="modal-overlay"
                         >
-                            {/* <div className="p-8 bg-white rounded-lg">
-                                <h3 className="text-lg">Are you sure you want to approve this vendor?</h3>
-                                <p className="mt-2">This action cannot be undone.</p>
-                                <div className="mt-4">
-                                    <button
-                                    onClick={handleApproveUser}
-                                    className="bg-red-500 text-white px-4 py-2 rounded-md mr-2"
-                                    >
-                                    Yes, Approve
-                                    </button>
-                                    <button
-                                    onClick={() => setIsDeleteModalOpen(false)}
-                                    className="bg-gray-500 text-white px-4 py-2 rounded-md"
-                                    >
-                                    Cancel
-                                    </button>
-                                </div>
-                              </div> */}
-                              <ViewVendorRequest vendorData={editVendor} onApprove={handleApproveUser}/>
+                          <ViewUserRequest vendorData={editVendor} onApprove={handleApproveUser} onDecline={handleDeleteRequest} setIsApproveModalOpen={setIsApproveModalOpen} />
                         </Modal>
 
                         <Modal
@@ -276,7 +260,7 @@ const filterAndSortUsers = () => {
                         </div>
 
                         <div className="mt-8">
-                            <h2 className="text-2xl font-semibold mb-4">VendorRequest List</h2>
+                            <h2 className="text-2xl font-semibold mb-4">User Request List</h2>
                             <div className="flex flex-wrap w-full mb-[-24px]">
                             <div className="w-full px-[12px] mb-[24px]">
                                 <div className="bb-table border-none border-[1px] md:border-solid border-[#eee] rounded-none md:rounded-[20px] overflow-hidden max-[1399px]:overflow-y-auto aos-init aos-animate" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="400">
@@ -290,7 +274,7 @@ const filterAndSortUsers = () => {
                                           className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize cursor-pointer"
                                           onClick={() => handleSort("name")}
                                         >
-                                          VendorRequest Name
+                                          User Request Name
                                         </th>
                                         <th
                                           className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize cursor-pointer"
@@ -304,6 +288,12 @@ const filterAndSortUsers = () => {
                                         >
                                           Phone
                                         </th>
+                                        <th
+                                          className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize cursor-pointer"
+                                          onClick={() => handleSort("created_at")}
+                                        >
+                                          Date & Time
+                                        </th>                                        
                                         <th className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize">
                                           Actions
                                         </th>
@@ -312,11 +302,11 @@ const filterAndSortUsers = () => {
                                     <tbody>
                                       {paginatedUsers.map((vendor) => (
                                         <tr key={vendor._id} className="border-b-[1px] border-solid border-[#eee]">
-                                          <td data-label="VendorRequest Name" className="p-[12px]">
-                                            <div className="VendorRequest flex justify-end md:justify-normal md:items-center">
+                                          <td data-label="User Request Name" className="p-[12px]">
+                                            <div className="User Request flex justify-end md:justify-normal md:items-center">
                                               <div>
                                                 <span className="ml-[10px] block font-Poppins text-[14px] font-semibold leading-[24px] tracking-[0.03rem] text-secondary">
-                                                  {vendor?.vendor_name ?? "-"}
+                                                  {vendor?.vendor_fname ? vendor?.vendor_fname +' '+vendor?.vendor_lname  :  "-"}
                                                 </span>
                                               </div>
                                             </div>
@@ -328,6 +318,9 @@ const filterAndSortUsers = () => {
                                           </td>
                                           <td data-label="Phone" className="p-[12px]">
                                             {vendor?.mobile || "-"}
+                                          </td>
+                                          <td data-label="Date & Time" className="p-[12px]">
+                                            {moment(vendor?.created_at).format("DD-MM-YYYY h:mm A") || "-"}
                                           </td>
                                           <td data-label="Action" className="p-[12px]">
                                             <button
@@ -383,4 +376,4 @@ const filterAndSortUsers = () => {
     );
 };
 
-export default VendorRequest;
+export default UserRequest;

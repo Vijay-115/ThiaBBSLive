@@ -18,17 +18,30 @@ const PriceRangeSlider = ({ min, max, step, value, onChange }) => {
 
   return (
     <>
-      <div className="relative bg-white rounded-sm p-2 text-center m-2">
-        <div className="flex font-quicksand text-lg font-semibold flex-row justify-center">
-          <div style={{ left: `${getPercentage(minValue)}%` }}>
-            ₹{minValue}
-          </div>
+      <div className="relative text-center">
+        <div className="flex font-quicksand text-lg font-semibold flex-row justify-center items-center">
+          <input
+            type="number"
+            min={min}
+            max={maxValue - step}
+            step={step}
+            value={minValue}
+            onChange={handleMinChange}
+            className="w-24 border rounded px-2 py-1 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          />
           <span className="inline-block mx-2"> - </span>
-          <div style={{ left: `${getPercentage(maxValue)}%` }}>
-            ₹{maxValue}
-          </div>
+          <input
+            type="number"
+            min={minValue + step}
+            max={max}
+            step={step}
+            value={maxValue}
+            onChange={handleMaxChange}
+            className="w-24 border rounded px-2 py-1 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          />
         </div>
       </div>
+
       <div className="price-range-slider">
         <div className="slider-track">
           <div

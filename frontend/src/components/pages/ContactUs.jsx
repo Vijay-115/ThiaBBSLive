@@ -14,8 +14,12 @@ export default function ContactUs() {
                     <h2 className="text-2xl font-semibold text-gray-700 mb-4">Contact Information</h2>
                     <div className="space-y-4">
                         <p className="flex items-center text-gray-700">
-                        <i className="ri-whatsapp-line leading-[0] text-[18px] text-primary mr-2"></i>
+                        <i className="ri-phone-line leading-[0] text-[18px] text-primary mr-2"></i>
                             <a href="tel:+914134068916" className="hover:underline">+91 413 406 8916</a>
+                        </p>
+                        <p className="flex items-center text-gray-700">
+                        <i className="ri-whatsapp-line leading-[0] text-[18px] text-primary mr-2"></i>
+                            <a href="https://wa.me/9600729596" className="hover:underline">+91 9600729596</a>
                         </p>
                         <p className="flex items-center text-gray-700">
                         <i className="ri-mail-line leading-[0] text-[18px] text-primary mr-2"></i> 
@@ -23,7 +27,7 @@ export default function ContactUs() {
                         </p>
                         <p className="flex items-center text-gray-700">
                         <i className="ri-map-pin-line leading-[0] text-[18px] text-primary mr-2"></i> 
-                            123, Thiaworld Jewellery, India
+                            No: 20, 100 Feet Road, Ellaipillaichavady, Puducherry, 605005, India
                         </p>
                     </div>
                     <div className="w-full h-44 rounded-lg overflow-hidden shadow-lg mt-3">
@@ -43,9 +47,9 @@ export default function ContactUs() {
                     <form className="space-y-4">
                         <input type="text" placeholder="Your Name" className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-400" />
                         <input type="email" placeholder="Your Email" className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-400" />
-                        <textarea placeholder="Your Message" rows="4" className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-400"></textarea>
+                        <textarea placeholder="Your Message" rows="6" className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-400"></textarea>
                         <button type="submit" className="bg-gradient-to-r dark:text-gray-300 from-logoSecondary to-logoPrimary shadow-lg mt-6 p-2 text-white rounded-lg w-full hover:scale-105 hover:from-logoPrimary hover:to-logoSecondary transition duration-300 ease-in-out">
-                            Send Message
+                            Send Us a Message 
                         </button>
                     </form>
                 </div>
@@ -53,10 +57,10 @@ export default function ContactUs() {
 
             {/* Social Media Panel */}
             <div className="flex space-x-6 mt-8">
-                <a href="https://facebook.com" className="text-blue-600 text-3xl">
+                <a href="https://www.facebook.com/profile.php?id=100090804256179" className="text-blue-600 text-3xl">
                     <i className="ri-facebook-circle-fill"></i>
                 </a>
-                <a href="https://instagram.com" className="text-pink-500 text-3xl">
+                <a href="https://www.instagram.com/bbscart/?hl=en#" className="text-pink-500 text-3xl">
                     <i className="ri-instagram-fill"></i>
                 </a>
                 <a href="https://wa.me/914134068916" className="text-green-500 text-3xl">

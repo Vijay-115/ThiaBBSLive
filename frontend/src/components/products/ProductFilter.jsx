@@ -197,9 +197,9 @@ function ProductFilter({filters, setFilters}) {
           <h3 className="text-[18px] font-bold">Price</h3>
           <PriceRangeSlider
             min={0}
-            max={2000}
-            step={50}
-            value={filters?.priceRange ?? { min: 0, max: 2000 }}
+            max={100000000}
+            step={1}
+            value={filters?.priceRange ?? { min: 0, max: 100000000 }}
             onChange={handlePriceChange}
           />
         </div>

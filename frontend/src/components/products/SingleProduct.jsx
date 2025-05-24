@@ -280,7 +280,7 @@ function SingleProduct() {
                 {/* Left Section: Image Slider */}
                 <div className="min-[992px]:w-[41.66%] w-full px-[12px] mb-[24px]">
                   <div className="single-pro-slider sticky top-[0] p-[15px] border-[1px] border-solid border-[#eee] rounded-[24px] max-[991px]:max-w-[500px] max-[991px]:m-auto">
-                    <SingleProductGallery images={productData?.gallery_imgs ?? []} />
+                    <SingleProductGallery images={productData?.gallery_imgs.length > 0 ? productData?.gallery_imgs : productData?.product_img } />
                   </div>
                 </div>
 

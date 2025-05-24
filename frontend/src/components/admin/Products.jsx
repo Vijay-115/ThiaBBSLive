@@ -43,7 +43,7 @@ const Products = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: "", direction: "" });
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 25;
 
   
   const [importfile, setImportfile] = useState(null);
@@ -224,9 +224,13 @@ const Products = () => {
     formData.append("file", file); // ✅ Append actual file object
   
     try {
-      await ProductService.importProducts(formData);
-      fetchProducts();
-      return true; // ✅ Success
+      const importRes = await ProductService.importProducts(formData);
+      if(importRes.status === 200){
+        fetchProducts();
+        return importRes;
+      }else{
+        return importRes;
+      }
     } catch (error) {
       console.error("Import Error:", error);
       alert("Error importing products.");
@@ -299,8 +303,8 @@ const Products = () => {
                             contentLabel="Product Form"
                             className="modal-content"
                             overlayClassName="modal-overlay"
-                        >
-                            <ProductForm product={editProduct} categories={categories} subCategories={subCategories} onSave={handleAddProduct} />
+                        > 
+                        <ProductForm product={editProduct} categories={categories} subCategories={subCategories} setIsAddEditModalOpen={setIsAddEditModalOpen} onSave={handleAddProduct} />
                         </Modal>
 
                         <Modal
@@ -425,7 +429,7 @@ const Products = () => {
                                                   </div>
                                               </div>
                                           </td>
-                                          <td data-label="Action" className="p-[12px]">
+                                          <td data-label="Action" width="200" className="p-[12px]">
                                               <button
                                               className="bg-yellow-500 text-white px-4 py-1 rounded-md"
                                               onClick={() => handleEditProduct(product)}
