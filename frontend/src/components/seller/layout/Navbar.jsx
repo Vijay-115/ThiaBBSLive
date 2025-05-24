@@ -1,4 +1,7 @@
 import React from "react";
+import { useDispatch } from "react-redux";
+import { logout } from "../../../services/authService";
+import { useSelector } from 'react-redux';
 
 const Navbar = ({
     isDarkMode,
@@ -13,8 +16,9 @@ const Navbar = ({
     toggleSearchForm,
 }) => {
 
-    const userName = localStorage.getItem('userName') || 'Admin';
-    const userRole = localStorage.getItem('userRole') || 'admin';
+    const { user, isAuthenticated } = useSelector((state) => state.auth);
+    const dispatch = useDispatch();
+    const userName = user.name || 'Admin';
 
     return (
         <nav>
@@ -68,7 +72,7 @@ const Navbar = ({
                         <li>
                             <a href="#">Settings</a>
                         </li>
-                        <li onClick={() => { localStorage.clear(); window.location.reload(); }}>
+                        <li onClick={ async () => { await logout(dispatch); }}>
                             <a>Log Out</a>
                         </li>
                     </ul>

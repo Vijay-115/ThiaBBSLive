@@ -44,7 +44,7 @@ const BecomeTerritoryHead = () => {
         let formErrors = {};
     
         // Basic validations
-        if (!vendorData.vendor_fname) formErrors.vendor_fname = "Vendor first name is required";
+        if (!vendorData.vendor_fname) formErrors.vendor_fname = "Territory Head first name is required";
         if (!vendorData.business_type) formErrors.business_type = "Business type is required";
         if (!vendorData.contact_person) formErrors.contact_person = "Contact person name is required";
         if (!vendorData.email) formErrors.email = "Email is required";
@@ -211,7 +211,7 @@ const BecomeTerritoryHead = () => {
             toast.success("Registration successful, Please wait for admin confirmation");
             navigate("/");
         } catch (error) {
-            toast.error(error.message || "Vendor registration failed. Try again.");
+            toast.error(error.message || "Territory Head registration failed. Try again.");
         }
     };
     
@@ -260,22 +260,22 @@ const BecomeTerritoryHead = () => {
                             Become a Territory Head
                         </h1>
                         <form className="grid grid-cols-2 gap-x-4" onSubmit={handleVendorSubmit} encType="multipart/form-data">
-                            {/* Vendor Name */}
+                            {/* Territory Head Name */}
                             <div className="col-span-1 mt-3">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Vendor First Name</label>
-                                <input name="vendor_fname" type="text" placeholder="Enter Vendor First Name"
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Territory Head First Name</label>
+                                <input name="vendor_fname" type="text" placeholder="Enter Territory Head First Name"
                                     className={`border p-[9.85px] w-full rounded-lg ${errors.vendor_fname ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.vendor_fname} />
                                 {errors.vendor_fname && <div className="text-red-800">{errors.vendor_fname}</div>}
                             </div>
                             <div className="col-span-1 mt-3">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Vendor Last Name</label>
-                                <input name="vendor_lname" type="text" placeholder="Enter Vendor Last Name"
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Territory Head Last Name</label>
+                                <input name="vendor_lname" type="text" placeholder="Enter Territory Head Last Name"
                                     className={`border p-[9.85px] w-full rounded-lg`}
                                     onChange={handleChange} value={vendorData.vendor_lname} />
                             </div>
                             <div className="col-span-1 mt-3">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Vendor DOB</label>
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Territory Head DOB</label>
                                 <input name="dob" type="date" placeholder="Select DOB"
                                     className={`border p-[9.85px] w-full rounded-lg`}
                                     onChange={handleChange} value={vendorData.dob} />
@@ -756,7 +756,7 @@ const BecomeTerritoryHead = () => {
                                 )}
                             </div>
 
-                            <h3 className="col-span-2 block text-[18px] font-medium text-primary mt-[20px]  mb-[8px]">Vendor Profile</h3>                            
+                            <h3 className="col-span-2 block text-[18px] font-medium text-primary mt-[20px]  mb-[8px]">Territory Head Profile</h3>                            
 
                             <div className="col-span-1 mt-3 relative">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Profile Picture/Logo</label>
@@ -797,8 +797,8 @@ const BecomeTerritoryHead = () => {
                             </div>    
                                              
                             <div className="col-span-1 mt-3">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Brief Vendor Bio/Description</label>
-                                <input name="vendor_bio" type="text" placeholder="Enter Brief Vendor Bio/Description"
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Brief Territory Head Bio/Description</label>
+                                <input name="vendor_bio" type="text" placeholder="Enter Brief Territory Head Bio/Description"
                                     className={`border p-[9.85px] w-full rounded-lg`}
                                     onChange={handleChange} value={vendorData.vendor_bio} />
                             </div>
@@ -854,7 +854,7 @@ const BecomeTerritoryHead = () => {
                             <div className="col-span-2 mt-6">
                                 <div className="flex flex-row gap-2 items-center">
                                     <input className="w-[15px] h-[15px]" type="checkbox" name="termsConditions" id="termsConditions" checked={vendorData.termsConditions} onChange={handleChange} /> 
-                                    <label htmlFor="termsConditions"> I agree to BBSCART Vendor Terms & Conditions. {errors.termsConditions && <span className="text-red-800">{`(${errors.termsConditions})`}</span>} </label>
+                                    <label htmlFor="termsConditions"> I agree to BBSCART Territory Head Terms & Conditions. {errors.termsConditions && <span className="text-red-800">{`(${errors.termsConditions})`}</span>} </label>
                                 </div>
                                 
                                 <div className="flex flex-row gap-2 items-center">
