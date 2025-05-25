@@ -47,6 +47,7 @@ import ExchangePolicy from './components/pages/ExchangePolicy';
 import BuybackPolicy from './components/pages/BuybackPolicy';
 import BankCashbackPolicy from './components/pages/BankCashbackPolicy';
 import ContactUs from './components/pages/ContactUs';
+import ThiaPage from './components/pages/ThiaPage';
 
 import SellerDashboard from './components/seller/Dashboard';
 import SellerProducts from './components/seller/Products';
@@ -135,6 +136,7 @@ function App() {
         <Route path="/bank-cashback-policy" element={<BankCashbackPolicy />} />
         <Route path="/contact" element={<ContactUs />} />
         <Route path="/orders" element={<CustomerOrders />} />
+        <Route path="/thia" element={<ThiaPage />} />
         
 
          {/* ✅ Admin Routes */}
