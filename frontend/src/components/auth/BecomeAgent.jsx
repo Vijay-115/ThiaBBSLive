@@ -296,21 +296,21 @@ const BecomeAgent = () => {
                                 {errors.business_type && <div className="text-red-800">{errors.business_type}</div>}
                             </div>      
                             {/* Brand Name */}
-                            <div className="col-span-1 mt-3">
+                            {/* <div className="col-span-1 mt-3">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Brand Name</label>
                                 <input name="brand_name" type="text" placeholder="Enter Brand Name"
                                     className={`border p-[9.85px] w-full rounded-lg ${errors.brand_name ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.brand_name} />
                                 {errors.brand_name && <div className="text-red-800">{errors.brand_name}</div>}
-                            </div>
+                            </div> */}
                             {/* Contact Person Name */}
-                            <div className="col-span-1 mt-3">
+                            {/* <div className="col-span-1 mt-3">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Contact Person Name</label>
                                 <input name="contact_person" type="text" placeholder="Enter Contact Person Name"
                                     className={`border p-[9.85px] w-full rounded-lg ${errors.contact_person ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.contact_person} />
                                 {errors.contact_person && <div className="text-red-800">{errors.contact_person}</div>}
-                            </div>
+                            </div> */}
                             {/* Email */}
                             <div className="col-span-1 mt-3">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Email</label>

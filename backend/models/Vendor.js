@@ -66,6 +66,8 @@ const VendorSchema = new mongoose.Schema({
     role: { type: String, enum: ['seller', 'agent', 'territory_head', 'franchise_head'], required: true },
     user_id: { type: ObjectId, ref: 'User', default: null },
     is_active: { type: Boolean, default: false },
+    is_decline: { type: Boolean, default: false },
+    decline_reason: { type: String, default: null },
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now }
 });
