@@ -33,7 +33,7 @@ const BecomeTerritoryHead = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
-    const businessTypes = ['Individual', 'Proprietorship', 'Partnership Firm', 'Private Limited Company', 'Public Company'];
+    const businessTypes = ['Individual', 'Partnership Firm', 'Private Limited Company'];
     const productCategories = ['Jewelry', 'Electronics', 'Garments', 'Supermarket/FMCG', 'Health & Beauty', 'Home & Kitchen', 'Books & Stationery', 'Other'];
 
     const { countries: businessCountries, states: businessStates, cities: businessCities } = useAddress(vendorData.register_business_address.country, vendorData.register_business_address.state);
@@ -44,23 +44,25 @@ const BecomeTerritoryHead = () => {
         let formErrors = {};
     
         // Basic validations
-        if (!vendorData.vendor_fname) formErrors.vendor_fname = "Territory Head first name is required";
-        if (!vendorData.business_type) formErrors.business_type = "Business type is required";
+        if (!vendorData.vendor_fname) formErrors.vendor_fname = "First name is required";
+        if (!vendorData.vendor_lname) formErrors.vendor_lname = "Last name is required";
+        if (!vendorData.dob) formErrors.dob = "Date of Birth is required";
+        // if (!vendorData.business_type) formErrors.business_type = "Business type is required";
         if (!vendorData.contact_person) formErrors.contact_person = "Contact person name is required";
         if (!vendorData.email) formErrors.email = "Email is required";
         else if (!/\S+@\S+\.\S+/.test(vendorData.email)) formErrors.email = "Invalid email";
         if (!vendorData.mobile) formErrors.mobile = "Mobile number is required";
-        if (!vendorData.product_category) formErrors.product_category = "Product category is required";
-        if (vendorData.product_category === "Other" && !vendorData.product_category_other) {
-            formErrors.product_category_other = "Please specify the category";
-        }
+        // if (!vendorData.product_category) formErrors.product_category = "Product category is required";
+        // if (vendorData.product_category === "Other" && !vendorData.product_category_other) {
+        //     formErrors.product_category_other = "Please specify the category";
+        // }
         if (!vendorData.termsConditions) formErrors.termsConditions = "You must agree to terms & conditions";
         if (!vendorData.privacyPolicy) formErrors.privacyPolicy = "You must agree to privacy policy";
         if (!vendorData.sellerPolicy) formErrors.sellerPolicy = "You must agree to seller policy";
         if (!vendorData.pan_number) formErrors.pan_number = "PAN number is required";
         if (!files.pan_pic) formErrors.pan_pic = "PAN picture is required";
-        if (!files.gst_pic) formErrors.gst_pic = "GST picture is required";
-        if (!vendorData.outlet_manager_name) formErrors.outlet_manager_name = "Store manager name is required";
+        // if (!files.gst_pic) formErrors.gst_pic = "GST picture is required";
+        if (!vendorData.outlet_manager_name) formErrors.outlet_manager_name = "Contact Person Name is required";
         if (!vendorData.outlet_contact_no) formErrors.outlet_contact_no = "Contact number is required";
         if (!vendorData.bank_name) formErrors.bank_name = "Bank name is required";
         if (!vendorData.account_holder_name) formErrors.account_holder_name = "Account holder’s name is required";
@@ -72,6 +74,7 @@ const BecomeTerritoryHead = () => {
         if (!vendorData.aadhar_number) formErrors.aadhar_number = "Aadhar number is required";
         if (!files.aadhar_pic) formErrors.aadhar_pic = "Aadhar picture is required";
         if (!files.self_declaration) formErrors.self_declaration = "Self declaration is required";
+        if (!vendorData.vendor_bio) formErrors.vendor_bio = "Brief Vendor Bio/Description is required";     
     
         // Initialize nested objects if needed
         formErrors.register_business_address = {};
@@ -96,19 +99,19 @@ const BecomeTerritoryHead = () => {
     
         // Outlet Location validations
         if (!vendorData.outlet_location?.street) {
-            formErrors.outlet_location.street = "Supermarket Outlets Locations Street is required";
+            formErrors.outlet_location.street = "Zone Supervision Street is required";
         }
         if (!vendorData.outlet_location?.city) {
-            formErrors.outlet_location.city = "Supermarket Outlets Locations city is required";
+            formErrors.outlet_location.city = "Zone Supervision city is required";
         }
         if (!vendorData.outlet_location?.state) {
-            formErrors.outlet_location.state = "Supermarket Outlets Locations state is required";
+            formErrors.outlet_location.state = "Zone Supervision state is required";
         }
         if (!vendorData.outlet_location?.postalCode) {
-            formErrors.outlet_location.postalCode = "Supermarket Outlets Locations zipcode is required";
+            formErrors.outlet_location.postalCode = "Zone Supervision zipcode is required";
         }
         if (!vendorData.outlet_location?.country) {
-            formErrors.outlet_location.country = "Supermarket Outlets Locations Country is required";
+            formErrors.outlet_location.country = "Zone Supervision Country is required";
         }
     
         // Clean up empty nested error objects (optional)
@@ -262,23 +265,25 @@ const BecomeTerritoryHead = () => {
                         <form className="grid grid-cols-2 gap-x-4" onSubmit={handleVendorSubmit} encType="multipart/form-data">
                             {/* Territory Head Name */}
                             <div className="col-span-1 mt-3">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Territory Head First Name</label>
-                                <input name="vendor_fname" type="text" placeholder="Enter Territory Head First Name"
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">First Name</label>
+                                <input name="vendor_fname" type="text" placeholder="Enter First Name"
                                     className={`border p-[9.85px] w-full rounded-lg ${errors.vendor_fname ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.vendor_fname} />
                                 {errors.vendor_fname && <div className="text-red-800">{errors.vendor_fname}</div>}
                             </div>
                             <div className="col-span-1 mt-3">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Territory Head Last Name</label>
-                                <input name="vendor_lname" type="text" placeholder="Enter Territory Head Last Name"
-                                    className={`border p-[9.85px] w-full rounded-lg`}
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Last Name</label>
+                                <input name="vendor_lname" type="text" placeholder="Enter Last Name"
+                                    className={`border p-[9.85px] w-full rounded-lg ${errors.vendor_lname ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.vendor_lname} />
+                                {errors.vendor_lname && <div className="text-red-800">{errors.vendor_lname}</div>}
                             </div>
                             <div className="col-span-1 mt-3">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Territory Head DOB</label>
-                                <input name="dob" type="date" placeholder="Select DOB"
-                                    className={`border p-[9.85px] w-full rounded-lg`}
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Date Of Birth</label>
+                                <input name="dob" type="date" placeholder="Select Date Of Birth"
+                                    className={`border p-[9.85px] w-full rounded-lg ${errors.dob ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.dob} />
+                                {errors.dob && <div className="text-red-800">{errors.dob}</div>}
                             </div>
                             {/* Business Type Dropdown */}
                             <div className="col-span-1 mt-3">
@@ -292,20 +297,19 @@ const BecomeTerritoryHead = () => {
                                     className={`w-full border rounded-lg  ${errors.business_type ? 'border-red-700' : ''}`}
                                     name="business_type"
                                 />
-                                {errors.business_type && <div className="text-red-800">{errors.business_type}</div>}
                             </div>      
                             {/* Brand Name */}
                             <div className="col-span-1 mt-3">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Brand Name</label>
-                                <input name="brand_name" type="text" placeholder="Enter Brand Name"
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Business / Store Name</label>
+                                <input name="brand_name" type="text" placeholder="Enter your shop or brand name"
                                     className={`border p-[9.85px] w-full rounded-lg ${errors.brand_name ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.brand_name} />
                                 {errors.brand_name && <div className="text-red-800">{errors.brand_name}</div>}
                             </div>
                             {/* Contact Person Name */}
                             <div className="col-span-1 mt-3">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Contact Person Name</label>
-                                <input name="contact_person" type="text" placeholder="Enter Contact Person Name"
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Primary Contact Name</label>
+                                <input name="contact_person" type="text" placeholder="Enter Primary Contact Name"
                                     className={`border p-[9.85px] w-full rounded-lg ${errors.contact_person ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.contact_person} />
                                 {errors.contact_person && <div className="text-red-800">{errors.contact_person}</div>}
@@ -320,8 +324,8 @@ const BecomeTerritoryHead = () => {
                             </div>
                             {/* Mobile */}
                             <div className="col-span-1 mt-3">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Contact Person Mobile</label>
-                                <input name="mobile" type="text" placeholder="Enter Contact Person Mobile"
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Primary Contact Mobile (with country code)</label>
+                                <input name="mobile" type="text" placeholder="Enter Primary Contact Mobile"
                                     className={`border p-[9.85px] w-full rounded-lg ${errors.mobile ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.mobile} />
                                 {errors.mobile && <div className="text-red-800">{errors.mobile}</div>}
@@ -330,28 +334,25 @@ const BecomeTerritoryHead = () => {
                             <div className="col-span-1 mt-3">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Contact Person Alternative Mobile</label>
                                 <input name="alt_mobile" type="text" placeholder="Enter Contact Person Alternative Mobile"
-                                    className={`border p-[9.85px] w-full rounded-lg ${errors.alt_mobile ? 'border-red-700' : ''}`}
+                                    className={`border p-[9.85px] w-full rounded-lg`}
                                     onChange={handleChange} value={vendorData.alt_mobile} />
-                                {errors.alt_mobile && <div className="text-red-800">{errors.alt_mobile}</div>}
                             </div>
                             <div className="col-span-1 mt-3">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Education Qualification</label>
                                 <input name="education_qualify" type="text" placeholder="Education Qualification"
-                                    className={`border p-[9.85px] w-full rounded-lg ${errors.education_qualify ? 'border-red-700' : ''}`}
+                                    className={`border p-[9.85px] w-full rounded-lg`}
                                     onChange={handleChange} value={vendorData.education_qualify} />
-                                {errors.education_qualify && <div className="text-red-800">{errors.education_qualify}</div>}
                             </div>
                             
                             <div className="col-span-1 mt-3">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Work Experience</label>
                                 <input name="work_experience" type="text" placeholder="Work Experience"
-                                    className={`border p-[9.85px] w-full rounded-lg ${errors.work_experience ? 'border-red-700' : ''}`}
+                                    className={`border p-[9.85px] w-full rounded-lg`}
                                     onChange={handleChange} value={vendorData.work_experience} />
-                                {errors.work_experience && <div className="text-red-800">{errors.work_experience}</div>}
                             </div>
 
                             <div className="col-span-1 mt-3 relative">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Self Declaration <Link to="/files/SelfDeclarationForm.pdf" target="blank">(Download)</Link></label>
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Upload Signed Self-Declaration PDF <Link to="/files/SelfDeclarationForm.pdf" target="blank">(Download Form)</Link></label>
                                 <input 
                                     type="file" 
                                     name="self_declaration"
@@ -390,13 +391,13 @@ const BecomeTerritoryHead = () => {
                                 {errors.criminal_history && <div className="text-red-800">{errors.criminal_history}</div>}
                             </div> */}
 
-                            <div className="col-span-1 mt-3">
+                            {/* <div className="col-span-1 mt-3">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Referral Details</label>
                                 <input name="referral_details" type="text" placeholder="Referral Details"
                                     className={`border p-[9.85px] w-full rounded-lg ${errors.referral_details ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.referral_details} />
                                 {errors.referral_details && <div className="text-red-800">{errors.referral_details}</div>}
-                            </div>
+                            </div> */}
                             
                             <div className="col-span-1 mt-3">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Language Proficiency</label>
@@ -606,11 +607,11 @@ const BecomeTerritoryHead = () => {
                                 );
                             })}
 
-                            <h3 className="col-span-2 block text-[18px] font-medium text-primary mt-[20px]  mb-[8px]">Supermarket Outlets Locations</h3>
+                            <h3 className="col-span-2 block text-[18px] font-medium text-primary mt-[20px]  mb-[8px]">Zone Supervision </h3>
 
                             <div className="col-span-1 mt-3">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Store Manager Name</label>
-                                <input name="outlet_manager_name" type="text" placeholder="Enter Store Manager Name"
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Contact Person Name</label>
+                                <input name="outlet_manager_name" type="text" placeholder="Enter Contact Person Name"
                                     className={`border p-[9.85px] w-full rounded-lg ${errors.outlet_manager_name ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.outlet_manager_name} />
                                 {errors.outlet_manager_name && <div className="text-red-800">{errors.outlet_manager_name}</div>}
@@ -741,7 +742,7 @@ const BecomeTerritoryHead = () => {
                                 <input 
                                     type="file" 
                                     name="cancel_cheque_passbook"
-                                    className="border p-[9.85px] w-full rounded-lg" 
+                                    className={`border p-[9.85px] w-full rounded-lg ${errors.cancel_cheque_passbook ? 'border-red-700' : ''}`} 
                                     onChange={handleImageChange} 
                                 />
 
@@ -754,9 +755,10 @@ const BecomeTerritoryHead = () => {
                                         Preview
                                     </button>
                                 )}
+                                {errors.branch_name && <div className="text-red-800">{errors.branch_name}</div>}
                             </div>
 
-                            <h3 className="col-span-2 block text-[18px] font-medium text-primary mt-[20px]  mb-[8px]">Territory Head Profile</h3>                            
+                            <h3 className="col-span-2 block text-[18px] font-medium text-primary mt-[20px]  mb-[8px]">Profile</h3>                            
 
                             <div className="col-span-1 mt-3 relative">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Profile Picture/Logo</label>
@@ -799,13 +801,14 @@ const BecomeTerritoryHead = () => {
                             <div className="col-span-1 mt-3">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Brief Territory Head Bio/Description</label>
                                 <input name="vendor_bio" type="text" placeholder="Enter Brief Territory Head Bio/Description"
-                                    className={`border p-[9.85px] w-full rounded-lg`}
+                                    className={`border p-[9.85px] w-full rounded-lg ${errors.vendor_bio ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.vendor_bio} />
+                                {errors.vendor_bio && <div className="text-red-800">{errors.vendor_bio}</div>}
                             </div>
 
 
                             {/* Product Category Dropdown */}
-                            <div className="col-span-1 mt-3">
+                            {/* <div className="col-span-1 mt-3">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Product Category</label>
                                 <Select
                                     options={productCategories.map((option) => ({ value: option, label: option, }))}
@@ -817,17 +820,17 @@ const BecomeTerritoryHead = () => {
                                     name="product_category"
                                 />
                                 {errors.product_category && <div className="text-red-800">{errors.product_category}</div>}
-                            </div>
+                            </div> */}
 
                             {/* Other Product Category Input */}
-                            {vendorData.product_category === "Other" && (
+                            {/* {vendorData.product_category === "Other" && (
                                 <div className="col-span-1 mt-3">
                                     <label className="block text-[14px] font-medium text-secondary mb-[8px]">Specify Category</label>
                                     <input name="product_category_other" type="text" placeholder="Enter category"
                                         className="border p-[9.85px] w-full rounded-lg" onChange={handleChange} value={vendorData.product_category_other} />
                                     {errors.product_category_other && <div className="text-red-800">{errors.product_category_other}</div>}
                                 </div>
-                            )}
+                            )} */}
 
 
                             <div className="col-span-1 mt-3 relative">
@@ -864,7 +867,7 @@ const BecomeTerritoryHead = () => {
                                 
                                 <div className="flex flex-row gap-2 items-center">
                                     <input className="w-[15px] h-[15px]" type="checkbox" name="sellerPolicy" id="sellerPolicy" checked={vendorData.sellerPolicy} onChange={handleChange} /> 
-                                    <label htmlFor="sellerPolicy">Acceptance of Seller Policy & Guidelines. {errors.sellerPolicy && <span className="text-red-800">{`(${errors.sellerPolicy})`}</span>}</label>
+                                    <label htmlFor="sellerPolicy">Acceptance of Territory Head Policy & Guidelines. {errors.sellerPolicy && <span className="text-red-800">{`(${errors.sellerPolicy})`}</span>}</label>
                                 </div>
                             </div>
 
