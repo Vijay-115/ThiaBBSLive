@@ -35,13 +35,13 @@ function BestSelling() {
 
               <div className="best-selling-product-price">
                 <span className="selling-price line-through">
-                  <i class="fa-solid fa-indian-rupee-sign"></i> 1,00,000
+                  ₹ 1,00,000
                 </span>
                 <span
                   className="selling-price"
                   style={{ color: "#ff6600", fontWeight: "bold" }}
                 >
-                  <i class="fa-solid fa-indian-rupee-sign"></i> 1,00,000 only
+                  ₹ 1,00,000 only
                 </span>
               </div>
 
@@ -52,7 +52,7 @@ function BestSelling() {
                   <span className="box-best-sell" onClick={increment}>+</span>
                 </div>
                 <button className="best-selling-product-button">
-                  <i class="fa-solid fa-cart-plus"></i> View More
+                  <i className="ri-shopping-cart-line"></i> View More
                 </button>
               </div>
             </div>
@@ -74,13 +74,13 @@ function BestSelling() {
 
               <div className="best-selling-product-price">
                 <span className="selling-price line-through">
-                  <i class="fa-solid fa-indian-rupee-sign"></i> 1,00,000
+                  ₹ 1,00,000
                 </span>
                 <span
                   className="selling-price"
                   style={{ color: "#ff6600", fontWeight: "bold" }}
                 >
-                  <i class="fa-solid fa-indian-rupee-sign"></i> 1,00,000 only
+                  ₹ 1,00,000 only
                 </span>
               </div>
 
@@ -91,7 +91,7 @@ function BestSelling() {
                   <span className="box-best-sell" onClick={increment}>+</span>
                 </div>
                 <button className="best-selling-product-button">
-                  <i class="fa-solid fa-cart-plus"></i> View More
+                  <i className="ri-shopping-cart-line"></i> View More
                 </button>
               </div>
             </div>
@@ -113,13 +113,13 @@ function BestSelling() {
 
               <div className="best-selling-product-price">
                 <span className="selling-price line-through">
-                  <i class="fa-solid fa-indian-rupee-sign"></i> 1,00,000
+                  ₹ 1,00,000
                 </span>
                 <span
                   className="selling-price"
                   style={{ color: "#ff6600", fontWeight: "bold" }}
                 >
-                  <i class="fa-solid fa-indian-rupee-sign"></i> 1,00,000 only
+                  ₹ 1,00,000 only
                 </span>
               </div>
 
@@ -130,7 +130,7 @@ function BestSelling() {
                   <span className="box-best-sell" onClick={increment}>+</span>
                 </div>
                 <button className="best-selling-product-button">
-                  <i class="fa-solid fa-cart-plus"></i> View More
+                  <i className="ri-shopping-cart-line"></i> View More
                 </button>
               </div>
             </div>
@@ -152,13 +152,13 @@ function BestSelling() {
 
               <div className="best-selling-product-price">
                 <span className="selling-price line-through">
-                  <i class="fa-solid fa-indian-rupee-sign"></i> 1,00,000
+                  ₹ 1,00,000
                 </span>
                 <span
                   className="selling-price"
                   style={{ color: "#ff6600", fontWeight: "bold" }}
                 >
-                  <i class="fa-solid fa-indian-rupee-sign"></i> 1,00,000 only
+                  ₹ 1,00,000 only
                 </span>
               </div>
 
@@ -169,7 +169,7 @@ function BestSelling() {
                   <span className="box-best-sell" onClick={increment}>+</span>
                 </div>
                 <button className="best-selling-product-button">
-                  <i class="fa-solid fa-cart-plus"></i> View More
+                  <i className="ri-shopping-cart-line"></i> View More
                 </button>
               </div>
             </div>
@@ -244,7 +244,6 @@ function BestSelling() {
               text-align: center;
               font-size: 10px;
               font-weight: bold;
-              padding: 5px 10px;
               border-radius: 5px;
               width: 50px;
               position: absolute;
