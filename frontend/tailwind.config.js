@@ -39,6 +39,15 @@ export default {
           '2xl': '6rem',
         },
       },
+      keyframes: {
+        marquee: {
+          '0%': { transform: 'translateX(100%)' },
+          '100%': { transform: 'translateX(-100%)' },
+        },
+      },
+      animation: {
+        marquee: 'marquee 20s linear infinite',
+      },
     },
     screens: {
       'xs': '480px',

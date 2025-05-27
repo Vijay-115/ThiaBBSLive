@@ -16,33 +16,33 @@ import { useLocation } from 'react-router-dom';
 function HomePage() {
   const location = useLocation();
   useEffect(() => {
-      // Scroll to top whenever the route changes
-      window.scrollTo(0, 0);
+    // Scroll to top whenever the route changes
+    window.scrollTo(0, 0);
   }, [location]);
   return (
     <>
-        
-            {/* Page Content */}
-            <HeroSection/>
-            <div className="homepage bbscontainer">       
-              <SectionCategory/>
-              <div className='home'>
-                <ProductList heading="Grocery Items" type="Slider" />
-              </div>
-              <TrendingItems/>
-              <VendorSlider />
-              <AnimationCards/>
-              <OfferSection/>
-              <HeroVideoCarousel/>
-              <WhatsAppChat />
-            </div>
-            <CallToActionSection />
-            <div className="homepage bbscontainer">
-              <BannerOne/>
-              <Services/>
-            </div>
-            {/* Page Content */}
-        
+
+      {/* Page Content */}
+      <HeroSection />
+      <div className="homepage bbscontainer">
+        <SectionCategory />
+        <div className='home'>
+          <ProductList heading="Grocery Items" type="Slider" />
+        </div>
+        <TrendingItems />
+        <VendorSlider />
+        <AnimationCards />
+        <OfferSection />
+        <HeroVideoCarousel />
+        <WhatsAppChat />
+      </div>
+      <CallToActionSection />
+      <div className="homepage bbscontainer">
+        <BannerOne />
+        <Services />
+      </div>
+      {/* Page Content */}
+
     </>
   )
 }
