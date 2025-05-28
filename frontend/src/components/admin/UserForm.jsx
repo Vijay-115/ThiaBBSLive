@@ -71,7 +71,7 @@ const UserForm = ({ vendor, onSave, setIsAddEditModalOpen }) => {
 
   return (
     <div className="max-w-[50vw] w-full mx-auto bg-white border border-gray-400 p-8 shadow-md rounded-md relative">
-      <span className="popup-close" onClick={() => setIsAddEditModalOpen(false)}><i class="ri-close-circle-line"></i></span>
+      <span className="popup-close" onClick={() => setIsAddEditModalOpen(false)}><i className="ri-close-circle-line"></i></span>
       <h2 className="text-2xl font-semibold text-center mb-6">
         {vendor ? "Edit Vendor" : "Add Vendor"}
       </h2>

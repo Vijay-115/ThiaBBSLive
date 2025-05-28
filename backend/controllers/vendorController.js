@@ -239,3 +239,22 @@ exports.approveVendor = async (req, res) => {
         res.status(500).json({ error: "Internal server error" });
     }
 };
+
+exports.declineVendor = async (req, res) => {
+    try {
+        const vendorId = req.params.id;
+        const declineReason = req.body.reason; // if you send reason or other data
+        console.log('Vendor Declined:', vendorId);
+        const vendorInfo = await Vendor.findById(vendorId);
+        if (declineReason && vendorId) {
+            vendorInfo.is_decline = true;
+            vendorInfo.decline_reason = declineReason;
+            await vendorInfo.save();
+        }
+        // Perform DB update or logic here...
+        return res.status(200).json({ success: true, message: 'Vendor declined successfully.' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ success: false, message: 'Internal Server Error' });
+    }
+};
