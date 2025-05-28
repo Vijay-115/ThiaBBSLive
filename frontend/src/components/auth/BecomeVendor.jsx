@@ -67,10 +67,10 @@ const BecomeVendor = () => {
         if (!vendorData.account_holder_name) formErrors.account_holder_name = "Account holder’s name is required";
         if (!vendorData.account_no) formErrors.account_no = "Account number is required";
         if (!vendorData.ifcs_code) formErrors.ifcs_code = "IFSC code is required";
-        // if (!vendorData.branch_name) formErrors.branch_name = "Branch name is required";
+        if (!vendorData.branch_name) formErrors.branch_name = "Branch name is required";
         if (!files.address_proof) formErrors.address_proof = "Address proof is required";
     
-        if (!files.gst_number) formErrors.gst_number = "GST number is required";
+        if (!vendorData.gst_number) formErrors.gst_number = "GST number is required";
         if (!files.gst_pic) formErrors.gst_pic = "GST picture is required";
         if (!vendorData.aadhar_number) formErrors.aadhar_number = "Aadhar number is required";
         if (!files.aadhar_pic) formErrors.aadhar_pic = "Aadhar picture is required"; 
@@ -399,8 +399,8 @@ const BecomeVendor = () => {
                             </div> */}
 
                             <div className="col-span-1 mt-3">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Referral Details</label>
-                                <input name="referral_details" type="text" placeholder="Referral Details"
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Referral ID</label>
+                                <input name="referral_details" type="text" placeholder="Referral ID"
                                     className={`border p-[9.85px] w-full rounded-lg ${errors.referral_details ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.referral_details} />
                                 {errors.referral_details && <div className="text-red-800">{errors.referral_details}</div>}
@@ -740,7 +740,7 @@ const BecomeVendor = () => {
                                 <input name="branch_name" type="text" placeholder="Enter Branch Name"
                                     className={`border p-[9.85px] w-full rounded-lg ${errors.branch_name ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.branch_name} />
-                                {/* {errors.branch_name && <div className="text-red-800">{errors.branch_name}</div>} */}
+                                {errors.branch_name && <div className="text-red-800">{errors.branch_name}</div>}
                             </div>
 
                             <div className="col-span-1 mt-3 relative">

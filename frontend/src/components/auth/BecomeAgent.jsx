@@ -789,7 +789,7 @@ const BecomeAgent = () => {
                             </div>          
 
                             <div className="col-span-1 mt-3 relative">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Cover Image for Vendor Storefront</label>
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Cover Image for Storefront</label>
                                 <input 
                                     type="file" 
                                     name="cover_pic"

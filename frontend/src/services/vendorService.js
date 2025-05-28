@@ -34,3 +34,16 @@ export const vendorApprove = async (vendorId) => {
         return false;
     }
 };
+
+export const vendoDecline = async (declineData) => {
+    try {
+        const response = await api.put(`/vendor/decline/${declineData.user_id}`, {
+            reason: declineData.decline_reason
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Decline error:', error);
+        localStorage.removeItem("token");
+        return false;
+    }
+};
