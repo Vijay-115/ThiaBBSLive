@@ -75,9 +75,9 @@ exports.registerVendor = async (req, res) => {
         
 
         // Ensure required fields are present
-        if (!vendor_fname || !business_type || !contact_person || !email || !mobile || !pan_number || !outlet_manager_name || !outlet_contact_no || !bank_name || !account_holder_name || !account_no || !ifcs_code || !branch_name) {
-            return res.status(400).json({ success: false, message: "Missing required fields" });
-        }
+        // if (!vendor_fname || !business_type || !contact_person || !email || !mobile || !pan_number || !outlet_manager_name || !outlet_contact_no || !bank_name || !account_holder_name || !account_no || !ifcs_code || !branch_name) {
+        //     return res.status(400).json({ success: false, message: "Missing required fields" });
+        // }
 
         const existingUser = await User.findOne({ email });
         

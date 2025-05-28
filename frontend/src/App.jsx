@@ -59,6 +59,7 @@ import { fetchCartItems } from './slice/cartSlice';
 import { fetchWishlistItems } from './slice/wishlistSlice';
 
 import ScrollToTopOnRouteChange from "./components/ScrollToTopOnRouteChange";
+import CustomerBecomeVendor from './components/auth/CustomerBecomeVendor';
 
 // Main App Component
 function App() {
@@ -114,6 +115,7 @@ function App() {
         <Route path="/cart" element={<CartPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/customer-become-a-vendor" element={<CustomerBecomeVendor />} />
         <Route path="/become-a-vendor" element={<BecomeVendor />} />
         <Route path="/become-a-agent" element={<BecomeAgent />} />
         <Route path="/become-a-territory-head" element={<BecomeTerritoryHead />} />
