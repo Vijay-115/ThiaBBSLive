@@ -1,6 +1,7 @@
 import React from "react";
 import { useDispatch } from "react-redux";
 import { logout } from "../../../services/authService";
+import { useSelector } from 'react-redux';
 
 const Navbar = ({
     isDarkMode,
@@ -15,9 +16,10 @@ const Navbar = ({
     toggleSearchForm,
 }) => {
 
+    
+    const { user, isAuthenticated } = useSelector((state) => state.auth);
     const dispatch = useDispatch();
-    const userName = localStorage.getItem('userName') || 'Admin';
-    const userRole = localStorage.getItem('userRole') || 'admin';
+    const userName = user.name || 'Admin';
 
     return (
         <nav>

@@ -39,6 +39,18 @@ const OtherUser = () => {
 
   const [roleFilter, setRoleFilter] = useState("all");
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const page = parseInt(params.get("page")) || 1;
+    setCurrentPage(page);
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    params.set("page", currentPage);
+    window.history.replaceState({}, "", `${window.location.pathname}?${params}`);
+  }, [currentPage]);
+  
 // Update the filter logic to show only selected roles
 const filterAndSortUsers = () => {
     let filtered = vendors.filter((vendor) => 

@@ -39,6 +39,18 @@ const SubCategories = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 25;
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const page = parseInt(params.get("page")) || 1;
+    setCurrentPage(page);
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    params.set("page", currentPage);
+    window.history.replaceState({}, "", `${window.location.pathname}?${params}`);
+  }, [currentPage]);
+  
   // Fetch Categories
   const fetchCategories = async (id) => {
     try {
@@ -237,7 +249,7 @@ const SubCategories = () => {
                             className="modal-content"
                             overlayClassName="modal-overlay"
                         >
-                            <SubCategoryForm categories={categories} subcategory={editCategory} onSave={handleAddCategory} />
+                            <SubCategoryForm categories={categories} subcategory={editCategory} onSave={handleAddCategory} setIsAddEditModalOpen={setIsAddEditModalOpen} />
                         </Modal>
 
                         <Modal

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-const CategoryForm = ({ category, onSave }) => {
+const CategoryForm = ({ category, onSave, setIsAddEditModalOpen }) => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -45,7 +45,8 @@ const CategoryForm = ({ category, onSave }) => {
   };
 
   return (
-    <div className="max-w-[50vw] w-full mx-auto bg-white border border-gray-400 p-8 shadow-md rounded-md">
+    <div className="max-w-[50vw] w-full mx-auto bg-white border border-gray-400 p-8 shadow-md rounded-md relative">
+      <span className="popup-close" onClick={() => setIsAddEditModalOpen(false)}><i className="ri-close-circle-line"></i></span>
       <h2 className="text-2xl font-semibold text-center mb-6">
         {category ? "Edit Category" : "Add Category"}
       </h2>

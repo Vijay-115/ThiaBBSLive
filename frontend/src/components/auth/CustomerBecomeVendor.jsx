@@ -1,17 +1,29 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Select from "react-select";
 import { GetCountries, GetState, GetCity } from "react-country-state-city";
 import useAddress from "../admin/hooks/useAddress";
 import { vendorRegister } from "../../services/vendorService";
 
-const BecomeAgent = () => {
+const CustomerBecomeVendor = () => {
     
     const [vendorData, setVendorData] = useState({
-        vendor_fname: '', vendor_lname: '', dob: '', education_qualify: '', work_experience: '', referral_details: '', lang_proficiency: '', aadhar_number: '', business_type: '', brand_name: '', contact_person: '', email: '', mobile: '', register_business_address: { street: "", city: "", state: "", postalCode: "", country: "" }, operational_address: { street: "", city: "", state: "", postalCode: "", country: "" }, pan_number: '', gst_number: '', fssai_license: '', shop_establish_license: '', outlet_location: { street: "", city: "", state: "", postalCode: "", country: "" },outlet_manager_name: '', outlet_contact_no: '', bank_name: '', account_holder_name: '', account_no: '', ifcs_code: '', branch_name: '', cancel_cheque_passbook: '', passbook: '', vendor_bio: '', product_category: '', product_category_other: '', address_proof: '', termsConditions: false, privacyPolicy: false, sellerPolicy: false, role: 'agent',
+        vendor_fname: '', vendor_lname: '', dob: '', education_qualify: '', work_experience: '', referral_details: '', lang_proficiency: '', aadhar_number: '', business_type: '', brand_name: '', contact_person: '', email: '', mobile: '', register_business_address: { street: "", city: "", state: "", postalCode: "", country: "" }, operational_address: { street: "", city: "", state: "", postalCode: "", country: "" }, pan_number: '', gst_number: '', fssai_license: '', shop_establish_license: '', outlet_location: { street: "", city: "", state: "", postalCode: "", country: "" },outlet_manager_name: '', outlet_contact_no: '', bank_name: '', account_holder_name: '', account_no: '', ifcs_code: '', branch_name: '', cancel_cheque_passbook: '', passbook: '', vendor_bio: '', product_category: '', product_category_other: '', address_proof: '', termsConditions: false, privacyPolicy: false, sellerPolicy: false, role: 'cbv',
     });
+
+    const { user, isAuthenticated } = useSelector((state) => state.auth);
+    useEffect(() => {
+        if (user) {
+            setVendorData(prev => ({
+                ...prev,
+                vendor_fname: user.name || "",
+                email: user.email || "",
+            }));     
+        }
+        console.log('CBV User',user);
+    }, [user]);
 
     // const [files, setFiles] = useState({
     //     pan_pic: null, gst_pic: null, fssai_pic: null,
@@ -20,11 +32,11 @@ const BecomeAgent = () => {
     // });
 
     const [data, setData] = useState({
-        aadhar_number: '',pan_number: '', gst_number: '', fssai_license: '', shop_establish_license: ''
+        aadhar_number: '',pan_number: ''
     });
     
     const [files, setFiles] = useState({
-        aadhar_pic: null, pan_pic: null, gst_pic: null, fssai_pic: null, shop_establish_pic: null, cancel_cheque_passbook: null, passbook: null, profile_pic: null, cover_pic: null, address_proof: null, self_declaration: null, criminal_history: null
+        aadhar_pic: null, pan_pic: null,  cancel_cheque_passbook: null, passbook: null, profile_pic: null, cover_pic: null, address_proof: null, self_declaration: null, criminal_history: null
     });
 
     const [imagePreviews, setImagePreviews] = useState({});
@@ -33,12 +45,8 @@ const BecomeAgent = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
-    const businessTypes = ['Individual', 'Partnership Firm'];
-    const productCategories = ['Jewelry', 'Electronics', 'Garments', 'Supermarket/FMCG', 'Health & Beauty', 'Home & Kitchen', 'Books & Stationery', 'Other'];
-
     const { countries: businessCountries, states: businessStates, cities: businessCities } = useAddress(vendorData.register_business_address.country, vendorData.register_business_address.state);
     const { countries: operationalCountries, states: operationalStates, cities: operationalCities } = useAddress(vendorData.operational_address.country, vendorData.operational_address.state);
-    const { countries: outletCountries, states: outletStates, cities: outletCities } = useAddress(vendorData.outlet_location.country, vendorData.outlet_location.state);
 
     const validateVendor = () => {
         let formErrors = {};
@@ -46,43 +54,30 @@ const BecomeAgent = () => {
         // Basic validations
         if (!vendorData.vendor_fname) formErrors.vendor_fname = "First name is required";
         if (!vendorData.vendor_lname) formErrors.vendor_lname = "Last name is required";
-        if (!vendorData.dob) formErrors.dob = "Date of Birth is required";
-        if (!vendorData.business_type) formErrors.business_type = "Business type is required";
-        // if (!vendorData.contact_person) formErrors.contact_person = "Primary contact name is required";
+        if (!vendorData.dob) formErrors.dob = "Date of Birth is required";      
         if (!vendorData.email) formErrors.email = "Email is required";
         else if (!/\S+@\S+\.\S+/.test(vendorData.email)) formErrors.email = "Invalid email";
-        if (!vendorData.mobile) formErrors.mobile = "Primary contact mobile is required";
-        // if (!vendorData.product_category) formErrors.product_category = "Product category is required";
-        // if (vendorData.product_category === "Other" && !vendorData.product_category_other) {
-        //     formErrors.product_category_other = "Please specify the category";
-        // }
+        if (!vendorData.mobile) formErrors.mobile = "Mobile number is required";
         if (!vendorData.termsConditions) formErrors.termsConditions = "You must agree to terms & conditions";
         if (!vendorData.privacyPolicy) formErrors.privacyPolicy = "You must agree to privacy policy";
-        if (!vendorData.sellerPolicy) formErrors.sellerPolicy = "You must agree to seller policy";
-        
-        if (!vendorData.outlet_manager_name) formErrors.outlet_manager_name = "Agent Area Manager Name is required";
-        if (!vendorData.outlet_contact_no) formErrors.outlet_contact_no = "Contact number is required";
+        if (!vendorData.sellerPolicy) formErrors.sellerPolicy = "You must agree to vendor policy";    
         if (!vendorData.bank_name) formErrors.bank_name = "Bank name is required";
         if (!vendorData.account_holder_name) formErrors.account_holder_name = "Account holder’s name is required";
         if (!vendorData.account_no) formErrors.account_no = "Account number is required";
         if (!vendorData.ifcs_code) formErrors.ifcs_code = "IFSC code is required";
         if (!vendorData.branch_name) formErrors.branch_name = "Branch name is required";
         if (!files.address_proof) formErrors.address_proof = "Address proof is required";
-
         if (!vendorData.aadhar_number) formErrors.aadhar_number = "Aadhar number is required";
-        if (!files.aadhar_pic) formErrors.aadhar_pic = "Aadhar picture is required";
+        if (!files.aadhar_pic) formErrors.aadhar_pic = "Aadhar picture is required"; 
         if (!vendorData.pan_number) formErrors.pan_number = "PAN number is required";
         if (!files.pan_pic) formErrors.pan_pic = "PAN picture is required";
         if (!files.self_declaration) formErrors.self_declaration = "Self declaration is required";
         if (!files.cancel_cheque_passbook) formErrors.cancel_cheque_passbook = "Cancelled Cheque/Passbook is required";
-        if (!files.profile_pic) formErrors.profile_pic = "Profile Picture / Logo is required";        
         
-        if (!vendorData.referral_details) formErrors.referral_details = "Referral details is required";
         if (!vendorData.vendor_bio) formErrors.vendor_bio = "Brief Vendor Bio/Description is required";        
-    
+
         // Initialize nested objects if needed
         formErrors.register_business_address = {};
-        formErrors.outlet_location = {};
     
         // Register Business Address validations
         if (!vendorData.register_business_address?.street) {
@@ -101,29 +96,9 @@ const BecomeAgent = () => {
             formErrors.register_business_address.country = "Register Business Address Country is required";
         }
     
-        // Outlet Location validations
-        if (!vendorData.outlet_location?.street) {
-            formErrors.outlet_location.street = "Agent Locations Street is required";
-        }
-        if (!vendorData.outlet_location?.city) {
-            formErrors.outlet_location.city = "Agent Locations city is required";
-        }
-        if (!vendorData.outlet_location?.state) {
-            formErrors.outlet_location.state = "Agent Locations state is required";
-        }
-        if (!vendorData.outlet_location?.postalCode) {
-            formErrors.outlet_location.postalCode = "Agent Locations zipcode is required";
-        }
-        if (!vendorData.outlet_location?.country) {
-            formErrors.outlet_location.country = "Agent Locations Country is required";
-        }
-    
         // Clean up empty nested error objects (optional)
         if (Object.keys(formErrors.register_business_address).length === 0) {
             delete formErrors.register_business_address;
-        }
-        if (Object.keys(formErrors.outlet_location).length === 0) {
-            delete formErrors.outlet_location;
         }
     
         return formErrors;
@@ -218,7 +193,7 @@ const BecomeAgent = () => {
             toast.success("Registration successful, Please wait for admin confirmation");
             navigate("/");
         } catch (error) {
-            toast.error(error.message || "Agent registration failed. Try again.");
+            toast.error(error.message || "Vendor registration failed. Try again.");
         }
     };
     
@@ -264,10 +239,10 @@ const BecomeAgent = () => {
                 <div id="back-div" className="bg-gradient-to-r from-logoSecondary to-logoPrimary rounded-[26px] m-4">
                     <div className="border-[20px] border-transparent rounded-[20px] dark:bg-gray-900 bg-white shadow-lg p-5 m-2">
                         <h1 className="pt-8 pb-6 font-bold dark:text-gray-400 text-3xl text-center">
-                            Become a Agent
+                            Customer Become A Vendor
                         </h1>
                         <form className="grid grid-cols-2 gap-x-4" onSubmit={handleVendorSubmit} encType="multipart/form-data">
-                            {/* Agent Name */}
+                            {/* Vendor Name */}
                             <div className="col-span-1 mt-3">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">First Name</label>
                                 <input name="vendor_fname" type="text" placeholder="Enter First Name"
@@ -288,37 +263,7 @@ const BecomeAgent = () => {
                                     className={`border p-[9.85px] w-full rounded-lg ${errors.dob ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.dob} />
                                 {errors.dob && <div className="text-red-800">{errors.dob}</div>}
-                            </div>
-                            {/* Business Type Dropdown */}
-                            <div className="col-span-1 mt-3">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Agent Business Type</label>
-                                <Select
-                                    options={businessTypes.map((option) => ({ value: option, label: option, }))}
-                                    value={vendorData.business_type ? { value: vendorData.business_type, label: vendorData.business_type } : null}
-                                    onChange={handleSelectChange}
-                                    placeholder="Select Business Type"
-                                    isSearchable
-                                    className={`w-full border rounded-lg  ${errors.business_type ? 'border-red-700' : ''}`}
-                                    name="business_type"
-                                />
-                                {errors.business_type && <div className="text-red-800">{errors.business_type}</div>}
                             </div>      
-                            {/* Brand Name */}
-                            {/* <div className="col-span-1 mt-3">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Brand Name</label>
-                                <input name="brand_name" type="text" placeholder="Enter Brand Name"
-                                    className={`border p-[9.85px] w-full rounded-lg ${errors.brand_name ? 'border-red-700' : ''}`}
-                                    onChange={handleChange} value={vendorData.brand_name} />
-                                {errors.brand_name && <div className="text-red-800">{errors.brand_name}</div>}
-                            </div> */}
-                            {/* Contact Person Name */}
-                            <div className="col-span-1 mt-3">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Primary Contact Name</label>
-                                <input name="contact_person" type="text" placeholder="Enter Primary Contact Name"
-                                    className={`border p-[9.85px] w-full rounded-lg ${errors.contact_person ? 'border-red-700' : ''}`}
-                                    onChange={handleChange} value={vendorData.contact_person} />
-                                {/* {errors.contact_person && <div className="text-red-800">{errors.contact_person}</div>} */}
-                            </div>
                             {/* Email */}
                             <div className="col-span-1 mt-3">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Email</label>
@@ -346,17 +291,15 @@ const BecomeAgent = () => {
                             <div className="col-span-1 mt-3">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Education Qualification</label>
                                 <input name="education_qualify" type="text" placeholder="Education Qualification"
-                                    className={`border p-[9.85px] w-full rounded-lg ${errors.education_qualify ? 'border-red-700' : ''}`}
+                                    className={`border p-[9.85px] w-full rounded-lg`}
                                     onChange={handleChange} value={vendorData.education_qualify} />
-                                {errors.education_qualify && <div className="text-red-800">{errors.education_qualify}</div>}
                             </div>
                             
                             <div className="col-span-1 mt-3">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Work Experience</label>
                                 <input name="work_experience" type="text" placeholder="Work Experience"
-                                    className={`border p-[9.85px] w-full rounded-lg ${errors.work_experience ? 'border-red-700' : ''}`}
+                                    className={`border p-[9.85px] w-full rounded-lg`}
                                     onChange={handleChange} value={vendorData.work_experience} />
-                                {errors.work_experience && <div className="text-red-800">{errors.work_experience}</div>}
                             </div>
 
                             <div className="col-span-1 mt-3 relative">
@@ -377,34 +320,6 @@ const BecomeAgent = () => {
                                 </button>
                                 )}
                                 {errors.self_declaration && <div className="text-red-800">{errors.self_declaration}</div>}
-                            </div>
-
-                            {/* <div className="col-span-1 mt-3 relative">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Criminal History</label>
-                                <input 
-                                    type="file" 
-                                    name="criminal_history"
-                                    className={`border p-[9.85px] w-full rounded-lg ${errors.criminal_history ? 'border-red-700' : ''}`}
-                                    onChange={handleImageChange} 
-                                />
-                                
-                                {imagePreviews['criminal_history'] && (
-                                <button 
-                                    className="mt-2 px-3 py-1 bg-blue-500 text-white text-center rounded-md absolute right-3"
-                                    onClick={() => window.open(imagePreviews['criminal_history'], '_blank')}
-                                >
-                                    Preview
-                                </button>
-                                )}
-                                {errors.criminal_history && <div className="text-red-800">{errors.criminal_history}</div>}
-                            </div> */}
-
-                            <div className="col-span-1 mt-3">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Referred by (Franchisee ID / Territory Head ID / Direct)</label>
-                                <input name="referral_details" type="text" placeholder="Referral Details"
-                                    className={`border p-[9.85px] w-full rounded-lg ${errors.referral_details ? 'border-red-700' : ''}`}
-                                    onChange={handleChange} value={vendorData.referral_details} />
-                                {errors.referral_details && <div className="text-red-800">{errors.referral_details}</div>}
                             </div>
                             
                             <div className="col-span-1 mt-3">
@@ -614,97 +529,6 @@ const BecomeAgent = () => {
                                     </>
                                 );
                             })}
-
-                            <h3 className="col-span-2 block text-[18px] font-medium text-primary mt-[20px]  mb-[8px]">Agent Locations</h3>
-
-                            <div className="col-span-1 mt-3">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Agent Area Manager Name</label>
-                                <input name="outlet_manager_name" type="text" placeholder="Enter Agent Area Manager Name"
-                                    className={`border p-[9.85px] w-full rounded-lg ${errors.outlet_manager_name ? 'border-red-700' : ''}`}
-                                    onChange={handleChange} value={vendorData.outlet_manager_name} />
-                                {errors.outlet_manager_name && <div className="text-red-800">{errors.outlet_manager_name}</div>}
-                            </div>                            
-                            <div className="col-span-1 mt-3">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Contact Number </label>
-                                <input name="outlet_contact_no" type="text" placeholder="Enter Contact Number"
-                                    className={`border p-[9.85px] w-full rounded-lg ${errors.outlet_contact_no ? 'border-red-700' : ''}`}
-                                    onChange={handleChange} value={vendorData.outlet_contact_no} />
-                                {errors.outlet_contact_no && <div className="text-red-800">{errors.outlet_contact_no}</div>}
-                            </div>
-
-                            {/* Register Business Address */}
-                            <div className="col-span-2 w-full">
-                                <div className="input-item mb-[8px]">
-                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">Street</label>
-                                    <input 
-                                        type="text" 
-                                        name="outlet_location.street" 
-                                        onChange={handleChange} 
-                                        value={vendorData?.outlet_location?.street || ""} 
-                                        placeholder="Address Line 1" 
-                                        className={`w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px] ${errors.outlet_location?.street ? 'border-red-700' : ''}`}  
-                                    />
-                                    {errors.outlet_location?.street && ( <div className="text-red-800">{errors.outlet_location.street}</div> )}
-                                </div>
-                            </div>                                            
-    
-                            {/* Country Dropdown */}
-                            <div className="col-span-1 mt-3 w-full">
-                                <div className="input-item mb-[8px]">
-                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">Country</label>
-                                    <Select
-                                        options={outletCountries}
-                                        value={outletCountries.find(option => option.label === vendorData.outlet_location.country) || null}
-                                        onChange={(option) => handleAddressSelectChange(option, { name: "outlet_location.country" })}
-                                        placeholder="Select Country"
-                                        className={`w-full border rounded-lg ${errors.outlet_location?.country ? 'border-red-700' : ''}`}
-                                        isSearchable
-                                    />
-                                    {errors.outlet_location?.country && ( <div className="text-red-800">{errors.outlet_location.country}</div> )}
-                                </div>
-                            </div>
-    
-                            
-                            {/* Region/State Dropdown */}
-                            <div className="col-span-1 mt-3 w-full">
-                                <div className="input-item mb-[8px]">
-                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">State</label>
-                                    <Select
-                                        options={outletStates}
-                                        value={outletStates.find(option => option.label === vendorData.outlet_location.state) || null}
-                                        onChange={(option) => handleAddressSelectChange(option, { name: "outlet_location.state" })}
-                                        placeholder="Select State"
-                                        isSearchable
-                                        className={`w-full border rounded-lg ${errors.outlet_location?.state ? 'border-red-700' : ''}`}
-                                    />
-                                    {errors.outlet_location?.state && ( <div className="text-red-800">{errors.outlet_location.state}</div> )}
-                                </div>
-                            </div>
-    
-                            {/* City Dropdown */}
-                            <div className="col-span-1 mt-3 w-full">
-                                <div className="input-item mb-[8px]">
-                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">City</label>
-                                    <Select
-                                        options={outletCities}
-                                        value={outletCities.find(option => option.label === vendorData.outlet_location.city) || null}
-                                        onChange={(option) => handleAddressSelectChange(option, { name: "outlet_location.city" })}
-                                        placeholder="Select City"
-                                        isSearchable
-                                        className={`w-full border rounded-lg ${errors.outlet_location?.city ? 'border-red-700' : ''}`}
-                                    />
-                                    {errors.outlet_location?.city && ( <div className="text-red-800">{errors.outlet_location.city}</div> )}
-                                </div>
-                            </div>
-    
-                            {/* Post Code */}
-                            <div className="col-span-1 mt-3 w-full">
-                                <div className="input-item mb-[8px]">
-                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">Post Code *</label>
-                                    <input type="text" name="outlet_location.postalCode" onChange={handleChange} value={vendorData?.outlet_location?.postalCode ?? ''} placeholder="Post Code" className={`w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px] ${errors.outlet_location?.postalCode ? 'border-red-700' : ''}`} />
-                                    {errors.outlet_location?.postalCode && ( <div className="text-red-800">{errors.outlet_location.postalCode}</div> )}
-                                </div>
-                            </div>
                             
                             <h3 className="col-span-2 block text-[18px] font-medium text-primary mt-[20px]  mb-[8px]">Bank & Payment Details</h3>
                             
@@ -750,7 +574,7 @@ const BecomeAgent = () => {
                                 <input 
                                     type="file" 
                                     name="cancel_cheque_passbook"
-                                    className={`border p-[9.85px] w-full rounded-lg ${errors.cancel_cheque_passbook ? 'border-red-700' : ''}`} 
+                                    className={`border p-[9.85px] w-full rounded-lg ${errors.cancel_cheque_passbook ? 'border-red-700' : ''}`}
                                     onChange={handleImageChange} 
                                 />
 
@@ -773,7 +597,7 @@ const BecomeAgent = () => {
                                 <input 
                                     type="file" 
                                     name="profile_pic"
-                                    className={`border p-[9.85px] w-full rounded-lg ${errors.profile_pic ? 'border-red-700' : ''}`} 
+                                    className="border p-[9.85px] w-full rounded-lg" 
                                     onChange={handleImageChange} 
                                 />
                                 {/* Preview Button */}
@@ -785,61 +609,15 @@ const BecomeAgent = () => {
                                         Preview
                                     </button>
                                 )}
-                                {errors.profile_pic && <div className="text-red-800">{errors.profile_pic}</div>}
                             </div>          
-
-                            <div className="col-span-1 mt-3 relative">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Cover Image for Storefront</label>
-                                <input 
-                                    type="file" 
-                                    name="cover_pic"
-                                    className="border p-[9.85px] w-full rounded-lg" 
-                                    onChange={handleImageChange} 
-                                />
-                                {/* Preview Button */}
-                                {imagePreviews['cover_pic'] && (
-                                    <button 
-                                        className="mt-2 px-3 py-1 bg-blue-500 text-white text-center rounded-md absolute right-3"
-                                        onClick={() => window.open(imagePreviews['cover_pic'], '_blank')}
-                                    >
-                                        Preview
-                                    </button>
-                                )}
-                            </div>    
                                              
                             <div className="col-span-1 mt-3">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Brief Agent Bio/Description</label>
-                                <input name="vendor_bio" type="text" placeholder="Enter Brief Agent Bio/Description"
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Brief Vendor Bio/Description</label>
+                                <input name="vendor_bio" type="text" placeholder="Enter Brief Vendor Bio/Description"
                                     className={`border p-[9.85px] w-full rounded-lg ${errors.vendor_bio ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.vendor_bio} />
                                 {errors.vendor_bio && <div className="text-red-800">{errors.vendor_bio}</div>}
                             </div>
-
-
-                            {/* Product Category Dropdown */}
-                            {/* <div className="col-span-1 mt-3">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Product Category</label>
-                                <Select
-                                    options={productCategories.map((option) => ({ value: option, label: option, }))}
-                                    value={vendorData.product_category ? { value: vendorData.product_category, label: vendorData.product_category } : null}
-                                    onChange={handleSelectChange}
-                                    placeholder="Select Product Category"
-                                    isSearchable
-                                    className="w-full border rounded-lg "
-                                    name="product_category"
-                                />
-                                {errors.product_category && <div className="text-red-800">{errors.product_category}</div>}
-                            </div> */}
-
-                            {/* Other Product Category Input */}
-                            {/* {vendorData.product_category === "Other" && (
-                                <div className="col-span-1 mt-3">
-                                    <label className="block text-[14px] font-medium text-secondary mb-[8px]">Specify Category</label>
-                                    <input name="product_category_other" type="text" placeholder="Enter category"
-                                        className="border p-[9.85px] w-full rounded-lg" onChange={handleChange} value={vendorData.product_category_other} />
-                                    {errors.product_category_other && <div className="text-red-800">{errors.product_category_other}</div>}
-                                </div>
-                            )} */}
 
 
                             <div className="col-span-1 mt-3 relative">
@@ -866,7 +644,7 @@ const BecomeAgent = () => {
                             <div className="col-span-2 mt-6">
                                 <div className="flex flex-row gap-2 items-center">
                                     <input className="w-[15px] h-[15px]" type="checkbox" name="termsConditions" id="termsConditions" checked={vendorData.termsConditions} onChange={handleChange} /> 
-                                    <label htmlFor="termsConditions"> I agree to BBSCART Agent Terms & Conditions. {errors.termsConditions && <span className="text-red-800">{`(${errors.termsConditions})`}</span>} </label>
+                                    <label htmlFor="termsConditions"> I agree to BBSCART CBVA Terms & Conditions. {errors.termsConditions && <span className="text-red-800">{`(${errors.termsConditions})`}</span>} </label>
                                 </div>
                                 
                                 <div className="flex flex-row gap-2 items-center">
@@ -876,13 +654,13 @@ const BecomeAgent = () => {
                                 
                                 <div className="flex flex-row gap-2 items-center">
                                     <input className="w-[15px] h-[15px]" type="checkbox" name="sellerPolicy" id="sellerPolicy" checked={vendorData.sellerPolicy} onChange={handleChange} /> 
-                                    <label htmlFor="sellerPolicy">Acceptance of Agent Policy & Guidelines. {errors.sellerPolicy && <span className="text-red-800">{`(${errors.sellerPolicy})`}</span>}</label>
+                                    <label htmlFor="sellerPolicy">Acceptance of CBVA Policy & Guidelines. {errors.sellerPolicy && <span className="text-red-800">{`(${errors.sellerPolicy})`}</span>}</label>
                                 </div>
                             </div>
 
                             <div className="col-span-2">
                                 <button className="bg-gradient-to-r from-logoSecondary to-logoPrimary shadow-lg mt-6 p-[9.85px] text-white rounded-lg w-full">
-                                    REGISTER AS AGENT
+                                    REGISTER AS CUSTOMER BECOME A VENDOR
                                 </button>
                             </div>
                         </form>
@@ -896,4 +674,4 @@ const BecomeAgent = () => {
     );
 };
 
-export default BecomeAgent;
+export default CustomerBecomeVendor;

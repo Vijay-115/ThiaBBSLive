@@ -44,23 +44,25 @@ const BecomeFranchiseHead = () => {
         let formErrors = {};
     
         // Basic validations
-        if (!vendorData.vendor_fname) formErrors.vendor_fname = "Vendor first name is required";
-        if (!vendorData.business_type) formErrors.business_type = "Business type is required";
+        if (!vendorData.vendor_fname) formErrors.vendor_fname = "First name is required";
+        if (!vendorData.vendor_lname) formErrors.vendor_lname = "Last name is required";
+        if (!vendorData.dob) formErrors.dob = "Date of Birth is required";
+        // if (!vendorData.business_type) formErrors.business_type = "Business type is required";
         if (!vendorData.contact_person) formErrors.contact_person = "Contact person name is required";
         if (!vendorData.email) formErrors.email = "Email is required";
         else if (!/\S+@\S+\.\S+/.test(vendorData.email)) formErrors.email = "Invalid email";
         if (!vendorData.mobile) formErrors.mobile = "Mobile number is required";
-        if (!vendorData.product_category) formErrors.product_category = "Product category is required";
-        if (vendorData.product_category === "Other" && !vendorData.product_category_other) {
-            formErrors.product_category_other = "Please specify the category";
-        }
+        // if (!vendorData.product_category) formErrors.product_category = "Product category is required";
+        // if (vendorData.product_category === "Other" && !vendorData.product_category_other) {
+        //     formErrors.product_category_other = "Please specify the category";
+        // }
         if (!vendorData.termsConditions) formErrors.termsConditions = "You must agree to terms & conditions";
         if (!vendorData.privacyPolicy) formErrors.privacyPolicy = "You must agree to privacy policy";
         if (!vendorData.sellerPolicy) formErrors.sellerPolicy = "You must agree to seller policy";
         if (!vendorData.pan_number) formErrors.pan_number = "PAN number is required";
         if (!files.pan_pic) formErrors.pan_pic = "PAN picture is required";
-        if (!files.gst_pic) formErrors.gst_pic = "GST picture is required";
-        if (!vendorData.outlet_manager_name) formErrors.outlet_manager_name = "Store manager name is required";
+        // if (!files.gst_pic) formErrors.gst_pic = "GST picture is required";
+        if (!vendorData.outlet_manager_name) formErrors.outlet_manager_name = "Contact Person Name is required";
         if (!vendorData.outlet_contact_no) formErrors.outlet_contact_no = "Contact number is required";
         if (!vendorData.bank_name) formErrors.bank_name = "Bank name is required";
         if (!vendorData.account_holder_name) formErrors.account_holder_name = "Account holder’s name is required";
@@ -72,6 +74,7 @@ const BecomeFranchiseHead = () => {
         if (!vendorData.aadhar_number) formErrors.aadhar_number = "Aadhar number is required";
         if (!files.aadhar_pic) formErrors.aadhar_pic = "Aadhar picture is required";
         if (!files.self_declaration) formErrors.self_declaration = "Self declaration is required";
+        if (!vendorData.vendor_bio) formErrors.vendor_bio = "Brief Vendor Bio/Description is required";     
 
         // Initialize nested objects if needed
         formErrors.register_business_address = {};
@@ -96,19 +99,19 @@ const BecomeFranchiseHead = () => {
     
         // Outlet Location validations
         if (!vendorData.outlet_location?.street) {
-            formErrors.outlet_location.street = "Supermarket Outlets Locations Street is required";
+            formErrors.outlet_location.street = "Territory Head Area Responsibility Street is required";
         }
         if (!vendorData.outlet_location?.city) {
-            formErrors.outlet_location.city = "Supermarket Outlets Locations city is required";
+            formErrors.outlet_location.city = "Territory Head Area Responsibility city is required";
         }
         if (!vendorData.outlet_location?.state) {
-            formErrors.outlet_location.state = "Supermarket Outlets Locations state is required";
+            formErrors.outlet_location.state = "Territory Head Area Responsibility state is required";
         }
         if (!vendorData.outlet_location?.postalCode) {
-            formErrors.outlet_location.postalCode = "Supermarket Outlets Locations zipcode is required";
+            formErrors.outlet_location.postalCode = "Territory Head Area Responsibility zipcode is required";
         }
         if (!vendorData.outlet_location?.country) {
-            formErrors.outlet_location.country = "Supermarket Outlets Locations Country is required";
+            formErrors.outlet_location.country = "Territory Head Area Responsibility Country is required";
         }
     
         // Clean up empty nested error objects (optional)
@@ -211,7 +214,7 @@ const BecomeFranchiseHead = () => {
             toast.success("Registration successful, Please wait for admin confirmation");
             navigate("/");
         } catch (error) {
-            toast.error(error.message || "Vendor registration failed. Try again.");
+            toast.error(error.message || "Franchise Head registration failed. Try again.");
         }
     };
     
@@ -260,25 +263,27 @@ const BecomeFranchiseHead = () => {
                         Become a Franchise Head
                         </h1>
                         <form className="grid grid-cols-2 gap-x-4" onSubmit={handleVendorSubmit} encType="multipart/form-data">
-                            {/* Vendor Name */}
+                            {/* Franchise Head Name */}
                             <div className="col-span-1 mt-3">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Vendor First Name</label>
-                                <input name="vendor_fname" type="text" placeholder="Enter Vendor First Name"
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">First Name</label>
+                                <input name="vendor_fname" type="text" placeholder="Enter First Name"
                                     className={`border p-[9.85px] w-full rounded-lg ${errors.vendor_fname ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.vendor_fname} />
                                 {errors.vendor_fname && <div className="text-red-800">{errors.vendor_fname}</div>}
                             </div>
                             <div className="col-span-1 mt-3">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Vendor Last Name</label>
-                                <input name="vendor_lname" type="text" placeholder="Enter Vendor Last Name"
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Last Name</label>
+                                <input name="vendor_lname" type="text" placeholder="Enter Last Name"
                                     className={`border p-[9.85px] w-full rounded-lg`}
                                     onChange={handleChange} value={vendorData.vendor_lname} />
+                                {errors.vendor_lname && <div className="text-red-800">{errors.vendor_lname}</div>}
                             </div>
                             <div className="col-span-1 mt-3">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Vendor DOB</label>
-                                <input name="dob" type="date" placeholder="Select DOB"
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Date Of Birth</label>
+                                <input name="dob" type="date" placeholder="Select Date Of Birth"
                                     className={`border p-[9.85px] w-full rounded-lg`}
                                     onChange={handleChange} value={vendorData.dob} />
+                                {errors.dob && <div className="text-red-800">{errors.dob}</div>}
                             </div>
                             {/* Business Type Dropdown */}
                             <div className="col-span-1 mt-3">
@@ -292,7 +297,7 @@ const BecomeFranchiseHead = () => {
                                     className={`w-full border rounded-lg  ${errors.business_type ? 'border-red-700' : ''}`}
                                     name="business_type"
                                 />
-                                {errors.business_type && <div className="text-red-800">{errors.business_type}</div>}
+                                {/* {errors.business_type && <div className="text-red-800">{errors.business_type}</div>} */}
                             </div>      
                             {/* Brand Name */}
                             <div className="col-span-1 mt-3">
@@ -351,7 +356,7 @@ const BecomeFranchiseHead = () => {
                             </div>
 
                             <div className="col-span-1 mt-3 relative">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Self Declaration <Link to="/files/SelfDeclarationForm.pdf" target="blank">(Download)</Link></label>
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Upload Signed Self-Declaration PDF<Link to="/files/SelfDeclarationForm.pdf" target="blank">(Download)</Link></label>
                                 <input 
                                     type="file" 
                                     name="self_declaration"
@@ -390,13 +395,13 @@ const BecomeFranchiseHead = () => {
                                 {errors.criminal_history && <div className="text-red-800">{errors.criminal_history}</div>}
                             </div> */}
 
-                            <div className="col-span-1 mt-3">
+                            {/* <div className="col-span-1 mt-3">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Referral Details</label>
                                 <input name="referral_details" type="text" placeholder="Referral Details"
                                     className={`border p-[9.85px] w-full rounded-lg ${errors.referral_details ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.referral_details} />
                                 {errors.referral_details && <div className="text-red-800">{errors.referral_details}</div>}
-                            </div>
+                            </div> */}
                             
                             <div className="col-span-1 mt-3">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Language Proficiency</label>
@@ -606,11 +611,11 @@ const BecomeFranchiseHead = () => {
                                 );
                             })}
 
-                            <h3 className="col-span-2 block text-[18px] font-medium text-primary mt-[20px]  mb-[8px]">Supermarket Outlets Locations</h3>
+                            <h3 className="col-span-2 block text-[18px] font-medium text-primary mt-[20px]  mb-[8px]">Territory Head Area Responsibility</h3>
 
                             <div className="col-span-1 mt-3">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Store Manager Name</label>
-                                <input name="outlet_manager_name" type="text" placeholder="Enter Store Manager Name"
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Contact Person Name</label>
+                                <input name="outlet_manager_name" type="text" placeholder="Enter Contact Person Name"
                                     className={`border p-[9.85px] w-full rounded-lg ${errors.outlet_manager_name ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.outlet_manager_name} />
                                 {errors.outlet_manager_name && <div className="text-red-800">{errors.outlet_manager_name}</div>}
@@ -741,7 +746,7 @@ const BecomeFranchiseHead = () => {
                                 <input 
                                     type="file" 
                                     name="cancel_cheque_passbook"
-                                    className="border p-[9.85px] w-full rounded-lg" 
+                                    className={`border p-[9.85px] w-full rounded-lg ${errors.cancel_cheque_passbook ? 'border-red-700' : ''}`} 
                                     onChange={handleImageChange} 
                                 />
 
@@ -756,14 +761,14 @@ const BecomeFranchiseHead = () => {
                                 )}
                             </div>
 
-                            <h3 className="col-span-2 block text-[18px] font-medium text-primary mt-[20px]  mb-[8px]">Vendor Profile</h3>                            
+                            <h3 className="col-span-2 block text-[18px] font-medium text-primary mt-[20px]  mb-[8px]">Profile</h3>                            
 
                             <div className="col-span-1 mt-3 relative">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Profile Picture/Logo</label>
                                 <input 
                                     type="file" 
                                     name="profile_pic"
-                                    className="border p-[9.85px] w-full rounded-lg" 
+                                    className={`border p-[9.85px] w-full rounded-lg ${errors.profile_pic ? 'border-red-700' : ''}`} 
                                     onChange={handleImageChange} 
                                 />
                                 {/* Preview Button */}
@@ -775,10 +780,11 @@ const BecomeFranchiseHead = () => {
                                         Preview
                                     </button>
                                 )}
+                                {errors.profile_pic && <div className="text-red-800">{errors.profile_pic}</div>}
                             </div>          
 
                             <div className="col-span-1 mt-3 relative">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Cover Image for Vendor Storefront</label>
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Cover Image for Storefront</label>
                                 <input 
                                     type="file" 
                                     name="cover_pic"
@@ -797,15 +803,16 @@ const BecomeFranchiseHead = () => {
                             </div>    
                                              
                             <div className="col-span-1 mt-3">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Brief Vendor Bio/Description</label>
-                                <input name="vendor_bio" type="text" placeholder="Enter Brief Vendor Bio/Description"
-                                    className={`border p-[9.85px] w-full rounded-lg`}
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Brief Franchise Head Bio/Description</label>
+                                <input name="vendor_bio" type="text" placeholder="Enter Brief Franchise Head Bio/Description"
+                                    className={`border p-[9.85px] w-full rounded-lg ${errors.vendor_bio ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.vendor_bio} />
+                                {errors.vendor_bio && <div className="text-red-800">{errors.vendor_bio}</div>}
                             </div>
 
 
                             {/* Product Category Dropdown */}
-                            <div className="col-span-1 mt-3">
+                            {/* <div className="col-span-1 mt-3">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Product Category</label>
                                 <Select
                                     options={productCategories.map((option) => ({ value: option, label: option, }))}
@@ -817,17 +824,17 @@ const BecomeFranchiseHead = () => {
                                     name="product_category"
                                 />
                                 {errors.product_category && <div className="text-red-800">{errors.product_category}</div>}
-                            </div>
+                            </div> */}
 
                             {/* Other Product Category Input */}
-                            {vendorData.product_category === "Other" && (
+                            {/* {vendorData.product_category === "Other" && (
                                 <div className="col-span-1 mt-3">
                                     <label className="block text-[14px] font-medium text-secondary mb-[8px]">Specify Category</label>
                                     <input name="product_category_other" type="text" placeholder="Enter category"
                                         className="border p-[9.85px] w-full rounded-lg" onChange={handleChange} value={vendorData.product_category_other} />
                                     {errors.product_category_other && <div className="text-red-800">{errors.product_category_other}</div>}
                                 </div>
-                            )}
+                            )} */}
 
 
                             <div className="col-span-1 mt-3 relative">
@@ -854,7 +861,7 @@ const BecomeFranchiseHead = () => {
                             <div className="col-span-2 mt-6">
                                 <div className="flex flex-row gap-2 items-center">
                                     <input className="w-[15px] h-[15px]" type="checkbox" name="termsConditions" id="termsConditions" checked={vendorData.termsConditions} onChange={handleChange} /> 
-                                    <label htmlFor="termsConditions"> I agree to BBSCART Vendor Terms & Conditions. {errors.termsConditions && <span className="text-red-800">{`(${errors.termsConditions})`}</span>} </label>
+                                    <label htmlFor="termsConditions"> I agree to BBSCART Franchise Head Terms & Conditions. {errors.termsConditions && <span className="text-red-800">{`(${errors.termsConditions})`}</span>} </label>
                                 </div>
                                 
                                 <div className="flex flex-row gap-2 items-center">
@@ -864,7 +871,7 @@ const BecomeFranchiseHead = () => {
                                 
                                 <div className="flex flex-row gap-2 items-center">
                                     <input className="w-[15px] h-[15px]" type="checkbox" name="sellerPolicy" id="sellerPolicy" checked={vendorData.sellerPolicy} onChange={handleChange} /> 
-                                    <label htmlFor="sellerPolicy">Acceptance of Seller Policy & Guidelines. {errors.sellerPolicy && <span className="text-red-800">{`(${errors.sellerPolicy})`}</span>}</label>
+                                    <label htmlFor="sellerPolicy">Acceptance of Franchise Head Policy & Guidelines. {errors.sellerPolicy && <span className="text-red-800">{`(${errors.sellerPolicy})`}</span>}</label>
                                 </div>
                             </div>
 

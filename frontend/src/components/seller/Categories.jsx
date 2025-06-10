@@ -39,6 +39,18 @@ const Categories = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 25;
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const page = parseInt(params.get("page")) || 1;
+    setCurrentPage(page);
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    params.set("page", currentPage);
+    window.history.replaceState({}, "", `${window.location.pathname}?${params}`);
+  }, [currentPage]);
+  
   const fetchCategories = async (id) => {
     try {
       const data = await ProductService.getCategorySellerID(id);
@@ -226,7 +238,7 @@ const Categories = () => {
                             className="modal-content"
                             overlayClassName="modal-overlay"
                         >
-                            <CategoryForm category={editCategory} onSave={handleAddCategory} />
+                            <CategoryForm category={editCategory} onSave={handleAddCategory} setIsAddEditModalOpen={setIsAddEditModalOpen} />
                         </Modal>
 
                         <Modal

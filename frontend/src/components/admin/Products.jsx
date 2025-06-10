@@ -44,8 +44,12 @@ const Products = () => {
   const [sortConfig, setSortConfig] = useState({ key: "", direction: "" });
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 25;
-
-
+  
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    params.set("page", currentPage);
+    window.history.replaceState({}, "", `${window.location.pathname}?${params}`);
+  }, [currentPage]);
   const [importfile, setImportfile] = useState(null);
   const [importloading, setImportloading] = useState(false);
 

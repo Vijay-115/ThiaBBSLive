@@ -75,31 +75,31 @@ exports.registerVendor = async (req, res) => {
         
 
         // Ensure required fields are present
-        if (!vendor_fname || !business_type || !contact_person || !email || !mobile || !pan_number || !outlet_manager_name || !outlet_contact_no || !bank_name || !account_holder_name || !account_no || !ifcs_code || !branch_name) {
-            return res.status(400).json({ success: false, message: "Missing required fields" });
-        }
+        // if (!vendor_fname || !business_type || !contact_person || !email || !mobile || !pan_number || !outlet_manager_name || !outlet_contact_no || !bank_name || !account_holder_name || !account_no || !ifcs_code || !branch_name) {
+        //     return res.status(400).json({ success: false, message: "Missing required fields" });
+        // }
 
-        const existingUser = await User.findOne({ email });
-        
-        if (existingUser) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "User with this email or mobile already exists" 
-            });
-        }
+        if(role != 'cbv'){
+            const existingUser = await User.findOne({ email });
+            if (existingUser) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: "User with this email or mobile already exists" 
+                });
+            }
 
-        const existingVendor = await Vendor.findOne({ 
-            $or: [{ email }, { mobile }] // Check if email OR mobile already exists
-        });
-        
-        if (existingVendor) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "Vendor with this email or mobile already exists" ,
-                vendor: existingVendor
+            const existingVendor = await Vendor.findOne({ 
+                $or: [{ email }, { mobile }] // Check if email OR mobile already exists
             });
-        }
-        
+            
+            if (existingVendor) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: "Vendor with this email or mobile already exists" ,
+                    vendor: existingVendor
+                });
+            }
+        }        
 
         // Create new vendor
         const newVendor = new Vendor({
@@ -196,19 +196,22 @@ exports.approveVendor = async (req, res) => {
         const randomPassword = crypto.randomBytes(6).toString('hex'); // Example: "a3f9b2e1"
         const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
+
         // Create a new user for the vendor
-        const newUser = new User({
-            name: vendor.vendor_fname,
-            email: vendor.email,
-            password: hashedPassword, // Store hashed password
-            role: vendor.role,
-        });
-
-        await newUser.save();
-
-        console.log('newUser',newUser);
-        
-        vendor.user_id = newUser._id;
+        if(vendor.role != 'cbv'){
+            const newUser = new User({
+                name: vendor.vendor_fname,
+                email: vendor.email,
+                password: hashedPassword, // Store hashed password
+                role: vendor.role,
+            });
+            await newUser.save();
+            console.log('newUser',newUser);
+            vendor.user_id = newUser._id;
+        }else{
+            const existingUser = await User.findOne({ email: vendor.email });
+            vendor.user_id = existingUser._id;
+        }
         await vendor.save();
 
         // Send email with login credentials
@@ -237,5 +240,45 @@ exports.approveVendor = async (req, res) => {
     } catch (error) {
         console.error("Error approving vendor:", error);
         res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+exports.declineVendor = async (req, res) => {
+    try {
+        const vendorId = req.params.id;
+        const declineReason = req.body.reason; // if you send reason or other data
+        console.log('Vendor Declined:', vendorId);
+        const vendorInfo = await Vendor.findById(vendorId);
+        if (declineReason && vendorId) {
+            vendorInfo.is_decline = true;
+            vendorInfo.decline_reason = declineReason;
+            await vendorInfo.save();
+            // Configure email transporter
+            const transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: process.env.EMAIL_USER,
+                    pass: process.env.EMAIL_PASS
+                }
+            });
+            await transporter.sendMail({
+                from: process.env.EMAIL,
+                to: vendorInfo.email,
+                subject: "Request Decline",
+                html: `
+                <div style="font-family: Montserrat, sans-serif; line-height: 1.6;">
+                    <p>Hello,${vendorInfo.vendor_fname}</p>
+                    <p>Dear user your request has been decline for given reason: "${vendorInfo.decline_reason}".</p>
+                    <p>Thank you!</p>
+                    <p><strong>BBSCart Team</strong></p>
+                </div>
+                `,
+            });
+        }
+        // Perform DB update or logic here...
+        return res.status(200).json({ success: true, message: 'Vendor declined successfully.' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ success: false, message: 'Internal Server Error' });
     }
 };

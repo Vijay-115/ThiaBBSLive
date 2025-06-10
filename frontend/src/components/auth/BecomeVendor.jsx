@@ -44,8 +44,11 @@ const BecomeVendor = () => {
         let formErrors = {};
     
         // Basic validations
-        if (!vendorData.vendor_fname) formErrors.vendor_fname = "Vendor first name is required";
+        if (!vendorData.vendor_fname) formErrors.vendor_fname = "First name is required";
+        if (!vendorData.vendor_lname) formErrors.vendor_lname = "Last name is required";
+        if (!vendorData.dob) formErrors.dob = "Date of Birth is required";
         if (!vendorData.business_type) formErrors.business_type = "Business type is required";
+        if (!vendorData.brand_name) formErrors.brand_name = "Business / Store Name is required";        
         if (!vendorData.contact_person) formErrors.contact_person = "Contact person name is required";
         if (!vendorData.email) formErrors.email = "Email is required";
         else if (!/\S+@\S+\.\S+/.test(vendorData.email)) formErrors.email = "Invalid email";
@@ -56,10 +59,8 @@ const BecomeVendor = () => {
         }
         if (!vendorData.termsConditions) formErrors.termsConditions = "You must agree to terms & conditions";
         if (!vendorData.privacyPolicy) formErrors.privacyPolicy = "You must agree to privacy policy";
-        if (!vendorData.sellerPolicy) formErrors.sellerPolicy = "You must agree to seller policy";
-        if (!vendorData.pan_number) formErrors.pan_number = "PAN number is required";
-        if (!files.pan_pic) formErrors.pan_pic = "PAN picture is required";
-        if (!files.gst_pic) formErrors.gst_pic = "GST picture is required";
+        if (!vendorData.sellerPolicy) formErrors.sellerPolicy = "You must agree to vendor policy";    
+        
         if (!vendorData.outlet_manager_name) formErrors.outlet_manager_name = "Store manager name is required";
         if (!vendorData.outlet_contact_no) formErrors.outlet_contact_no = "Contact number is required";
         if (!vendorData.bank_name) formErrors.bank_name = "Bank name is required";
@@ -69,9 +70,16 @@ const BecomeVendor = () => {
         if (!vendorData.branch_name) formErrors.branch_name = "Branch name is required";
         if (!files.address_proof) formErrors.address_proof = "Address proof is required";
     
+        if (!vendorData.gst_number) formErrors.gst_number = "GST number is required";
+        if (!files.gst_pic) formErrors.gst_pic = "GST picture is required";
         if (!vendorData.aadhar_number) formErrors.aadhar_number = "Aadhar number is required";
-        if (!files.aadhar_pic) formErrors.aadhar_pic = "Aadhar picture is required";
+        if (!files.aadhar_pic) formErrors.aadhar_pic = "Aadhar picture is required"; 
+        if (!vendorData.pan_number) formErrors.pan_number = "PAN number is required";
+        if (!files.pan_pic) formErrors.pan_pic = "PAN picture is required";
         if (!files.self_declaration) formErrors.self_declaration = "Self declaration is required";
+        if (!files.cancel_cheque_passbook) formErrors.cancel_cheque_passbook = "Cancelled Cheque/Passbook is required";
+        
+        if (!vendorData.vendor_bio) formErrors.vendor_bio = "Brief Vendor Bio/Description is required";        
 
         // Initialize nested objects if needed
         formErrors.register_business_address = {};
@@ -262,23 +270,25 @@ const BecomeVendor = () => {
                         <form className="grid grid-cols-2 gap-x-4" onSubmit={handleVendorSubmit} encType="multipart/form-data">
                             {/* Vendor Name */}
                             <div className="col-span-1 mt-3">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Vendor First Name</label>
-                                <input name="vendor_fname" type="text" placeholder="Enter Vendor First Name"
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">First Name</label>
+                                <input name="vendor_fname" type="text" placeholder="Enter First Name"
                                     className={`border p-[9.85px] w-full rounded-lg ${errors.vendor_fname ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.vendor_fname} />
                                 {errors.vendor_fname && <div className="text-red-800">{errors.vendor_fname}</div>}
                             </div>
                             <div className="col-span-1 mt-3">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Vendor Last Name</label>
-                                <input name="vendor_lname" type="text" placeholder="Enter Vendor Last Name"
-                                    className={`border p-[9.85px] w-full rounded-lg`}
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Last Name</label>
+                                <input name="vendor_lname" type="text" placeholder="Enter Last Name"
+                                    className={`border p-[9.85px] w-full rounded-lg ${errors.vendor_lname ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.vendor_lname} />
+                                {errors.vendor_lname && <div className="text-red-800">{errors.vendor_lname}</div>}
                             </div>
                             <div className="col-span-1 mt-3">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Vendor DOB</label>
-                                <input name="dob" type="date" placeholder="Select DOB"
-                                    className={`border p-[9.85px] w-full rounded-lg`}
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Date Of Birth</label>
+                                <input name="dob" type="date" placeholder="Select Date Of Birth"
+                                    className={`border p-[9.85px] w-full rounded-lg ${errors.dob ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.dob} />
+                                {errors.dob && <div className="text-red-800">{errors.dob}</div>}
                             </div>
                             {/* Business Type Dropdown */}
                             <div className="col-span-1 mt-3">
@@ -296,7 +306,7 @@ const BecomeVendor = () => {
                             </div>      
                             {/* Brand Name */}
                             <div className="col-span-1 mt-3">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Brand Name</label>
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Business / Store Name</label>
                                 <input name="brand_name" type="text" placeholder="Enter Brand Name"
                                     className={`border p-[9.85px] w-full rounded-lg ${errors.brand_name ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.brand_name} />
@@ -304,8 +314,8 @@ const BecomeVendor = () => {
                             </div>
                             {/* Contact Person Name */}
                             <div className="col-span-1 mt-3">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Contact Person Name</label>
-                                <input name="contact_person" type="text" placeholder="Enter Contact Person Name"
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Primary Contact Name</label>
+                                <input name="contact_person" type="text" placeholder="Enter Primary Contact Name"
                                     className={`border p-[9.85px] w-full rounded-lg ${errors.contact_person ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.contact_person} />
                                 {errors.contact_person && <div className="text-red-800">{errors.contact_person}</div>}
@@ -320,8 +330,8 @@ const BecomeVendor = () => {
                             </div>
                             {/* Mobile */}
                             <div className="col-span-1 mt-3">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Contact Person Mobile</label>
-                                <input name="mobile" type="text" placeholder="Enter Contact Person Mobile"
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Primary Contact Mobile (with country code)</label>
+                                <input name="mobile" type="text" placeholder="Enter Primary Contact Mobile"
                                     className={`border p-[9.85px] w-full rounded-lg ${errors.mobile ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.mobile} />
                                 {errors.mobile && <div className="text-red-800">{errors.mobile}</div>}
@@ -337,21 +347,19 @@ const BecomeVendor = () => {
                             <div className="col-span-1 mt-3">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Education Qualification</label>
                                 <input name="education_qualify" type="text" placeholder="Education Qualification"
-                                    className={`border p-[9.85px] w-full rounded-lg ${errors.education_qualify ? 'border-red-700' : ''}`}
+                                    className={`border p-[9.85px] w-full rounded-lg`}
                                     onChange={handleChange} value={vendorData.education_qualify} />
-                                {errors.education_qualify && <div className="text-red-800">{errors.education_qualify}</div>}
                             </div>
                             
                             <div className="col-span-1 mt-3">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Work Experience</label>
                                 <input name="work_experience" type="text" placeholder="Work Experience"
-                                    className={`border p-[9.85px] w-full rounded-lg ${errors.work_experience ? 'border-red-700' : ''}`}
+                                    className={`border p-[9.85px] w-full rounded-lg`}
                                     onChange={handleChange} value={vendorData.work_experience} />
-                                {errors.work_experience && <div className="text-red-800">{errors.work_experience}</div>}
                             </div>
 
                             <div className="col-span-1 mt-3 relative">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Self Declaration <Link to="/files/SelfDeclarationForm.pdf" target="blank">(Download)</Link></label>
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Upload Signed Self-Declaration PDF<Link to="/files/SelfDeclarationForm.pdf" target="blank">(Download)</Link></label>
                                 <input 
                                     type="file" 
                                     name="self_declaration"
@@ -391,8 +399,8 @@ const BecomeVendor = () => {
                             </div> */}
 
                             <div className="col-span-1 mt-3">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Referral Details</label>
-                                <input name="referral_details" type="text" placeholder="Referral Details"
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Referral ID</label>
+                                <input name="referral_details" type="text" placeholder="Referral ID"
                                     className={`border p-[9.85px] w-full rounded-lg ${errors.referral_details ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.referral_details} />
                                 {errors.referral_details && <div className="text-red-800">{errors.referral_details}</div>}
@@ -741,7 +749,7 @@ const BecomeVendor = () => {
                                 <input 
                                     type="file" 
                                     name="cancel_cheque_passbook"
-                                    className="border p-[9.85px] w-full rounded-lg" 
+                                    className={`border p-[9.85px] w-full rounded-lg ${errors.cancel_cheque_passbook ? 'border-red-700' : ''}`}
                                     onChange={handleImageChange} 
                                 />
 
@@ -754,9 +762,10 @@ const BecomeVendor = () => {
                                         Preview
                                     </button>
                                 )}
+                                {errors.cancel_cheque_passbook && <div className="text-red-800">{errors.cancel_cheque_passbook}</div>}
                             </div>
 
-                            <h3 className="col-span-2 block text-[18px] font-medium text-primary mt-[20px]  mb-[8px]">Vendor Profile</h3>                            
+                            <h3 className="col-span-2 block text-[18px] font-medium text-primary mt-[20px]  mb-[8px]">Profile</h3>                            
 
                             <div className="col-span-1 mt-3 relative">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Profile Picture/Logo</label>
@@ -778,7 +787,7 @@ const BecomeVendor = () => {
                             </div>          
 
                             <div className="col-span-1 mt-3 relative">
-                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Cover Image for Vendor Storefront</label>
+                                <label className="block text-[14px] font-medium text-secondary mb-[8px]">Cover Image for Storefront</label>
                                 <input 
                                     type="file" 
                                     name="cover_pic"
@@ -799,8 +808,9 @@ const BecomeVendor = () => {
                             <div className="col-span-1 mt-3">
                                 <label className="block text-[14px] font-medium text-secondary mb-[8px]">Brief Vendor Bio/Description</label>
                                 <input name="vendor_bio" type="text" placeholder="Enter Brief Vendor Bio/Description"
-                                    className={`border p-[9.85px] w-full rounded-lg`}
+                                    className={`border p-[9.85px] w-full rounded-lg ${errors.vendor_bio ? 'border-red-700' : ''}`}
                                     onChange={handleChange} value={vendorData.vendor_bio} />
+                                {errors.vendor_bio && <div className="text-red-800">{errors.vendor_bio}</div>}
                             </div>
 
 
@@ -813,7 +823,7 @@ const BecomeVendor = () => {
                                     onChange={handleSelectChange}
                                     placeholder="Select Product Category"
                                     isSearchable
-                                    className="w-full border rounded-lg "
+                                    className={`w-full border rounded-lg ${errors.product_category ? 'border-red-700' : ''}`}
                                     name="product_category"
                                 />
                                 {errors.product_category && <div className="text-red-800">{errors.product_category}</div>}
@@ -864,7 +874,7 @@ const BecomeVendor = () => {
                                 
                                 <div className="flex flex-row gap-2 items-center">
                                     <input className="w-[15px] h-[15px]" type="checkbox" name="sellerPolicy" id="sellerPolicy" checked={vendorData.sellerPolicy} onChange={handleChange} /> 
-                                    <label htmlFor="sellerPolicy">Acceptance of Seller Policy & Guidelines. {errors.sellerPolicy && <span className="text-red-800">{`(${errors.sellerPolicy})`}</span>}</label>
+                                    <label htmlFor="sellerPolicy">Acceptance of Vendor Policy & Guidelines. {errors.sellerPolicy && <span className="text-red-800">{`(${errors.sellerPolicy})`}</span>}</label>
                                 </div>
                             </div>
 
