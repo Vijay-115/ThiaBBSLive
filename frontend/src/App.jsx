@@ -47,6 +47,7 @@ import ExchangePolicy from './components/pages/ExchangePolicy';
 import BuybackPolicy from './components/pages/BuybackPolicy';
 import BankCashbackPolicy from './components/pages/BankCashbackPolicy';
 import ContactUs from './components/pages/ContactUs';
+import ThiaPage from './components/pages/ThiaPage';
 
 import SellerDashboard from './components/seller/Dashboard';
 import SellerProducts from './components/seller/Products';
@@ -92,7 +93,7 @@ function App() {
 
   useEffect(() => {
     const checkHeaderFooter = () => {
-      const excludeHeaderFooterRoutes = ['/admin/dashboard', '/admin/products', '/admin/orders', '/admin/products/categories', '/admin/products/subcategories', '/admin/other-users', '/admin/customers', '/admin/vendors', '/seller/dashboard', '/seller/products', '/seller/orders', '/seller/products/categories', '/seller/products/subcategories', '/admin/users-request'];
+      const excludeHeaderFooterRoutes = ['/admin/dashboard', '/admin/products', '/admin/orders', '/admin/products/categories', '/admin/products/subcategories', '/admin/other-users', '/admin/customers', '/admin/vendors', '/seller/dashboard', '/seller/products', '/seller/orders', '/seller/products/categories', '/seller/products/subcategories', '/admin/users-request', '/thia'];
       setShouldRenderHeaderFooter(!excludeHeaderFooterRoutes.includes(location.pathname));
     };
 
@@ -137,6 +138,7 @@ function App() {
         <Route path="/bank-cashback-policy" element={<BankCashbackPolicy />} />
         <Route path="/contact" element={<ContactUs />} />
         <Route path="/orders" element={<CustomerOrders />} />
+        <Route path="/thia" element={<ThiaPage />} />
         
 
          {/* ✅ Admin Routes */}
