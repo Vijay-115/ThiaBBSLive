@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Select from "react-select";
+import toast from "react-hot-toast";
 
 const ProductForm = ({ product, categories, subCategories, onSave, setIsAddEditModalOpen }) => {
 
@@ -38,6 +39,32 @@ const ProductForm = ({ product, categories, subCategories, onSave, setIsAddEditM
     variant_gallery_imgs:[]
   });
   const [editIndex, setEditIndex] = useState(null); 
+  const [errors, setErrors] = useState({});
+
+  const validateVendor = () => {
+    let formErrors = {};
+    // Basic validations
+    if (!productData.name) formErrors.name = "Product name is required";
+    if (!productData.description) formErrors.description = "Product description is required";
+    if(!productData.is_variant === true){
+      if (!productData.price) formErrors.price = "Product price is required";
+      if (!productData.stock) formErrors.stock = "Product stock is required";
+      if (!productData.SKU) formErrors.SKU = "Product SKU is required";
+    }
+    if (!productData.brand) formErrors.brand = "Product brand is required";
+    if (!productData.weight) formErrors.weight = "Product weight is required";
+    if (!productData.weight) formErrors.weight = "Product weight is required";
+    if (!productData.category_id) formErrors.category_id = "Product Category is required";
+    if (!productData.subcategory_id) formErrors.subcategory_id = "Product Subcategory is required";
+    if(productData.is_variant === true){      
+      if (!variantData.variant_name) formErrors.variant_name = "Product Variant name is required";
+      if (!variantData.price) formErrors.vprice = "Product Variant price is required";
+      if (!variantData.stock) formErrors.vstock = "Product Variant stock is required";
+      if (!variantData.SKU) formErrors.VSKU = "Product Variant SKU is required";
+      if (!variantData.variant_img) formErrors.variant_img = "Product Variant image is required";
+    }
+    return formErrors;
+  };  
 
   const handleVariantChange = (e) => {
     const { name, value } = e.target;
@@ -225,6 +252,13 @@ const ProductForm = ({ product, categories, subCategories, onSave, setIsAddEditM
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    // Validate form
+    const validationErrors = validateVendor();
+    if (Object.keys(validationErrors).length > 0) {
+        setErrors(validationErrors);
+        toast.error("Please fix the errors and try again.");
+        return;
+    }
     const submissionData = new FormData();
 
     console.log('variantsJSON', JSON.stringify(productData.variants));
@@ -303,43 +337,50 @@ const ProductForm = ({ product, categories, subCategories, onSave, setIsAddEditM
               <div className="w-full">
                 <div className="input-item">
                   <label className="block text-[14px] font-medium text-secondary mb-[4px]"> Product Name * </label>
-                  <input type="text" name="name" value={productData.name} onChange={handleChange} placeholder="Product Name"  className="w-full p-2 mb-4 border rounded-lg" />
+                  <input type="text" name="name" value={productData.name} onChange={handleChange} placeholder="Product Name"  className={`w-full p-2 border rounded-lg ${errors.name ? 'border-red-700' : 'mb-4 '}`} />
+                  {errors.name && <div className="text-red-800 mb-2">{errors.name}</div>}
                 </div>
               </div>
               <div className="w-full">
                 <div className="input-item">
                   <label className="block text-[14px] font-medium text-secondary mb-[4px]"> Description * </label>
-                  <textarea name="description" value={productData.description} onChange={handleChange} placeholder="Description"  className="w-full p-2 mb-4 border rounded-lg" />
+                  <textarea name="description" value={productData.description} onChange={handleChange} placeholder="Description"  className={`w-full p-2 border rounded-lg ${errors.description ? 'border-red-700' : 'mb-4'}`} />
+                  {errors.description && <div className="text-red-800 mb-2">{errors.description}</div>}
                 </div>
               </div>
               <div className="w-full">
                 <div className="input-item">
                   <label className="block text-[14px] font-medium text-secondary mb-[4px]"> Price * </label>
-                  <input type="number" name="price" value={productData.price} onChange={handleChange} placeholder="Price"  className="w-full p-2 mb-4 border rounded-lg" />
+                  <input type="number" name="price" value={productData.price} onChange={handleChange} placeholder="Price"  className={`w-full p-2 border rounded-lg ${errors.price ? 'border-red-700' : 'mb-4'}`} />
+                  {errors.price && <div className="text-red-800 mb-2">{errors.price}</div>}
                 </div>
               </div>
               <div className="w-full">
                 <div className="input-item">
                   <label className="block text-[14px] font-medium text-secondary mb-[4px]"> Stock * </label>
-                  <input type="number" name="stock" value={productData.stock} onChange={handleChange} placeholder="Stock"  className="w-full p-2 mb-4 border rounded-lg" />
+                  <input type="number" name="stock" value={productData.stock} onChange={handleChange} placeholder="Stock"  className={`w-full p-2 border rounded-lg ${errors.stock ? 'border-red-700' : 'mb-4'}`} />
+                  {errors.stock && <div className="text-red-800 mb-2">{errors.stock}</div>}
                 </div>
               </div>
               <div className="w-full">
                 <div className="input-item">
                   <label className="block text-[14px] font-medium text-secondary mb-[4px]"> SKU * </label>
-                  <input type="text" name="SKU" value={productData.SKU} onChange={handleChange} placeholder="SKU"  className="w-full p-2 mb-4 border rounded-lg" />
+                  <input type="text" name="SKU" value={productData.SKU} onChange={handleChange} placeholder="SKU"  className={`w-full p-2 border rounded-lg ${errors.SKU ? 'border-red-700' : 'mb-4'}`} />
+                  {errors.SKU && <div className="text-red-800 mb-2">{errors.SKU}</div>}
                 </div>
               </div>
               <div className="w-full">
                 <div className="input-item">
                   <label className="block text-[14px] font-medium text-secondary mb-[4px]"> Brand * </label>
-                  <input type="text" name="brand" value={productData.brand} onChange={handleChange} placeholder="Brand"  className="w-full p-2 mb-4 border rounded-lg" />
+                  <input type="text" name="brand" value={productData.brand} onChange={handleChange} placeholder="Brand"  className={`w-full p-2 border rounded-lg ${errors.brand ? 'border-red-700' : 'mb-4'}`}  />
+                  {errors.brand && <div className="text-red-800 mb-2 ">{errors.brand}</div>}
                 </div>
               </div>
               <div className="w-full">
                 <div className="input-item">
                   <label className="block text-[14px] font-medium text-secondary mb-[4px]"> Weight </label>
-                  <input type="number" name="weight" value={productData.weight} onChange={handleChange} placeholder="Weight" className="w-full p-2 mb-4 border rounded-lg" />
+                  <input type="number" name="weight" value={productData.weight} onChange={handleChange} placeholder="Weight" className={`w-full p-2 border rounded-lg ${errors.weight ? 'border-red-700' : 'mb-4'}`}/>
+                  {errors.weight && <div className="text-red-800 mb-2">{errors.weight}</div>}
                 </div>
               </div>
               <div className="flex space-x-2 mb-4">
@@ -411,9 +452,10 @@ const ProductForm = ({ product, categories, subCategories, onSave, setIsAddEditM
                     onChange={handleSelectChange}
                     placeholder="Select Category"
                     isSearchable
-                    className="w-full border rounded-lg"
+                    className={`w-full border rounded-lg ${errors.category_id ? 'border-red-700' : ''}`}
                     name="category_id"
                   />
+                  {errors.category_id && <div className="text-red-800 mb-2">{errors.category_id}</div>}
                 </div>
               </div>
               <div className="w-full mt-3">
@@ -425,15 +467,17 @@ const ProductForm = ({ product, categories, subCategories, onSave, setIsAddEditM
                       onChange={handleSelectChange}
                       placeholder="Select Subcategories"
                       isSearchable
-                      className="w-full border rounded-lg"
+                      className={`w-full border rounded-lg ${errors.subcategory_id ? 'border-red-700' : ''}`}
                       name="subcategory_id"
                   />
+                  {errors.subcategory_id && <div className="text-red-800 mb-2">{errors.subcategory_id}</div>}
                 </div>
               </div>
               <div className="w-full mt-3">
                 <div className="input-item">
                   <label className="block text-[14px] font-medium text-secondary mb-[4px]"> Upload Product Image </label>
                   <input type="file" accept="image/*" onChange={(e) => handleProductImageChange(e,'product')} className="w-full p-2 mb-4 border rounded-lg" />
+                  {errors.product_img && <div className="text-red-800 mb-2">{errors.product_img}</div>}
                 </div>
               </div>
               <div className="w-full">
@@ -457,25 +501,30 @@ const ProductForm = ({ product, categories, subCategories, onSave, setIsAddEditM
                   <h3 className="text-xl font-semibold text-center mb-4">Add Variants</h3>
                   
                   <div className="w-full">
-                    <input type="text" name="variant_name" placeholder="Variant Name" value={variantData.variant_name} onChange={handleVariantChange} />
+                    <input type="text" name="variant_name" placeholder="Variant Name" className={`w-full p-2 border rounded-lg ${errors.variant_name ? 'border-red-700' : 'mb-4'}`} value={variantData.variant_name} onChange={handleVariantChange} />
+                    {errors.variant_name && <div className="text-red-800 mb-2">{errors.variant_name}</div>}
                   </div>
                   
                   <div className="w-full mt-2">
-                    <input type="number" name="price" placeholder="Variant Price" value={variantData.price} onChange={handleVariantChange} />
+                    <input type="number" name="price" placeholder="Variant Price" className={`w-full p-2 border rounded-lg ${errors.vprice ? 'border-red-700' : 'mb-4'}`} value={variantData.price} onChange={handleVariantChange} />
+                    {errors.vprice && <div className="text-red-800 mb-2">{errors.vprice}</div>}
                   </div>
                   
                   <div className="w-full mt-2">
-                    <input type="number" name="stock" placeholder="Stock" value={variantData.stock} onChange={handleVariantChange} />
+                    <input type="number" name="stock" placeholder="Stock" className={`w-full p-2 border rounded-lg ${errors.vstock ? 'border-red-700' : 'mb-4'}`} value={variantData.stock} onChange={handleVariantChange} />
+                    {errors.vstock && <div className="text-red-800 mb-2">{errors.vstock}</div>}
                   </div>
                   
                   <div className="w-full mt-2">
-                    <input type="text" name="SKU" placeholder="SKU" value={variantData.SKU} onChange={handleVariantChange} />
+                    <input type="text" name="SKU" placeholder="SKU" className={`w-full p-2 border rounded-lg ${errors.VSKU ? 'border-red-700' : 'mb-4'}`} value={variantData.SKU} onChange={handleVariantChange} />
+                    {errors.VSKU && <div className="text-red-800 mb-2">{errors.VSKU}</div>}
                   </div>
 
                   <div className="w-full mt-3">
                     <div className="input-item">
                       <label className="block text-[14px] font-medium text-secondary mb-[4px]"> Upload Product Image </label>
                       <input type="file" accept="image/*" onChange={(e) => handleProductImageChange(e,'variant')} className="w-full p-2 mb-4 border rounded-lg" />
+                      {errors.variant_img && <div className="text-red-800 mb-2">{errors.variant_img}</div>}
                     </div>
                   </div>
                   <div className="w-full">
