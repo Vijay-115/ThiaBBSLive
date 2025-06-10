@@ -599,3 +599,7 @@ background-position: center;
   font-size: 28px;
   cursor: pointer;
 }
+
+body #root #_rht_toaster{
+    z-index: 999999999!important;
+}
