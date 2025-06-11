@@ -394,44 +394,40 @@ const Products = () => {
                           <thead className="bg-gray-100 dark:bg-gray-800">
                             <tr>
                               <th className="font-Poppins p-2 text-left font-semibold text-gray-700 dark:text-gray-200 tracking-wide">Image</th>
-                              <th className="font-Poppins p-2 text-left font-semibold text-gray-700 dark:text-gray-200 tracking-wide">Name</th>
+                              <th className="font-Poppins p-2 pl-6 text-left font-semibold text-gray-700 dark:text-gray-200 tracking-wide">Name</th>
                               <th className="font-Poppins p-2 text-left font-semibold text-gray-700 dark:text-gray-200 tracking-wide">Category</th>
                               <th className="font-Poppins p-2 text-left font-semibold text-gray-700 dark:text-gray-200 tracking-wide">Subcategory</th>
                               <th className="font-Poppins p-2 text-left font-semibold text-gray-700 dark:text-gray-200 tracking-wide">Description</th>
-                              <th className="font-Poppins p-2 text-left font-semibold text-gray-700 dark:text-gray-200 tracking-wide">Actions</th>
+                              <th className="font-Poppins p-2 text-right font-semibold text-gray-700 dark:text-gray-200 tracking-wide pr-6">Actions</th>
                             </tr>
                           </thead>
                           <tbody>
                             {paginatedProducts.map((product) => (
                               <tr key={product._id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-blue-50 dark:hover:bg-gray-800/60 transition">
-                                <td className="p-2 align-middle">
+                                <td className="p-3 align-middle">
                                   <img src={import.meta.env.VITE_API_URL + '' + product.product_img ?? ''} alt="product" className="w-12 h-12 object-cover border border-gray-200 dark:border-gray-700 rounded-md shadow-sm" />
                                 </td>
-                                <td className="p-2 align-middle font-medium text-gray-900 dark:text-gray-100">
-                                  {product.name ?? ''}
-                                </td>
-                                <td className="p-2 align-middle text-gray-700 dark:text-gray-300">
-                                  {product.category_id?.name ?? '-'}
-                                </td>
-                                <td className="p-2 align-middle text-gray-700 dark:text-gray-300">
-                                  {product.subcategory_id?.name ?? '-'}
-                                </td>
-                                <td className="p-2 align-middle text-gray-600 dark:text-gray-400 max-w-xs truncate">
-                                  {product.description ?? ''}
-                                </td>
-                                <td className="p-2 align-middle">
-                                  <div className="flex gap-1">
+                                <td className="p-3 pl-6 align-middle font-medium text-gray-900 dark:text-gray-100">{product.name ?? ''}</td>
+                                <td className="p-3 align-middle text-gray-700 dark:text-gray-300">{product.category_id?.name ?? '-'}</td>
+                                <td className="p-3 align-middle text-gray-700 dark:text-gray-300">{product.subcategory_id?.name ?? '-'}</td>
+                                <td className="p-3 align-middle text-gray-600 dark:text-gray-400 max-w-xs truncate">{product.description ?? ''}</td>
+                                <td className="p-3 align-middle text-right">
+                                  <div className="flex justify-end gap-2">
                                     <button
-                                      className="flex items-center gap-1 bg-yellow-400 hover:bg-yellow-500 text-white px-2 py-1 rounded font-medium shadow transition text-xs"
+                                      className="rounded-full bg-yellow-50 hover:bg-yellow-200 text-yellow-700 hover:text-yellow-900 transition shadow border border-yellow-200 hover:border-yellow-300"
                                       onClick={() => handleEditProduct(product)}
+                                      title="Edit"
+                                      style={{ width: '30px', height: '30px', lineHeight: '35px' }}
                                     >
-                                      <i className="bx bx-edit-alt"></i> Edit
+                                      <i className="bx bxs-pencil text-lg"></i>
                                     </button>
                                     <button
-                                      className="flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded font-medium shadow transition text-xs"
+                                      className="rounded-full bg-red-50 hover:bg-red-200 text-red-600 hover:text-red-800 transition shadow border border-red-200 hover:border-red-300"
                                       onClick={() => openDeleteModal(product)}
+                                      title="Delete"
+                                      style={{ width: '30px', height: '30px', lineHeight: '35px' }}
                                     >
-                                      <i className="bx bx-trash"></i> Delete
+                                      <i className="bx bxs-trash-alt text-lg"></i>
                                     </button>
                                   </div>
                                 </td>
