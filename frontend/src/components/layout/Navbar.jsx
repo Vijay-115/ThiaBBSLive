@@ -1,67 +1,6 @@
-/*import React, { useEffect, useState, useRef } from 'react';
-import NavItems from "./NavItems"
-
-function Navbar({ menuOpen, closeMenu }) {
-
-
-  const offers = [
-    '2% Instant Discount on HDFC Credit Cards Only',
-    'No Wastage (VA) On Gold Coin'
-  ];
-
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % offers.length);
-    }, 3000); // change every 3 seconds
-
-    return () => clearInterval(interval);
-  }, [offers.length]);
-
-  return (
-    <>
-      <nav className='navbar'>
-        <div className='md:bg-slate-100 w-full py-2 px-4'>
-          <NavItems menuOpen={menuOpen} closeMenu={closeMenu} />
-        </div>
-      </nav>
-      <div className="w-full bg-[#cf1717] text-white py-2 text-center overflow-hidden">
-        <ul className="offer-msg list-none m-0 p-0">
-          <li key={currentIndex} className="bounce-text text-sm font-medium text-gray-800">
-            {offers[currentIndex]}
-          </li>
-        </ul>
-      </div>
-      <style>
-        {`
-            .bounce-text {
-                animation: bounceIn 0.6s ease-in-out;
-            }
-
-            @keyframes bounceIn {
-                0% {
-                    transform: translateY(-100%);
-                    opacity: 0;
-                }
-                50% {
-                    transform: translateY(10%);
-                    opacity: 1;
-                }
-                100% {
-                    transform: translateY(0);
-                }
-            }
-        `}
-      </style>
-    </>
-  )
-}
-
-export default Navbar*/
-
-
 import React, { useState, useEffect } from 'react';
+import { ProductService } from '../../services/ProductService';
+import { useSelector } from 'react-redux';
 
 // Simple mobile detection hook (since we're skipping useIsMobile)
 const useIsMobile = () => {
@@ -77,199 +16,32 @@ const useIsMobile = () => {
   return isMobile;
 };
 
-const jewelryData = [
-  {
-    id: 'jewelry-1',
-    title: 'Jewelry',
-    submenu: [
-      {
-        id: 'category-1',
-        title: 'Rings',
-        description: 'Handcrafted rings for every occasion',
-        items: [
-          { id: 'rings-1', title: 'Engagement Rings', link: '#', hasChildren: true },
-          { id: 'rings-2', title: 'Wedding Bands', link: '#', hasChildren: true },
-          { id: 'rings-3', title: 'Diamond Rings', link: '#' },
-          { id: 'rings-4', title: 'Gemstone Rings', link: '#' },
-        ],
-        image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80',
-      },
-      {
-        id: 'category-2',
-        title: 'Necklaces',
-        description: 'Elegant necklaces for any style',
-        items: [
-          { id: 'necklaces-1', title: 'Pendants', link: '#', hasChildren: true },
-          { id: 'necklaces-2', title: 'Chokers', link: '#' },
-          { id: 'necklaces-3', title: 'Gold Chains', link: '#' },
-          { id: 'necklaces-4', title: 'Diamond Necklaces', link: '#' },
-        ],
-        image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80',
-      },
-      {
-        id: 'category-3',
-        title: 'Earrings',
-        description: 'Beautiful earrings for every occasion',
-        items: [
-          { id: 'earrings-1', title: 'Studs', link: '#', hasChildren: true },
-          { id: 'earrings-2', title: 'Hoops', link: '#' },
-          { id: 'earrings-3', title: 'Drops', link: '#' },
-          { id: 'earrings-4', title: 'Chandeliers', link: '#' },
-        ],
-        image: 'https://images.unsplash.com/photo-1635767798638-3665a153ee1a?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80',
-      },
-    ],
-  },
-  {
-    id: 'collections-1',
-    title: 'Collections',
-    submenu: [
-      {
-        id: 'collection-1',
-        title: 'Seasonal',
-        items: [
-          { id: 'seasonal-1', title: 'Summer Glow', link: '#' },
-          { id: 'seasonal-2', title: 'Winter Frost', link: '#' },
-          { id: 'seasonal-3', title: 'Spring Bloom', link: '#' },
-          { id: 'seasonal-4', title: 'Autumn Gold', link: '#' },
-        ],
-        image: 'https://images.unsplash.com/photo-1616661412974-5d152a521b3e?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80',
-      },
-      {
-        id: 'collection-2',
-        title: 'Exclusive',
-        items: [
-          { id: 'exclusive-1', title: 'Limited Edition', link: '#' },
-          { id: 'exclusive-2', title: 'Signature Series', link: '#' },
-          { id: 'exclusive-3', title: 'Designer Collaborations', link: '#' },
-          { id: 'exclusive-4', title: 'Artisan Crafted', link: '#' },
-        ],
-        image: 'https://images.unsplash.com/photo-1617038220319-276d3cfab638?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80',
-      },
-    ],
-  },
-];
-
-const fullMenuData = [
-  {
-    id: 'grocery-1',
-    title: 'Groceries',
-    submenu: [
-      {
-        id: 'food-1',
-        title: 'Fresh Produce',
-        description: 'Fresh and organic produce for your daily needs',
-        items: [
-          { id: 'fresh-1', title: 'Fruits', link: '#', hasChildren: true },
-          { id: 'fresh-2', title: 'Vegetables', link: '#', hasChildren: true },
-          { id: 'fresh-3', title: 'Herbs', link: '#' },
-        ],
-        image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80',
-      },
-      {
-        id: 'food-2',
-        title: 'Dairy & Eggs',
-        description: 'Fresh dairy products from local farms',
-        items: [
-          { id: 'dairy-1', title: 'Milk', link: '#' },
-          { id: 'dairy-2', title: 'Cheese', link: '#' },
-          { id: 'dairy-3', title: 'Yogurt', link: '#' },
-          { id: 'dairy-4', title: 'Eggs', link: '#' },
-        ],
-        image: 'https://images.unsplash.com/photo-1628088062854-d1870b4553da?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80',
-      },
-      {
-        id: 'food-3',
-        title: 'Bakery',
-        description: 'Freshly baked goods every day',
-        items: [
-          { id: 'bakery-1', title: 'Bread', link: '#' },
-          { id: 'bakery-2', title: 'Pastries', link: '#' },
-          { id: 'bakery-3', title: 'Cakes', link: '#' },
-        ],
-        image: 'https://images.unsplash.com/photo-1608198093002-ad4e005484ec?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80',
-      },
-    ],
-  },
-  {
-    id: 'jewelry-1',
-    title: 'Jewelry',
-    submenu: [
-      {
-        id: 'category-1',
-        title: 'Rings',
-        description: 'Handcrafted rings for every occasion',
-        items: [
-          { id: 'rings-1', title: 'Engagement Rings', link: '#', hasChildren: true },
-          { id: 'rings-2', title: 'Wedding Bands', link: '#', hasChildren: true },
-          { id: 'rings-3', title: 'Diamond Rings', link: '#' },
-          { id: 'rings-4', title: 'Gemstone Rings', link: '#' },
-        ],
-        image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80',
-      },
-      {
-        id: 'category-2',
-        title: 'Necklaces',
-        description: 'Elegant necklaces for any style',
-        items: [
-          { id: 'necklaces-1', title: 'Pendants', link: '#', hasChildren: true },
-          { id: 'necklaces-2', title: 'Chokers', link: '#' },
-          { id: 'necklaces-3', title: 'Gold Chains', link: '#' },
-          { id: 'necklaces-4', title: 'Diamond Necklaces', link: '#' },
-        ],
-        image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80',
-      },
-      {
-        id: 'category-3',
-        title: 'Earrings',
-        description: 'Beautiful earrings for every occasion',
-        items: [
-          { id: 'earrings-1', title: 'Studs', link: '#', hasChildren: true },
-          { id: 'earrings-2', title: 'Hoops', link: '#' },
-          { id: 'earrings-3', title: 'Drops', link: '#' },
-          { id: 'earrings-4', title: 'Chandeliers', link: '#' },
-        ],
-        image: 'https://images.unsplash.com/photo-1651328905475-16882e198d54',
-      },
-    ],
-  },
-  {
-    id: 'collections-1',
-    title: 'Collections',
-    submenu: [
-      {
-        id: 'collection-1',
-        title: 'Seasonal',
-        items: [
-          { id: 'seasonal-1', title: 'Summer Glow', link: '#' },
-          { id: 'seasonal-2', title: 'Winter Frost', link: '#' },
-          { id: 'seasonal-3', title: 'Spring Bloom', link: '#' },
-          { id: 'seasonal-4', title: 'Autumn Gold', link: '#' },
-        ],
-        image: 'https://images.unsplash.com/photo-1616661412974-5d152a521b3e?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80',
-      },
-      {
-        id: 'collection-2',
-        title: 'Exclusive',
-        items: [
-          { id: 'exclusive-1', title: 'Limited Edition', link: '#' },
-          { id: 'exclusive-2', title: 'Signature Series', link: '#' },
-          { id: 'exclusive-3', title: 'Designer Collaborations', link: '#' },
-          { id: 'exclusive-4', title: 'Artisan Crafted', link: '#' },
-        ],
-        image: 'https://images.unsplash.com/photo-1617038220319-276d3cfab638?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80',
-      },
-    ],
-  },
-];
-
-// Basic utility className toggle
-const cn = (...classes) => classes.filter(Boolean).join(' ');
-
 const MegaMenu = ({ menuType }) => {
   const [activeMenu, setActiveMenu] = useState(null);
   const isMobile = useIsMobile();
-  const menuData = fullMenuData;
+  const [dynamicCategories, setDynamicCategories] = useState([]);
+  const { user } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        let response = null;
+        if (user && user.role === 'seller') {
+          response = await ProductService.getCategorySellerID(user._id);
+        } else if (user && user.role === 'admin') {
+          response = await ProductService.getCategories();
+        } else if (user && user.role === 'user') {
+          response = await ProductService.getCategoriesNearbySeller();
+        } else {
+          response = await ProductService.getCategories();
+        }
+        setDynamicCategories(response || []);
+      } catch (error) {
+        setDynamicCategories([]);
+      }
+    };
+    fetchCategories();
+  }, [user]);
 
   const offers = [
     '2% Instant Discount on HDFC Credit Cards Only',
@@ -286,6 +58,111 @@ const MegaMenu = ({ menuType }) => {
     return () => clearInterval(interval);
   }, [offers.length]);
 
+  const fullMenuData = [
+    {
+      id: 'grocery-1',
+      title: 'Groceries',
+      submenu: dynamicCategories.length > 0
+        ? dynamicCategories.map((cat) => ({
+            id: cat._id,
+            title: cat.name,
+            description: cat.description || '',
+            items: (cat.subcategories || []).map((sub) => ({
+              id: sub._id,
+              title: sub.name,
+              link: `/product/subcategory/${sub._id}`
+            })),
+            image: cat.image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80',
+          }))
+        : [
+            // fallback static
+            {
+              id: 'food-1',
+              title: 'Fresh Produce',
+              description: 'Fresh and organic produce for your daily needs',
+              items: [
+                { id: 'fresh-1', title: 'Fruits', link: '#', hasChildren: true },
+                { id: 'fresh-2', title: 'Vegetables', link: '#', hasChildren: true },
+                { id: 'fresh-3', title: 'Herbs', link: '#' },
+              ],
+              image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80',
+            },
+          ],
+    },
+    {
+      id: 'jewelry-1',
+      title: 'Jewelry',
+      submenu: [
+        {
+          id: 'category-1',
+          title: 'Rings',
+          description: 'Handcrafted rings for every occasion',
+          items: [
+            { id: 'rings-1', title: 'Engagement Rings', link: '#', hasChildren: true },
+            { id: 'rings-2', title: 'Wedding Bands', link: '#', hasChildren: true },
+            { id: 'rings-3', title: 'Diamond Rings', link: '#' },
+            { id: 'rings-4', title: 'Gemstone Rings', link: '#' },
+          ],
+          image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80',
+        },
+        {
+          id: 'category-2',
+          title: 'Necklaces',
+          description: 'Elegant necklaces for any style',
+          items: [
+            { id: 'necklaces-1', title: 'Pendants', link: '#', hasChildren: true },
+            { id: 'necklaces-2', title: 'Chokers', link: '#' },
+            { id: 'necklaces-3', title: 'Gold Chains', link: '#' },
+            { id: 'necklaces-4', title: 'Diamond Necklaces', link: '#' },
+          ],
+          image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80',
+        },
+        {
+          id: 'category-3',
+          title: 'Earrings',
+          description: 'Beautiful earrings for every occasion',
+          items: [
+            { id: 'earrings-1', title: 'Studs', link: '#', hasChildren: true },
+            { id: 'earrings-2', title: 'Hoops', link: '#' },
+            { id: 'earrings-3', title: 'Drops', link: '#' },
+            { id: 'earrings-4', title: 'Chandeliers', link: '#' },
+          ],
+          image: 'https://images.unsplash.com/photo-1651328905475-16882e198d54',
+        },
+      ],
+    },
+    {
+      id: 'collections-1',
+      title: 'Collections',
+      submenu: [
+        {
+          id: 'collection-1',
+          title: 'Seasonal',
+          items: [
+            { id: 'seasonal-1', title: 'Summer Glow', link: '#' },
+            { id: 'seasonal-2', title: 'Winter Frost', link: '#' },
+            { id: 'seasonal-3', title: 'Spring Bloom', link: '#' },
+            { id: 'seasonal-4', title: 'Autumn Gold', link: '#' },
+          ],
+          image: 'https://images.unsplash.com/photo-1616661412974-5d152a521b3e?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80',
+        },
+        {
+          id: 'collection-2',
+          title: 'Exclusive',
+          items: [
+            { id: 'exclusive-1', title: 'Limited Edition', link: '#' },
+            { id: 'exclusive-2', title: 'Signature Series', link: '#' },
+            { id: 'exclusive-3', title: 'Designer Collaborations', link: '#' },
+            { id: 'exclusive-4', title: 'Artisan Crafted', link: '#' },
+          ],
+          image: 'https://images.unsplash.com/photo-1617038220319-276d3cfab638?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80',
+        },
+      ],
+    },
+  ];
+
+  const cn = (...classes) => classes.filter(Boolean).join(' ');
+
   return (
     <>
       <div className="w-full bg-[#cf1717] text-white py-2 text-center overflow-hidden">
@@ -298,7 +175,7 @@ const MegaMenu = ({ menuType }) => {
       <nav className="relative bg-white shadow-md">
         <div className="container mx-auto px-4">
           <ul className="flex justify-center space-x-4 md:space-x-10 py-4">
-            {menuData.map((item) => (
+            {fullMenuData.map((item) => (
               <li
                 key={item.id}
                 className="megamenu-item group"

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { toast } from "react-hot-toast";
 
 const VendorForm = ({ seller, onSave, setIsAddEditModalOpen }) => {
   const [formData, setFormData] = useState({
@@ -30,8 +31,35 @@ const VendorForm = ({ seller, onSave, setIsAddEditModalOpen }) => {
     }));
   };
 
+  const validateForm = () => {
+    // Name validation
+    if (!formData.name.trim()) {
+      toast.error('Name is required.');
+      return false;
+    }
+    // Email validation
+    if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
+      toast.error('Please enter a valid email address.');
+      return false;
+    }
+    // Phone validation: exactly 10 digits
+    if (!/^\d{10}$/.test(formData.phone)) {
+      toast.error('Phone number must be exactly 10 digits.');
+      return false;
+    }
+    // Password validation (only for add)
+    if (!seller) {
+      if (!/^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).*$/.test(formData.password)) {
+        toast.error('Password must be at least 6 characters, include 1 uppercase, 1 lowercase, and 1 special character.');
+        return false;
+      }
+    }
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
     const submissionData = new FormData();
 
     if (seller?._id) {
@@ -57,101 +85,96 @@ const VendorForm = ({ seller, onSave, setIsAddEditModalOpen }) => {
   };
 
   return (
-    <div className="max-w-[50vw] w-full mx-auto bg-white border border-gray-400 p-8 shadow-md rounded-md relative">
-      <span className="popup-close" onClick={() => setIsAddEditModalOpen(false)}><i className="ri-close-circle-line"></i></span>
-      <h2 className="text-2xl font-semibold text-center mb-6">
-        {seller ? "Edit Vendor" : "Add Vendor"}
-      </h2>
-      <div className="input-box-form mt-[20px]">
-        <form onSubmit={handleSubmit}>
-          <div className="flex flex-wrap mx-[-12px]">
-            {/* First Name */}
-            <div className="w-full px-[12px]">
-              <div className="input-item mb-[24px]">
-                <label className="block text-[14px] font-medium text-secondary mb-[8px]">
-                  First Name *
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  placeholder="Enter your First Name"
-                  className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+      <div className="relative w-full max-w-md mx-auto bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col" style={{ maxHeight: '90vh' }}>
+        {/* Close Button */}
+        <button
+          className="absolute top-2 right-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 text-2xl transition z-10"
+          onClick={() => setIsAddEditModalOpen(false)}
+          aria-label="Close"
+        >
+          <i className="ri-close-circle-line"></i>
+        </button>
+        {/* Header */}
+        <div className="px-4 pt-4 pb-2 border-b border-gray-100 dark:border-gray-800 rounded-t-3xl bg-gradient-to-r from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-900">
+          <h2 className="text-xl font-bold text-center text-blue-800 dark:text-blue-300 tracking-tight">
+            {seller ? "Edit Vendor" : "Add Vendor"}
+          </h2>
+        </div>
+        {/* Scrollable Form Area */}
+        <div className="flex-1 overflow-y-auto px-4 py-4" style={{ scrollbarWidth: 'thin', msOverflowStyle: 'none' }}>
+          <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5 flex flex-col min-h-0">
+            {/* Name */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                First Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="name"
+                placeholder="Enter your First Name"
+                className="w-full px-4 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-400 focus:outline-none bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm transition"
+                value={formData.name}
+                onChange={handleChange}
+              />
             </div>
-
             {/* Email */}
-            <div className="w-full px-[12px]">
-              <div className="input-item mb-[24px]">
-                <label className="block text-[14px] font-medium text-secondary mb-[8px]">
-                  Email *
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="Enter your Email"
-                  className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                Email <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="email"
+                name="email"
+                placeholder="Enter your Email"
+                className="w-full px-4 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-400 focus:outline-none bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm transition"
+                value={formData.email}
+                onChange={handleChange}
+              />
             </div>
-
             {/* Phone */}
-            <div className="w-full px-[12px]">
-              <div className="input-item mb-[24px]">
-                <label className="block text-[14px] font-medium text-secondary mb-[8px]">
-                  Phone *
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                Phone <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="phone"
+                placeholder="88888 88888"
+                className="w-full px-4 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-400 focus:outline-none bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm transition"
+                value={formData.phone}
+                onChange={handleChange}
+              />
+            </div>
+            {/* Password (only for add) */}
+            {!seller && (
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                  Password <span className="text-red-500">*</span>
                 </label>
                 <input
-                  type="text"
-                  name="phone"
-                  placeholder="88888 88888"
-                  className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]"
-                  value={formData.phone}
+                  type="password"
+                  name="password"
+                  placeholder="Enter your Password"
+                  className="w-full px-4 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-400 focus:outline-none bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm transition"
+                  value={formData.password}
                   onChange={handleChange}
-                  required
                 />
-              </div>
-            </div>
-
-            {/* Password */}
-            { !seller && (
-              <div className="w-full px-[12px]">
-                <div className="input-item mb-[24px]">
-                  <label className="block text-[14px] font-medium text-secondary mb-[8px]">
-                    Password *
-                  </label>
-                  <input
-                    type="password"
-                    name="password"
-                    placeholder="Enter your Password"
-                    className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
               </div>
             )}
-
-            {/* Save Button */}
-            <div className="w-full px-[12px]">
-              <div className="input-button">
-                <button
-                  type="submit"
-                  className="bb-btn-2 inline-block py-[10px] px-[25px] text-[14px] font-medium text-white bg-[#6c7fd8] rounded-[10px] hover:bg-transparent hover:border-[#3d4750] hover:text-secondary border"
-                >
-                  {seller ? "Update Vendor" : "Create Vendor"}
-                </button>
-              </div>
-            </div>
-          </div>
-        </form>
+          </form>
+        </div>
+        {/* Static Footer */}
+        <div className="px-4 py-2 border-t border-gray-100 dark:border-gray-800 rounded-b-3xl bg-gradient-to-r from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-900">
+          <button
+            type="submit"
+            form="vendor-form"
+            onClick={handleSubmit}
+            className="w-full py-2 px-4 text-base font-bold rounded-xl bg-gradient-to-r from-blue-700 to-blue-500 hover:from-blue-800 hover:to-blue-600 text-white shadow-lg transition-all duration-200 border-0 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          >
+            {seller ? "Update Vendor" : "Create Vendor"}
+          </button>
+        </div>
       </div>
     </div>
   );
