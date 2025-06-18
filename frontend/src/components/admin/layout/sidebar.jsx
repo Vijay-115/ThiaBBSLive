@@ -6,8 +6,8 @@ import { logout } from "../../../services/authService";
 const Sidebar = ({ isSidebarHidden, toggleSidebar }) => {
     const location = useLocation();
     const dispatch = useDispatch();
-    const isProductSectionActive = ["/admin/products", "/admin/products/categories", "/admin/products/subcategories"]
-        .includes(location.pathname);
+    const isProductSectionActive = ["/admin/products", "/admin/products/categories", "/admin/products/subcategories"].includes(location.pathname);
+    const isUserRequestSectionActive = ["/admin/users-request", "/admin/users-request/categories", "/admin/users-request/subcategories"].includes(location.pathname);
 
     const [isProductOpen, setIsProductOpen] = useState(isProductSectionActive);
 
@@ -94,7 +94,48 @@ const Sidebar = ({ isSidebarHidden, toggleSidebar }) => {
                             <i className="bx bxs-group bx-sm" />
                             <span className="text">User's Request</span>
                         </NavLink>
-                    </li>                   
+                    </li>  
+                    
+                    <li className={isProductSectionActive ? "active" : ""}>
+                        <a
+                            onClick={() => setIsProductOpen(!isProductOpen)}
+                            className="flex items-center justify-between rounded-lg hover:bg-blue-500 transition cursor-pointer"
+                        >
+                            <div className="flex items-center">
+                                <i className="bx bxs-shopping-bag-alt bx-sm" />
+                                <span>User's Request</span>
+                            </div>
+                            <i className={`bx ${isProductOpen ? "bx-chevron-up" : "bx-chevron-down"}`} />
+                        </a>
+
+                        {/* Submenu */}
+                        <ul className={`mt-2 space-y-1 transition-all ${isProductOpen ? "block" : "hidden"}`}>
+                            <li>
+                                <NavLink to="/admin/products" className="" style={location.pathname === "/admin/products" ? { backgroundColor: "#0da89c", color: "#ffffff" } : {backgroundColor: "transparent", color: "#000000"}} >
+                                    <i className="bx bxs-shopping-bag-alt bx-sm" />
+                                    <span>Vendor's Request</span>
+                                </NavLink>
+                            </li>
+                            <li className={location.pathname === "/admin/products/categories" ? "bg-blue-600 rounded-lg" : ""}>
+                                <NavLink to="/admin/products/categories" className="" style={location.pathname === "/admin/products/categories" ? { backgroundColor: "#0da89c", color: "#ffffff" } : {backgroundColor: "transparent", color: "#000000"}}>
+                                    <i className="bx bxs-category bx-sm" />
+                                    <span>Agent's Request</span>
+                                </NavLink>
+                            </li>
+                            <li className={location.pathname === "/admin/products/subcategories" ? "bg-blue-600 rounded-lg" : ""}>
+                                <NavLink to="/admin/products/subcategories" className="" style={location.pathname === "/admin/products/subcategories" ? { backgroundColor: "#0da89c", color: "#ffffff" } : {backgroundColor: "transparent", color: "#000000"}}>
+                                    <i className="bx bxs-layer bx-sm" />
+                                    <span>Territory Head's Request</span>
+                                </NavLink>
+                            </li>
+                            <li className={location.pathname === "/admin/products/subcategories" ? "bg-blue-600 rounded-lg" : ""}>
+                                <NavLink to="/admin/products/subcategories" className="" style={location.pathname === "/admin/products/subcategories" ? { backgroundColor: "#0da89c", color: "#ffffff" } : {backgroundColor: "transparent", color: "#000000"}}>
+                                    <i className="bx bxs-layer bx-sm" />
+                                    <span>Franchise Head's Request</span>
+                                </NavLink>
+                            </li>
+                        </ul>
+                    </li>                 
                 </ul>
                 <ul className="side-menu bottom">
                     <li onClick={ async () => { await logout(dispatch);}}>

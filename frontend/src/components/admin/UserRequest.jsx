@@ -5,7 +5,7 @@ import Sidebar from './layout/sidebar';
 import Navbar from './layout/Navbar';
 import useDashboardLogic from "./hooks/useDashboardLogic"; 
 import Modal from "react-modal";
-import { vendorApprove, vendorRequest } from "../../services/vendorService";
+import { vendoDecline, vendorApprove, vendorRequest } from "../../services/vendorService";
 import ViewUserRequest from "./ViewUserRequest";
 import moment from "moment";
 import { toast } from "react-hot-toast";
@@ -174,7 +174,7 @@ const UserRequest = () => {
             navigate("/");
         }
     } catch (error) {
-        toast.error(error.message || "Agent registration failed. Try again.");
+        toast.error(error.message || "Decline failed. Try again.");
     }
 }
 
