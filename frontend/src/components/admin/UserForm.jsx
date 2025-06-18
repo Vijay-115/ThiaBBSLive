@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Select from "react-select";
+import { toast } from "react-hot-toast";
 
 const UserForm = ({ vendor, onSave, setIsAddEditModalOpen }) => {
   const [formData, setFormData] = useState({
@@ -7,27 +8,14 @@ const UserForm = ({ vendor, onSave, setIsAddEditModalOpen }) => {
     email: "",
     phone: "",
     password: "",
-    role: "customer", // Default role
-    // referredBy: "",
+    role: "customer",
   });
   const [rolesOptions, setRolesOptions] = useState([]);
   const [roles, setRoles] = useState([
-    {
-      label:'Customer',
-      value:'customer'
-    },
-    {
-      label:'Agent',
-      value:'agent'
-    },
-    {
-      label:'Territory Head',
-      value:'territory_head'
-    },
-    {
-      label:'Franchise',
-      value:'franchise'
-    },
+    { label: "Customer", value: "customer" },
+    { label: "Agent", value: "agent" },
+    { label: "Territory Head", value: "territory_head" },
+    { label: "Franchise", value: "franchise" },
   ]);
 
   useEffect(() => {
@@ -38,7 +26,6 @@ const UserForm = ({ vendor, onSave, setIsAddEditModalOpen }) => {
     setRolesOptions(formattedOptions);
   }, [roles]);
 
-
   useEffect(() => {
     if (vendor) {
       setFormData({
@@ -47,7 +34,6 @@ const UserForm = ({ vendor, onSave, setIsAddEditModalOpen }) => {
         phone: vendor.userdetails?.phone || "",
         password: vendor?.password || "",
         role: vendor.role || "customer",
-        // referredBy: vendor.userdetails?.referredBy || "",
       });
     }
   }, [vendor]);
@@ -57,122 +43,153 @@ const UserForm = ({ vendor, onSave, setIsAddEditModalOpen }) => {
   };
 
   const handleSelectChange = (selectedOption) => {
-    console.log(selectedOption);
     setFormData((prevData) => ({
       ...prevData,
       role: selectedOption.value,
     }));
   };
 
+  const validateForm = () => {
+    if (!formData.name.trim()) {
+      toast.error("Name is required.");
+      return false;
+    }
+    if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
+      toast.error("Please enter a valid email address.");
+      return false;
+    }
+    if (!/^\d{10}$/.test(formData.phone)) {
+      toast.error("Phone number must be exactly 10 digits.");
+      return false;
+    }
+    if (!vendor) {
+      if (!/^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).*$/.test(formData.password)) {
+        toast.error("Password must be at least 6 characters, include 1 uppercase, 1 lowercase, and 1 special character.");
+        return false;
+      }
+    }
+    return true;
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
     onSave(formData);
+    setFormData({
+      name: "",
+      email: "",
+      phone: "",
+      password: "",
+      role: "customer",
+    });
   };
 
   return (
-    <div className="max-w-[50vw] w-full mx-auto bg-white border border-gray-400 p-8 shadow-md rounded-md relative">
-      <span className="popup-close" onClick={() => setIsAddEditModalOpen(false)}><i className="ri-close-circle-line"></i></span>
-      <h2 className="text-2xl font-semibold text-center mb-6">
-        {vendor ? "Edit Vendor" : "Add Vendor"}
-      </h2>
-      <div className="input-box-form mt-[20px]">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="w-full px-[12px] mt-[0px]">
-            <div className="input-item mb-[12px]">
-              <label className="block text-[14px] font-medium text-secondary mb-[8px]">Full Name</label>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+      <div className="relative w-full max-w-md mx-auto bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col" style={{ maxHeight: '90vh' }}>
+        {/* Close Button */}
+        <button
+          className="absolute top-2 right-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 text-2xl transition z-10"
+          onClick={() => setIsAddEditModalOpen(false)}
+          aria-label="Close"
+        >
+          <i className="ri-close-circle-line"></i>
+        </button>
+        {/* Header */}
+        <div className="px-4 pt-4 pb-2 border-b border-gray-100 dark:border-gray-800 rounded-t-3xl bg-gradient-to-r from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-900">
+          <h2 className="text-xl font-bold text-center text-blue-800 dark:text-blue-300 tracking-tight">
+            {vendor ? "Edit User" : "Add User"}
+          </h2>
+        </div>
+        {/* Scrollable Form Area */}
+        <div className="flex-1 overflow-y-auto px-4 py-4" style={{ scrollbarWidth: 'thin', msOverflowStyle: 'none' }}>
+          <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5 flex flex-col min-h-0">
+            {/* Name */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                Full Name <span className="text-red-500">*</span>
+              </label>
               <input
                 type="text"
                 name="name"
+                placeholder="Enter Full Name"
+                className="w-full px-4 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-400 focus:outline-none bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm transition"
                 value={formData.name}
                 onChange={handleChange}
-                required
-                className="w-full border p-2 rounded-md"
               />
             </div>
-          </div>
-
-          <div className="w-full px-[12px] mt-[0px]">
-            <div className="input-item mb-[12px]">
-              <label className="block text-[14px] font-medium text-secondary mb-[8px]">Email</label>
+            {/* Email */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                Email <span className="text-red-500">*</span>
+              </label>
               <input
                 type="email"
                 name="email"
+                placeholder="Enter Email"
+                className="w-full px-4 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-400 focus:outline-none bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm transition"
                 value={formData.email}
                 onChange={handleChange}
-                required
-                className="w-full border p-2 rounded-md"
               />
             </div>
-          </div>
-
-          <div className="w-full px-[12px] mt-[0px]">
-            <div className="input-item mb-[12px]">
-              <label className="block text-[14px] font-medium text-secondary mb-[8px]">Phone</label>
+            {/* Phone */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                Phone <span className="text-red-500">*</span>
+              </label>
               <input
                 type="text"
                 name="phone"
+                placeholder="88888 88888"
+                className="w-full px-4 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-400 focus:outline-none bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm transition"
                 value={formData.phone}
                 onChange={handleChange}
-                required
-                className="w-full border p-2 rounded-md"
               />
             </div>
-          </div>
-          {/* Password */}
-          { !vendor && (
-            <div className="w-full px-[12px]">
-              <div className="input-item mb-[24px]">
-                <label className="block text-[14px] font-medium text-secondary mb-[8px]">
-                  Password *
+            {/* Password (only for add) */}
+            {!vendor && (
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                  Password <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="password"
                   name="password"
-                  placeholder="Enter your Password"
-                  className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]"
+                  placeholder="Enter Password"
+                  className="w-full px-4 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-400 focus:outline-none bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm transition"
                   value={formData.password}
                   onChange={handleChange}
-                  required
                 />
               </div>
-            </div>
-          )}
-
-          <div className="w-full px-[12px] mt-[0px]">
-              <div className="input-item mb-[12px]">
-                <label className="block text-[14px] font-medium text-secondary mb-[8px]">
-                  Select Role*
-                </label>
-                <Select
-                  options={rolesOptions}
-                  value={rolesOptions.find(option => option.value === formData.role) || null}
-                  onChange={handleSelectChange}
-                  placeholder="Select Category"
-                  isSearchable
-                  className="w-full border rounded-lg"
-                  name="role"
-                />
-              </div>
-            </div>
-
-          {/* {formData.role !== "franchise" && (
+            )}
+            {/* Role Select */}
             <div>
-              <label className="block text-[14px] font-medium text-secondary mb-[8px]">Referred By (Higher Role User ID)</label>
-              <input
-                type="text"
-                name="referredBy"
-                value={formData.referredBy}
-                onChange={handleChange}
-                required={formData.role !== "customer"}
-                className="w-full border p-2 rounded-md"
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                Select Role <span className="text-red-500">*</span>
+              </label>
+              <Select
+                options={rolesOptions}
+                value={rolesOptions.find(option => option.value === formData.role) || null}
+                onChange={handleSelectChange}
+                placeholder="Select Role"
+                isSearchable
+                className="w-full border rounded-xl"
+                name="role"
               />
             </div>
-          )} */}
-
-          <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-md">
-            Save
+          </form>
+        </div>
+        {/* Static Footer */}
+        <div className="px-4 py-2 border-t border-gray-100 dark:border-gray-800 rounded-b-3xl bg-gradient-to-r from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-900">
+          <button
+            type="submit"
+            form="user-form"
+            onClick={handleSubmit}
+            className="w-full py-2 px-4 text-base font-bold rounded-xl bg-gradient-to-r from-blue-700 to-blue-500 hover:from-blue-800 hover:to-blue-600 text-white shadow-lg transition-all duration-200 border-0 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          >
+            {vendor ? "Update User" : "Create User"}
           </button>
-        </form>
+        </div>
       </div>
     </div>
   );

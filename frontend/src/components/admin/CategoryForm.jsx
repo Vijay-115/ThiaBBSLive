@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { toast } from "react-hot-toast";
 
 const CategoryForm = ({ category, onSave, setIsAddEditModalOpen }) => {
   const [formData, setFormData] = useState({
@@ -6,7 +7,6 @@ const CategoryForm = ({ category, onSave, setIsAddEditModalOpen }) => {
     description: "",
   });
 
-  // Update formData when category prop changes
   useEffect(() => {
     if (category) {
       setFormData({
@@ -20,24 +20,32 @@ const CategoryForm = ({ category, onSave, setIsAddEditModalOpen }) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value || "", // Ensuring empty string instead of undefined
+      [name]: value || "",
     }));
+  };
+
+  const validateForm = () => {
+    if (!formData.name.trim()) {
+      toast.error("Category name is required.");
+      return false;
+    }
+    if (!formData.description.trim()) {
+      toast.error("Description is required.");
+      return false;
+    }
+    return true;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
     const submissionData = new FormData();
-
     if (category?._id) {
       submissionData.append("_id", category._id);
     }
     submissionData.append("name", formData.name);
     submissionData.append("description", formData.description);
-
-    console.log("Submitting Category Data:", formData);
     onSave(submissionData);
-
-    // Reset form after submission
     setFormData({
       name: "",
       description: "",
@@ -45,61 +53,65 @@ const CategoryForm = ({ category, onSave, setIsAddEditModalOpen }) => {
   };
 
   return (
-    <div className="max-w-[50vw] w-full mx-auto bg-white border border-gray-400 p-8 shadow-md rounded-md relative">
-      <span className="popup-close" onClick={() => setIsAddEditModalOpen(false)}><i className="ri-close-circle-line"></i></span>
-      <h2 className="text-2xl font-semibold text-center mb-6">
-        {category ? "Edit Category" : "Add Category"}
-      </h2>
-      <div className="input-box-form mt-[20px]">
-        <form onSubmit={handleSubmit}>
-          <div className="flex flex-wrap mx-[-12px]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+      <div className="relative w-full max-w-md mx-auto bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col" style={{ maxHeight: '90vh' }}>
+        {/* Close Button */}
+        <button
+          className="absolute top-2 right-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 text-2xl transition z-10"
+          onClick={() => setIsAddEditModalOpen(false)}
+          aria-label="Close"
+        >
+          <i className="ri-close-circle-line"></i>
+        </button>
+        {/* Header */}
+        <div className="px-4 pt-4 pb-2 border-b border-gray-100 dark:border-gray-800 rounded-t-3xl bg-gradient-to-r from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-900">
+          <h2 className="text-xl font-bold text-center text-blue-800 dark:text-blue-300 tracking-tight">
+            {category ? "Edit Category" : "Add Category"}
+          </h2>
+        </div>
+        {/* Scrollable Form Area */}
+        <div className="flex-1 overflow-y-auto px-4 py-4" style={{ scrollbarWidth: 'thin', msOverflowStyle: 'none' }}>
+          <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5 flex flex-col min-h-0">
             {/* Category Name */}
-            <div className="w-full px-[12px]">
-              <div className="input-item mb-[24px]">
-                <label className="block text-[14px] font-medium text-secondary mb-[8px]">
-                  Category Name *
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  placeholder="Enter your Category Name"
-                  className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                Category Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="name"
+                placeholder="Enter your Category Name"
+                className="w-full px-4 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-400 focus:outline-none bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm transition"
+                value={formData.name}
+                onChange={handleChange}
+              />
             </div>
-
             {/* Description */}
-            <div className="w-full px-[12px]">
-              <div className="input-item mb-[24px]">
-                <label className="block text-[14px] font-medium text-secondary mb-[8px]">
-                  Description *
-                </label>
-                <textarea
-                  name="description"
-                  placeholder="Enter your Description"
-                  className="w-full p-[10px] text-[14px] border border-[#eee] rounded-[10px]"
-                  value={formData.description}
-                  onChange={handleChange}
-                />
-              </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                Description <span className="text-red-500">*</span>
+              </label>
+              <textarea
+                name="description"
+                placeholder="Enter your Description"
+                className="w-full px-4 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-400 focus:outline-none bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm transition min-h-[80px]"
+                value={formData.description}
+                onChange={handleChange}
+              />
             </div>
-
-            {/* Save Button */}
-            <div className="w-full px-[12px]">
-              <div className="input-button">
-                <button
-                  type="submit"
-                  className="bb-btn-2 inline-block py-[10px] px-[25px] text-[14px] font-medium text-white bg-[#6c7fd8] rounded-[10px] hover:bg-transparent hover:border-[#3d4750] hover:text-secondary border"
-                >
-                  {category ? "Update Category" : "Create Category"}
-                </button>
-              </div>
-            </div>
-          </div>
-        </form>
+          </form>
+        </div>
+        {/* Static Footer */}
+        <div className="px-4 py-2 border-t border-gray-100 dark:border-gray-800 rounded-b-3xl bg-gradient-to-r from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-900">
+          <button
+            type="submit"
+            form="category-form"
+            onClick={handleSubmit}
+            className="w-full py-2 px-4 text-base font-bold rounded-xl bg-gradient-to-r from-blue-700 to-blue-500 hover:from-blue-800 hover:to-blue-600 text-white shadow-lg transition-all duration-200 border-0 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          >
+            {category ? "Update Category" : "Create Category"}
+          </button>
+        </div>
       </div>
     </div>
   );

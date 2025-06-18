@@ -31,7 +31,7 @@ function FooterTop() {
     return (
         <>
             <div className="bg-[#cf1717] py-10">
-                <div className="container mx-auto px-4">
+                <div className="bbscontainer mx-auto px-4">
                     <div className="flex flex-col md:flex-row items-center justify-between">
                         <div className="mb-6 md:mb-0 text-center md:text-left">
                             <h3 className="text-2xl font-bold text-white">Get the Latest Updates</h3>
@@ -76,11 +76,11 @@ function FooterTop() {
                         </div>
                         <div className="min-[992px]:w-[16.66%] max-[991px]:w-full w-full px-[12px] bb-footer-toggle bb-footer-info">
                             <div className="bb-footer-widget">
-                                <h4 className="bb-footer-heading font-quicksand leading-[1.2] text-[18px] font-bold mb-[20px] text-secondary tracking-[0] relative block w-full pb-[15px] capitalize border-b-[1px] border-solid border-[#eee] max-[991px]:text-[14px]">Category</h4>
+                                <h4 className="bb-footer-heading font-quicksand leading-[1.2] text-[18px] font-bold mb-[20px] text-secondary tracking-[0] relative block w-full pb-[15px] capitalize border-b-[1px] border-solid border-[#eee] max-[991px]:text-[14px]">Quick Links</h4>
                                 <div className="bb-footer-links bb-footer-dropdown  max-[991px]:mb-[35px]">
                                     <ul className="align-items-center">
                                         <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
-                                            <Link to="/product/category/groceries" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Groceries</Link>
+                                            <Link to="/services-terms-of-use" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Services Terms of Use</Link>
                                         </li>
                                         <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
                                             <Link to="/product/category/womens-jewellery" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Jewellery</Link>
