@@ -8,6 +8,7 @@ import Modal from "react-modal";
 import { vendorApprove, vendorRequest } from "../../services/vendorService";
 import ViewUserRequest from "./ViewUserRequest";
 import moment from "moment";
+import { toast } from "react-hot-toast";
 
 const UserRequest = () => {
 

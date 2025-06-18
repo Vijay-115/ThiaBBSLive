@@ -216,7 +216,9 @@ exports.approveVendor = async (req, res) => {
 
         // Send email with login credentials
         const transporter = nodemailer.createTransport({
-            service: 'gmail',
+            host: 'smtp.zoho.com',
+            port: 465,
+            secure: true,   
             auth: {
                 user: process.env.EMAIL_USER,
                 pass: process.env.EMAIL_PASS
@@ -255,7 +257,9 @@ exports.declineVendor = async (req, res) => {
             await vendorInfo.save();
             // Configure email transporter
             const transporter = nodemailer.createTransport({
-                service: 'gmail',
+                host: 'smtp.zoho.com',
+                port: 465,
+                secure: true,   
                 auth: {
                     user: process.env.EMAIL_USER,
                     pass: process.env.EMAIL_PASS
