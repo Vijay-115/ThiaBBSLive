@@ -5,18 +5,30 @@ import { logout } from "../../../services/authService";
 
 const Sidebar = ({ isSidebarHidden, toggleSidebar }) => {
     const location = useLocation();
+    const params = new URLSearchParams(location.search);
+    const currentRole = params.get("role");
     const dispatch = useDispatch();
     const isProductSectionActive = ["/admin/products", "/admin/products/categories", "/admin/products/subcategories"].includes(location.pathname);
-    const isUserRequestSectionActive = ["/admin/users-request", "/admin/users-request/categories", "/admin/users-request/subcategories"].includes(location.pathname);
+    
+    const isUserRequestSectionActive =
+    location.pathname === "/admin/users-request" &&
+    ["seller", "territory_head", "franchise_head", "agent"].includes(currentRole);
 
     const [isProductOpen, setIsProductOpen] = useState(isProductSectionActive);
-
     // Ensure dropdown stays open when navigating within product links
     useEffect(() => {
         if (isProductSectionActive) {
             setIsProductOpen(true);
         }
     }, [location.pathname]);
+
+    const [isUserRequestOpen, setIsUserRequestOpen] = useState(isUserRequestSectionActive);
+
+    useEffect(() => {
+    if (isUserRequestSectionActive) {
+        setIsUserRequestOpen(true);
+    }
+    }, [location]);
     return (
         <>
             <section id="sidebar" className={isSidebarHidden ? 'hide' : 'show'}>
@@ -89,47 +101,59 @@ const Sidebar = ({ isSidebarHidden, toggleSidebar }) => {
                             <span className="text">Other User's</span>
                         </NavLink>
                     </li>     
-                    <li className={location.pathname === "/admin/users-request" ? "active" : ""}>
+                    {/* <li className={location.pathname === "/admin/users-request" ? "active" : ""}>
                         <NavLink to="/admin/users-request">
                             <i className="bx bxs-group bx-sm" />
                             <span className="text">User's Request</span>
                         </NavLink>
-                    </li>  
+                    </li>   */}
                     
-                    <li className={isProductSectionActive ? "active" : ""}>
+                    <li className={isUserRequestSectionActive ? "active" : ""}>
                         <a
-                            onClick={() => setIsProductOpen(!isProductOpen)}
+                            onClick={() => setIsUserRequestOpen(!isUserRequestOpen)}
                             className="flex items-center justify-between rounded-lg hover:bg-blue-500 transition cursor-pointer"
                         >
                             <div className="flex items-center">
                                 <i className="bx bxs-shopping-bag-alt bx-sm" />
                                 <span>User's Request</span>
                             </div>
-                            <i className={`bx ${isProductOpen ? "bx-chevron-up" : "bx-chevron-down"}`} />
+                            <i className={`bx ${isUserRequestOpen ? "bx-chevron-up" : "bx-chevron-down"}`} />
                         </a>
 
                         {/* Submenu */}
-                        <ul className={`mt-2 space-y-1 transition-all ${isProductOpen ? "block" : "hidden"}`}>
+                        <ul className={`mt-2 space-y-1 transition-all ${isUserRequestOpen ? "block" : "hidden"}`}>
                             <li>
-                                <NavLink to="/admin/products" className="" style={location.pathname === "/admin/products" ? { backgroundColor: "#0da89c", color: "#ffffff" } : {backgroundColor: "transparent", color: "#000000"}} >
+                                <NavLink to="/admin/users-request?role=seller" className="" style={currentRole === "seller"
+                                ? { backgroundColor: "#0da89c", color: "#ffffff" }
+                                    : { backgroundColor: "transparent", color: "#000000" }
+                                } >
                                     <i className="bx bxs-shopping-bag-alt bx-sm" />
                                     <span>Vendor's Request</span>
                                 </NavLink>
                             </li>
-                            <li className={location.pathname === "/admin/products/categories" ? "bg-blue-600 rounded-lg" : ""}>
-                                <NavLink to="/admin/products/categories" className="" style={location.pathname === "/admin/products/categories" ? { backgroundColor: "#0da89c", color: "#ffffff" } : {backgroundColor: "transparent", color: "#000000"}}>
+                            <li className={location.pathname === "/admin/users-request?role=agent" ? "bg-blue-600 rounded-lg" : ""}>
+                                <NavLink to="/admin/users-request?role=agent" className="" style={currentRole === "agent"
+                                ? { backgroundColor: "#0da89c", color: "#ffffff" }
+                                    : { backgroundColor: "transparent", color: "#000000" }
+                                } >
                                     <i className="bx bxs-category bx-sm" />
                                     <span>Agent's Request</span>
                                 </NavLink>
                             </li>
-                            <li className={location.pathname === "/admin/products/subcategories" ? "bg-blue-600 rounded-lg" : ""}>
-                                <NavLink to="/admin/products/subcategories" className="" style={location.pathname === "/admin/products/subcategories" ? { backgroundColor: "#0da89c", color: "#ffffff" } : {backgroundColor: "transparent", color: "#000000"}}>
+                            <li className={location.pathname === "/admin/users-request?role=territory_head" ? "bg-blue-600 rounded-lg" : ""}>
+                                <NavLink to="/admin/users-request?role=territory_head" className="" style={currentRole === "territory_head"
+                                ? { backgroundColor: "#0da89c", color: "#ffffff" }
+                                    : { backgroundColor: "transparent", color: "#000000" }
+                                } >
                                     <i className="bx bxs-layer bx-sm" />
                                     <span>Territory Head's Request</span>
                                 </NavLink>
                             </li>
-                            <li className={location.pathname === "/admin/products/subcategories" ? "bg-blue-600 rounded-lg" : ""}>
-                                <NavLink to="/admin/products/subcategories" className="" style={location.pathname === "/admin/products/subcategories" ? { backgroundColor: "#0da89c", color: "#ffffff" } : {backgroundColor: "transparent", color: "#000000"}}>
+                            <li className={location.pathname === "/admin/users-request?role=franchise_head" ? "bg-blue-600 rounded-lg" : ""}>
+                                <NavLink to="/admin/users-request?role=franchise_head" className="" style={currentRole === "franchise_head"
+                                ? { backgroundColor: "#0da89c", color: "#ffffff" }
+                                    : { backgroundColor: "transparent", color: "#000000" }
+                                } >
                                     <i className="bx bxs-layer bx-sm" />
                                     <span>Franchise Head's Request</span>
                                 </NavLink>

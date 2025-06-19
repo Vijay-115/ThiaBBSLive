@@ -164,13 +164,20 @@ exports.registerVendor = async (req, res) => {
 };
 
 exports.getRequest = async (req, res) => {
-    try {
-        const vendors = await Vendor.find({is_active:false}); //
-        console.log('getRequest', vendors);
-        res.status(200).json(vendors);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
+console.log('Test getRequest');
+console.log(req.query.role);
+  try {
+    const role = req.query.role || 'vendor'; // default to vendor if not provided
+    const vendors = await Vendor.find({ role });
+    console.log('getRequest', vendors);
+    res.status(200).json(vendors);
+  } catch (err) {
+    console.error('Error in getRequest:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal Server Error',
+    });
+  }
 };
 
 exports.approveVendor = async (req, res) => {

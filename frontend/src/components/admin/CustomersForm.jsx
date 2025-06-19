@@ -6,9 +6,13 @@ const CustomersForm = ({ customer, onSave, setIsAddEditModalOpen }) => {
     name: "",
     email: "",
     password: "",
+    confirmPassword: "",
     role: "user",
     phone: "",
   });
+    
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     if (customer) {
@@ -16,6 +20,7 @@ const CustomersForm = ({ customer, onSave, setIsAddEditModalOpen }) => {
         name: customer?.name || "",
         email: customer?.email || "",
         password: customer?.password || "",
+        confirmPassword: customer?.password || "",
         role: "user",
         phone: customer?.userdetails?.phone || "",
       });
@@ -24,33 +29,53 @@ const CustomersForm = ({ customer, onSave, setIsAddEditModalOpen }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value || "",
-    }));
+
+    if (name === "phone") {
+      // Allow only digits and max length of 10
+      const numericValue = value.replace(/\D/g, "").slice(0, 10);
+      setFormData((prev) => ({
+        ...prev,
+        [name]: numericValue,
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   const validateForm = () => {
-    if (!formData.name.trim()) {
-      toast.error("Name is required.");
-      return false;
-    }
-    if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
-      toast.error("Please enter a valid email address.");
-      return false;
-    }
-    if (!/^\d{10}$/.test(formData.phone)) {
-      toast.error("Phone number must be exactly 10 digits.");
-      return false;
-    }
-    if (!customer) {
-      if (!/^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).*$/.test(formData.password)) {
-        toast.error("Password must be at least 6 characters, include 1 uppercase, 1 lowercase, and 1 special character.");
+      if (!formData.name.trim()) {
+        toast.error('Name is required.');
         return false;
       }
-    }
-    return true;
-  };
+  
+      if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
+        toast.error('Please enter a valid email address.');
+        return false;
+      }
+  
+      if (!/^\d{10}$/.test(formData.phone)) {
+        toast.error('Phone number must be exactly 10 digits.');
+        return false;
+      }
+  
+      if (!customer) {
+        const passwordRegex = /^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).*$/;
+        if (!passwordRegex.test(formData.password)) {
+          toast.error('Password must be at least 6 characters, include 1 uppercase, 1 lowercase, and 1 special character.');
+          return false;
+        }
+  
+        if (formData.password !== formData.confirmPassword) {
+          toast.error("Passwords do not match.");
+          return false;
+        }
+      }
+  
+      return true;
+    };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -69,6 +94,7 @@ const CustomersForm = ({ customer, onSave, setIsAddEditModalOpen }) => {
       name: "",
       email: "",
       password: "",
+      confirmPassword: "",
       role: "user",
       phone: "",
     });
@@ -136,21 +162,49 @@ const CustomersForm = ({ customer, onSave, setIsAddEditModalOpen }) => {
                 onChange={handleChange}
               />
             </div>
-            {/* Password (only for add) */}
+            {/* Password */}
             {!customer && (
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
-                  Password <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="password"
-                  name="password"
-                  placeholder="Enter Password"
-                  className="w-full px-4 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-400 focus:outline-none bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm transition"
-                  value={formData.password}
-                  onChange={handleChange}
-                />
-              </div>
+              <>
+                <div className="relative">
+                  <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-200">
+                    Password <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    placeholder="Enter your Password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-400"
+                  />
+                  <span
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-10 cursor-pointer text-gray-500 dark:text-gray-300"
+                  >
+                    <i className={showPassword ? "ri-eye-off-line" : "ri-eye-line"}></i>
+                  </span>
+                </div>
+                {/* Confirm Password */}
+                <div className="relative">
+                  <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-200">
+                    Confirm Password <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    name="confirmPassword"
+                    placeholder="Confirm your Password"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-400"
+                  />
+                  <span
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-4 top-10 cursor-pointer text-gray-500 dark:text-gray-300"
+                  >
+                    <i className={showConfirmPassword ? "ri-eye-off-line" : "ri-eye-line"}></i>
+                  </span>
+                </div>
+              </>
             )}
           </form>
         </div>
