@@ -5,13 +5,14 @@ import Sidebar from './layout/sidebar';
 import Navbar from './layout/Navbar';
 import useDashboardLogic from "./hooks/useDashboardLogic"; 
 import Modal from "react-modal";
-import { vendorApprove, vendorRequest } from "../../services/vendorService";
+import { vendoDecline, vendorApprove, vendorRequest } from "../../services/vendorService";
 import ViewUserRequest from "./ViewUserRequest";
 import moment from "moment";
 import { toast } from "react-hot-toast";
+import { useLocation } from 'react-router-dom';
 
 const UserRequest = () => {
-
+  const location = useLocation();
   const {
     isSidebarHidden,
     toggleSidebar,
@@ -26,6 +27,7 @@ const UserRequest = () => {
   } = useDashboardLogic();
 
   const [vendors, setVendors] = useState([]);
+  const [role, setRole] = useState('');
   const [filteredvendors, setFilteredvendors] = useState([]);
   const [editVendor, setEditVendor] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
@@ -43,6 +45,29 @@ const UserRequest = () => {
   const [declineData, setDeclineData] = useState({
       user_id: '', decline_reason: ''
   });
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const roleParam = params.get('role') || 'seller';
+    setRole(roleParam); // this sets the role
+  }, [location.search]);
+
+  useEffect(() => {
+    if (!role) return; // prevent calling with empty role
+    fetchRequest(role); // only run after role is set
+  }, [role]);
+
+  const fetchRequest = async (role) => {
+    try {
+      const data = await vendorRequest(role);
+      setVendors(data);
+      setFilteredvendors(data);
+      console.log("Fetching vendors:", data);
+    } catch (error) {
+      console.error("Error fetching vendors:", error);
+      setErrorMessage(error.message || "Failed to fetch vendors.");
+    }
+  };
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -65,23 +90,6 @@ const UserRequest = () => {
 
       setFilteredvendors(filtered);
   };
-
-  const fetchRequest = async () => {
-    try {
-      const data = await vendorRequest();
-      // const data = await Promise.all(roles.map((role) => UserService.getUserRole(role)));
-      setVendors(data);
-      setFilteredvendors(data);
-      console.log("Fetching vendors:", data); // Fixed stale state issue
-    } catch (error) {
-      console.error("Error fetching vendors:", error);
-      setErrorMessage(error.message || "Failed to fetch vendors.");
-    }
-  };
-
-  useEffect(() => {
-    fetchRequest();
-  }, []);
 
   useEffect(() => {
     const filterAndSortUsers = () => {
@@ -174,7 +182,7 @@ const UserRequest = () => {
             navigate("/");
         }
     } catch (error) {
-        toast.error(error.message || "Agent registration failed. Try again.");
+        toast.error(error.message || "Decline failed. Try again.");
     }
 }
 
@@ -182,6 +190,16 @@ const UserRequest = () => {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+
+  const formatRole = (role) => {
+    if (!role || typeof role !== "string") return "";
+
+    if (role === "seller") role = "vendor";
+
+    return role
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+  };
 
   const totalPages = Math.ceil(filteredvendors.length / itemsPerPage);
   return (
@@ -220,6 +238,11 @@ const UserRequest = () => {
                                   </li>
                                   <li>
                                       <a> User Request </a>
+                                  </li><li>
+                                      <i className="bx bx-chevron-right" />
+                                  </li>
+                                  <li>
+                                      <a className="capitalize"> {formatRole(role)}'s Request </a>
                                   </li>
                               </ul>
                           </div>
@@ -309,17 +332,17 @@ const UserRequest = () => {
                       </div>
 
                       <div className="mt-8">
-                          <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100 tracking-tight">User Request List</h2>
+                          <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100 tracking-tight">{formatRole(role)}'s Request List</h2>
                           <div className="flex flex-wrap w-full mb-[-16px]">
                           <div className="w-full px-2 mb-4">
                               <div className="overflow-x-auto rounded-xl shadow border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
                                 {paginatedUsers.length === 0 ? (
-                                  <p className="text-gray-500 p-4 text-center text-sm">No user requests available.</p>
+                                  <p className="text-gray-500 p-4 text-center text-sm">No {formatRole(role)}'s requests available.</p>
                                 ) : (
                                   <table className="w-full table-auto border-collapse text-sm">
                                     <thead className="bg-gray-100 dark:bg-gray-800">
                                       <tr>
-                                        <th className="font-Poppins p-2 pl-6 text-left font-semibold text-gray-700 dark:text-gray-200 tracking-wide">User Request Name</th>
+                                        <th className="font-Poppins p-2 pl-6 text-left font-semibold text-gray-700 dark:text-gray-200 tracking-wide">{formatRole(role)} Name</th>
                                         <th className="font-Poppins p-2 text-left font-semibold text-gray-700 dark:text-gray-200 tracking-wide">Email</th>
                                         <th className="font-Poppins p-2 text-left font-semibold text-gray-700 dark:text-gray-200 tracking-wide">Phone</th>
                                         <th className="font-Poppins p-2 text-left font-semibold text-gray-700 dark:text-gray-200 tracking-wide">Date & Time</th>

@@ -164,13 +164,20 @@ exports.registerVendor = async (req, res) => {
 };
 
 exports.getRequest = async (req, res) => {
-    try {
-        const vendors = await Vendor.find({is_active:false}); //
-        console.log('getRequest', vendors);
-        res.status(200).json(vendors);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
+console.log('Test getRequest');
+console.log(req.query.role);
+  try {
+    const role = req.query.role || 'vendor'; // default to vendor if not provided
+    const vendors = await Vendor.find({ role });
+    console.log('getRequest', vendors);
+    res.status(200).json(vendors);
+  } catch (err) {
+    console.error('Error in getRequest:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal Server Error',
+    });
+  }
 };
 
 exports.approveVendor = async (req, res) => {
@@ -256,28 +263,29 @@ exports.declineVendor = async (req, res) => {
             vendorInfo.decline_reason = declineReason;
             await vendorInfo.save();
             // Configure email transporter
-            const transporter = nodemailer.createTransport({
+            /*const transporter = nodemailer.createTransport({
                 host: 'smtp.zoho.com',
                 port: 465,
-                secure: true,   
+                secure: true,
                 auth: {
                     user: process.env.EMAIL_USER,
                     pass: process.env.EMAIL_PASS
                 }
             });
+
             await transporter.sendMail({
-                from: process.env.EMAIL,
+                from: process.env.EMAIL, // Must match EMAIL_USER
                 to: vendorInfo.email,
                 subject: "Request Decline",
                 html: `
                 <div style="font-family: Montserrat, sans-serif; line-height: 1.6;">
-                    <p>Hello,${vendorInfo.vendor_fname}</p>
-                    <p>Dear user your request has been decline for given reason: "${vendorInfo.decline_reason}".</p>
+                    <p>Hello, ${vendorInfo.vendor_fname}</p>
+                    <p>Dear user, your request has been declined for the following reason: "${vendorInfo.decline_reason}".</p>
                     <p>Thank you!</p>
                     <p><strong>BBSCart Team</strong></p>
                 </div>
                 `,
-            });
+            });*/
         }
         // Perform DB update or logic here...
         return res.status(200).json({ success: true, message: 'Vendor declined successfully.' });
