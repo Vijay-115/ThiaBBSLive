@@ -11,6 +11,7 @@ const Register = () => {
     const [errors, setErrors] = useState({});
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const [showPassword, setShowPassword] = useState(false);
 
     const validateRegister = () => {
         let formErrors = {};
@@ -100,15 +101,24 @@ const Register = () => {
                                 </div>
                                 <div>
                                     <label htmlFor="password" className="mb-2 dark:text-gray-400 text-md">Password</label>
-                                    <input
-                                        id="password"
-                                        name="password"
-                                        className={`border p-3 shadow-md dark:bg-indigo-700 dark:text-gray-300 dark:border-gray-700 placeholder:text-base focus:scale-105 ease-in-out duration-300 border-gray-300 rounded-lg w-full placeholder-gray-300 ${errors.email ? 'border-red-700' : ''}`}
-                                        type="password"
-                                        placeholder="********"
-                                        onChange={handleChange}
-                                        value={userData.password}
-                                    />
+                                    <div className="relative">
+                                        <input
+                                            id="password"
+                                            name="password"
+                                            className={`border p-3 shadow-md dark:bg-indigo-700 dark:text-gray-300 dark:border-gray-700 placeholder:text-base focus:scale-105 ease-in-out duration-300 border-gray-300 rounded-lg w-full placeholder-gray-300 ${errors.email ? 'border-red-700' : ''}`}
+                                            type={showPassword ? "text" : "password"}
+                                            placeholder="********"
+                                            onChange={handleChange}
+                                            value={userData.password}
+                                        />
+                                        <button
+                                        type="button"
+                                        onClick={() => setShowPassword((prev) => !prev)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500 dark:text-gray-300"
+                                        >
+                                        <i className={showPassword ? "ri-eye-off-line" : "ri-eye-line"}></i>
+                                        </button>
+                                    </div>
                                     {errors.password && <div className="text-red-800">{errors.password}</div>}
                                 </div>
                                 {/* <div>
