@@ -41,11 +41,11 @@ const Navbar = ({
                 checked={isDarkMode}
                 onChange={toggleDarkMode}
             />
-            <label className="swith-lm" htmlFor="switch-mode">
+            {/* <label className="swith-lm" htmlFor="switch-mode">
                 <i className="bx bxs-moon" />
                 <i className="bx bx-sun" />
                 <div className="ball" />
-            </label>
+            </label> */}
             <div className="notification" onClick={toggleNotificationMenu}>
                 <i className="bx bxs-bell bx-tada-hover" />
                 <span className="num">8</span>

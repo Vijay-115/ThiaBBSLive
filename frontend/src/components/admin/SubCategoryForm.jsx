@@ -108,8 +108,16 @@ const SubCategoryForm = ({ categories, subcategory, onSave, setIsAddEditModalOpe
                 onChange={handleSelectChange}
                 placeholder="Select Category"
                 isSearchable
-                className="w-full border rounded-xl"
+                className="w-full border rounded-xl z-50"
+                classNamePrefix="react-select"
                 name="category_id"
+                menuPortalTarget={typeof window !== 'undefined' ? document.body : null}
+                styles={{
+                  menuPortal: base => ({ ...base, zIndex: 9999 }),
+                  menu: base => ({ ...base, zIndex: 9999, width: '100%' }),
+                  control: base => ({ ...base, minHeight: 44, borderRadius: 12, borderColor: '#d1d5db', boxShadow: 'none' }),
+                  option: base => ({ ...base, fontSize: 15 }),
+                }}
               />
             </div>
             {/* SubCategory Name */}
