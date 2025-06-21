@@ -3,6 +3,7 @@ import axios from "axios";
 import { Link } from 'react-router-dom';
 import { useParams, useNavigate } from "react-router-dom";
 import toast from 'react-hot-toast';
+import { resetPassword } from "../../services/authService";
 
 function ResetPassword() {
     const { token } = useParams();

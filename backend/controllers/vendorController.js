@@ -3,6 +3,8 @@ const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User'); // Assuming User model exists
+const { Resend } = require('resend');
+const resend = new Resend('re_Kwdg2csA_A3De7JEabPeYrUMCKPZD1BnZ');
 
 exports.registerVendor = async (req, res) => {
     try {
@@ -220,26 +222,20 @@ exports.approveVendor = async (req, res) => {
             vendor.user_id = existingUser._id;
         }
         await vendor.save();
-
-        // Send email with login credentials
-        const transporter = nodemailer.createTransport({
-            host: 'smtp.zoho.com',
-            port: 465,
-            secure: true,   
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS
-            }
+        
+        (async function () {
+        const { data, error } = await resend.emails.send({
+            from: 'BBSCart <info@bbscart.com>',
+            to: [vendor.email],
+            subject: 'Vendor Approval - Account Created',
+            html: `Dear ${vendor.vendor_fname},\n\nYour vendor account has been approved.\n\nLogin Details:\nEmail: ${vendor.email}\nPassword: ${randomPassword}\n\nPlease log in and change your password immediately.\n\nRegards,\nBBSCart`,
         });
 
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: vendor.email,
-            subject: 'Vendor Approval - Account Created',
-            text: `Dear ${vendor.vendor_fname},\n\nYour vendor account has been approved.\n\nLogin Details:\nEmail: ${vendor.email}\nPassword: ${randomPassword}\n\nPlease log in and change your password immediately.\n\nRegards,\nBBSCart`
-        };
-
-        await transporter.sendMail(mailOptions);
+        if (error) {
+            return console.error({ error });
+        }
+        console.log({ data });
+        })();
 
         res.status(200).json({
             message: "Vendor approved successfully. Login credentials sent via email.",
@@ -262,21 +258,11 @@ exports.declineVendor = async (req, res) => {
             vendorInfo.is_decline = true;
             vendorInfo.decline_reason = declineReason;
             await vendorInfo.save();
-            // Configure email transporter
-            /*const transporter = nodemailer.createTransport({
-                host: 'smtp.zoho.com',
-                port: 465,
-                secure: true,
-                auth: {
-                    user: process.env.EMAIL_USER,
-                    pass: process.env.EMAIL_PASS
-                }
-            });
-
-            await transporter.sendMail({
-                from: process.env.EMAIL, // Must match EMAIL_USER
-                to: vendorInfo.email,
-                subject: "Request Decline",
+            (async function () {
+            const { data, error } = await resend.emails.send({
+                from: 'BBSCart <info@bbscart.com>',
+                to: [vendorInfo.email],
+                subject: 'Request Decline',
                 html: `
                 <div style="font-family: Montserrat, sans-serif; line-height: 1.6;">
                     <p>Hello, ${vendorInfo.vendor_fname}</p>
@@ -285,7 +271,13 @@ exports.declineVendor = async (req, res) => {
                     <p><strong>BBSCart Team</strong></p>
                 </div>
                 `,
-            });*/
+            });
+
+            if (error) {
+                return console.error({ error });
+            }
+            console.log({ data });
+            })();
         }
         // Perform DB update or logic here...
         return res.status(200).json({ success: true, message: 'Vendor declined successfully.' });
