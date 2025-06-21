@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ProductService } from '../../services/ProductService';
 import { useSelector } from 'react-redux';
+import ReactDOM from 'react-dom';
 
 // Simple mobile detection hook (since we're skipping useIsMobile)
 const useIsMobile = () => {
@@ -21,6 +22,8 @@ const MegaMenu = ({ menuType }) => {
   const isMobile = useIsMobile();
   const [dynamicCategories, setDynamicCategories] = useState([]);
   const { user } = useSelector((state) => state.auth);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [activeSidebarMenu, setActiveSidebarMenu] = useState(null);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -165,111 +168,169 @@ const MegaMenu = ({ menuType }) => {
 
   return (
     <>
+      {/* Offer Banner */}
       <div className="w-full bg-[#cf1717] text-white py-2 text-center overflow-hidden">
         <ul className="offer-msg list-none m-0 p-0">
-          <li key={currentIndex} className="bounce-text text-sm font-medium text-gray-800">
+          <li key={currentIndex} className="bounce-text text-sm font-medium text-white">
             {offers[currentIndex]}
           </li>
         </ul>
       </div>
-      <nav className="relative bg-white shadow-md">
-        <div className="container mx-auto px-4">
-          <ul className="flex justify-center space-x-4 md:space-x-10 py-4">
+      {/* Main Navbar */}
+      <nav className="relative bg-white shadow-md border-b border-gray-100 z-30">
+        <div className="container mx-auto px-2 flex items-center justify-between">
+          {/* Hamburger for mobile */}
+          <button
+            className="lg:hidden p-2 text-[#cf1717] focus:outline-none"
+            onClick={() => setMobileSidebarOpen(true)}
+            aria-label="Open menu"
+          >
+            <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" /></svg>
+          </button>
+          {/* Desktop Menu */}
+          <ul className="hidden lg:flex overflow-x-auto no-scrollbar justify-center space-x-2 lg:space-x-8 py-2 w-full">
             {fullMenuData.map((item) => (
               <li
                 key={item.id}
-                className="megamenu-item group"
-                onMouseEnter={() => !isMobile && setActiveMenu(item.id)}
-                onMouseLeave={() => !isMobile && setActiveMenu(null)}
-                onClick={() =>
-                  isMobile && setActiveMenu(activeMenu === item.id ? null : item.id)
-                }
+                className="relative group flex-shrink-0"
+                onMouseEnter={() => setActiveMenu(item.id)}
+                onMouseLeave={() => setActiveMenu(null)}
               >
-                <div className="flex items-center space-x-1 text-black hover:text-red-500 font-medium transition-colors cursor-pointer">
+                <button
+                  className={cn(
+                    'flex items-center gap-1 px-4 py-2 rounded-md font-semibold text-gray-800 hover:bg-[#f7eaea] hover:text-[#cf1717] transition',
+                    activeMenu === item.id ? 'bg-[#f7eaea] text-[#cf1717]' : ''
+                  )}
+                  aria-haspopup="true"
+                  aria-expanded={activeMenu === item.id}
+                >
                   <span>{item.title}</span>
-                  <span className="text-xs">&#9662;</span> {/* Down arrow symbol */}
-                </div>
-
-                {item.submenu && (
+                  <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                </button>
+                {/* Desktop MegaMenu - use portal for top layer */}
+                {activeMenu === item.id && item.submenu && ReactDOM.createPortal(
                   <div
-                    className={cn(
-                      "megamenu-content absolute left-0 w-full bg-white z-10",
-                      activeMenu === item.id ? "block" : "hidden"
-                    )}
+                    className="fixed left-0 top-0 w-full h-full z-[9999] pointer-events-none"
+                    style={{}}
                   >
-                    <div className="container mx-auto p-4 md:p-6">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
+                    <div
+                      className="absolute left-1/2 -translate-x-1/2 top-40 w-[95vw] max-w-5xl bg-white border border-[#cf1717] rounded-xl shadow-2xl p-6 flex flex-col pointer-events-auto"
+                      style={{ minWidth: '320px' }}
+                      onMouseEnter={() => setActiveMenu(item.id)}
+                      onMouseLeave={() => setActiveMenu(null)}
+                    >
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
                         {item.submenu.map((submenu) => (
-                          <div key={submenu.id} className="bg-white p-4 rounded-lg shadow-sm">
-                            <div className="flex flex-col md:flex-row items-start gap-4">
-                              {submenu.image && (
-                                <div className="w-16 h-16 md:w-24 md:h-24 rounded-lg overflow-hidden flex-shrink-0">
-                                  <img
-                                    src={submenu.image}
-                                    alt={submenu.title}
-                                    className="w-full h-full object-cover"
-                                  />
-                                </div>
-                              )}
-                              <div className="flex-1">
-                                <h3 className="text-lg font-semibold mb-1 text-black">
-                                  {submenu.title}
-                                </h3>
-                                {submenu.description && (
-                                  <p className="text-sm text-gray-600 mb-3">
-                                    {submenu.description}
-                                  </p>
-                                )}
-                                <ul className="space-y-2">
-                                  {submenu.items.map((subItem) => (
-                                    <li
-                                      key={subItem.id}
-                                      className="text-gray-700 hover:text-red-500 transition-colors"
-                                    >
-                                      <a href={subItem.link} className="flex items-center py-1">
-                                        <span>{subItem.title}</span>
-                                        {subItem.hasChildren && (
-                                          <span className="text-xs ml-1">&#9656;</span>
-                                        )}
-                                      </a>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
+                          <div key={submenu.id} className="flex-1 min-w-[180px] max-w-xs">
+                            <div className="mb-2 border-b border-[#cf1717] pb-1">
+                              <h3 className="text-base font-bold text-[#cf1717] mb-0.5">{submenu.title}</h3>
                             </div>
+                            <ul className="space-y-1 mt-2">
+                              {submenu.items.map((subItem) => (
+                                <li key={subItem.id}>
+                                  <a
+                                    href={subItem.link}
+                                    className="flex items-center gap-2 px-2 py-1.5 rounded-md text-sm text-gray-700 hover:bg-[#cf1717]/10 hover:text-[#cf1717] transition group"
+                                  >
+                                    <span className="inline-block w-2 h-2 rounded-full bg-[#cf1717] opacity-60 group-hover:opacity-100"></span>
+                                    <span>{subItem.title}</span>
+                                    {subItem.hasChildren && (
+                                      <svg className="w-3 h-3 ml-1 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+                                    )}
+                                  </a>
+                                </li>
+                              ))}
+                            </ul>
                           </div>
                         ))}
                       </div>
                     </div>
-                  </div>
+                  </div>,
+                  document.body
                 )}
               </li>
             ))}
           </ul>
         </div>
       </nav>
-
-      <style>
-        {`
-            .bounce-text {
-                animation: bounceIn 0.6s ease-in-out;
-            }
-
-            @keyframes bounceIn {
-                0% {
-                    transform: translateY(-100%);
-                    opacity: 0;
-                }
-                50% {
-                    transform: translateY(10%);
-                    opacity: 1;
-                }
-                100% {
-                    transform: translateY(0);
-                }
-            }
-        `}
-      </style>
+      {/* Mobile Sidebar */}
+      {isMobile && mobileSidebarOpen && ReactDOM.createPortal(
+        <div className="fixed inset-0 z-[9999] flex">
+          {/* Overlay */}
+          <div className="absolute inset-0 bg-black bg-opacity-40" onClick={() => setMobileSidebarOpen(false)}></div>
+          {/* Sidebar */}
+          <div className="relative w-80 max-w-full h-full bg-white shadow-2xl border-r border-[#cf1717] flex flex-col animate-slideInLeft">
+            <button
+              className="absolute top-3 right-3 text-gray-400 hover:text-[#cf1717] text-2xl z-10"
+              onClick={() => setMobileSidebarOpen(false)}
+              aria-label="Close"
+            >
+              <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <div className="flex-1 overflow-y-auto pt-8 pb-4 px-4">
+              <ul className="space-y-2">
+                {fullMenuData.map((item) => (
+                  <li key={item.id}>
+                    <button
+                      className={cn(
+                        'w-full flex items-center justify-between px-3 py-2 rounded-md font-semibold text-gray-800 hover:bg-[#f7eaea] hover:text-[#cf1717] transition',
+                        activeSidebarMenu === item.id ? 'bg-[#f7eaea] text-[#cf1717]' : ''
+                      )}
+                      onClick={() => setActiveSidebarMenu(activeSidebarMenu === item.id ? null : item.id)}
+                    >
+                      <span>{item.title}</span>
+                      <svg className={cn('w-4 h-4 ml-2 transition-transform', activeSidebarMenu === item.id ? 'rotate-90' : '')} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+                    </button>
+                    {activeSidebarMenu === item.id && item.submenu && (
+                      <div className="pl-4 mt-1 border-l-2 border-[#cf1717]">
+                        {item.submenu.map((submenu) => (
+                          <div key={submenu.id} className="mb-2">
+                            <h3 className="text-base font-bold text-[#cf1717] mb-1 mt-2">{submenu.title}</h3>
+                            <ul className="space-y-1">
+                              {submenu.items.map((subItem) => (
+                                <li key={subItem.id}>
+                                  <a
+                                    href={subItem.link}
+                                    className="block py-1.5 text-sm text-gray-700 hover:text-[#cf1717]"
+                                  >
+                                    {subItem.title}
+                                  </a>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+      <style>{`
+        .bounce-text {
+          animation: bounceIn 0.6s ease-in-out;
+        }
+        @keyframes bounceIn {
+          0% { transform: translateY(-100%); opacity: 0; }
+          50% { transform: translateY(10%); opacity: 1; }
+          100% { transform: translateY(0); }
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; background: #f7eaea; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cf1717; border-radius: 8px; }
+        @media (max-width: 1023px) {
+          .animate-slideInLeft { animation: slideInLeft 0.3s cubic-bezier(0.4,0,0.2,1) both; }
+          @keyframes slideInLeft {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+          }
+        }
+      `}</style>
     </>
   );
 };
