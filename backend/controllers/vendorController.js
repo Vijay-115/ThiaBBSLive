@@ -3,6 +3,8 @@ const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User'); // Assuming User model exists
+const { Resend } = require('resend');
+const resend = new Resend('re_Kwdg2csA_A3De7JEabPeYrUMCKPZD1BnZ');
 
 exports.registerVendor = async (req, res) => {
     try {
@@ -164,13 +166,20 @@ exports.registerVendor = async (req, res) => {
 };
 
 exports.getRequest = async (req, res) => {
-    try {
-        const vendors = await Vendor.find({is_active:false}); //
-        console.log('getRequest', vendors);
-        res.status(200).json(vendors);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
+console.log('Test getRequest');
+console.log(req.query.role);
+  try {
+    const role = req.query.role || 'vendor'; // default to vendor if not provided
+    const vendors = await Vendor.find({ role });
+    console.log('getRequest', vendors);
+    res.status(200).json(vendors);
+  } catch (err) {
+    console.error('Error in getRequest:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal Server Error',
+    });
+  }
 };
 
 exports.approveVendor = async (req, res) => {
@@ -213,24 +222,20 @@ exports.approveVendor = async (req, res) => {
             vendor.user_id = existingUser._id;
         }
         await vendor.save();
-
-        // Send email with login credentials
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS
-            }
+        
+        (async function () {
+        const { data, error } = await resend.emails.send({
+            from: 'BBSCart <info@bbscart.com>',
+            to: [vendor.email],
+            subject: 'Vendor Approval - Account Created',
+            html: `Dear ${vendor.vendor_fname},\n\nYour vendor account has been approved.\n\nLogin Details:\nEmail: ${vendor.email}\nPassword: ${randomPassword}\n\nPlease log in and change your password immediately.\n\nRegards,\nBBSCart`,
         });
 
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: vendor.email,
-            subject: 'Vendor Approval - Account Created',
-            text: `Dear ${vendor.vendor_fname},\n\nYour vendor account has been approved.\n\nLogin Details:\nEmail: ${vendor.email}\nPassword: ${randomPassword}\n\nPlease log in and change your password immediately.\n\nRegards,\nBBSCart`
-        };
-
-        await transporter.sendMail(mailOptions);
+        if (error) {
+            return console.error({ error });
+        }
+        console.log({ data });
+        })();
 
         res.status(200).json({
             message: "Vendor approved successfully. Login credentials sent via email.",
@@ -253,27 +258,26 @@ exports.declineVendor = async (req, res) => {
             vendorInfo.is_decline = true;
             vendorInfo.decline_reason = declineReason;
             await vendorInfo.save();
-            // Configure email transporter
-            const transporter = nodemailer.createTransport({
-                service: 'gmail',
-                auth: {
-                    user: process.env.EMAIL_USER,
-                    pass: process.env.EMAIL_PASS
-                }
-            });
-            await transporter.sendMail({
-                from: process.env.EMAIL,
-                to: vendorInfo.email,
-                subject: "Request Decline",
+            (async function () {
+            const { data, error } = await resend.emails.send({
+                from: 'BBSCart <info@bbscart.com>',
+                to: [vendorInfo.email],
+                subject: 'Request Decline',
                 html: `
                 <div style="font-family: Montserrat, sans-serif; line-height: 1.6;">
-                    <p>Hello,${vendorInfo.vendor_fname}</p>
-                    <p>Dear user your request has been decline for given reason: "${vendorInfo.decline_reason}".</p>
+                    <p>Hello, ${vendorInfo.vendor_fname}</p>
+                    <p>Dear user, your request has been declined for the following reason: "${vendorInfo.decline_reason}".</p>
                     <p>Thank you!</p>
                     <p><strong>BBSCart Team</strong></p>
                 </div>
                 `,
             });
+
+            if (error) {
+                return console.error({ error });
+            }
+            console.log({ data });
+            })();
         }
         // Perform DB update or logic here...
         return res.status(200).json({ success: true, message: 'Vendor declined successfully.' });

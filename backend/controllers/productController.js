@@ -360,6 +360,7 @@ exports.getNearbySellerProducts = async (req, res) => {
 exports.updateProduct = async (req, res) => {
     try {
         console.log("🔄 Received Update Request:", req.body);
+        console.log("🔄 Received Update Files:", req.files);
         const productId = req.params.id;
 
         const existingProduct = await Product.findById(productId);
@@ -406,16 +407,30 @@ exports.updateProduct = async (req, res) => {
             updatedProductData.product_img = existingProduct.product_img;
         }
 
-        // ✅ Gallery Images
-        const galleryImages = req.files.filter(file => file.fieldname === "gallery_imgs");
-        if (galleryImages.length > 0) {
-            if (existingProduct.gallery_imgs?.length) {
-                existingProduct.gallery_imgs.forEach(removeOldImage);
-            }
-            updatedProductData.gallery_imgs = galleryImages.map(file => `/uploads/${file.filename}`);
-        } else {
-            updatedProductData.gallery_imgs = existingProduct.gallery_imgs;
+        // ✅ Gallery Images (new approach)
+        let retainedImages = [];
+
+        if (req.body.existing_gallery_imgs) {
+        try {
+            const parsed = JSON.parse(req.body.existing_gallery_imgs);
+            if (Array.isArray(parsed)) retainedImages = parsed;
+        } catch (err) {
+            return res.status(400).json({ message: "❌ Invalid existing_gallery_imgs format" });
         }
+        }
+
+        // Remove images that are in existingProduct.gallery_imgs but NOT in retainedImages
+        const imagesToDelete = (existingProduct.gallery_imgs || []).filter(
+        img => !retainedImages.includes(img)
+        );
+        imagesToDelete.forEach(removeOldImage);
+
+        const newGalleryImages = req.files
+        .filter(file => file.fieldname === "new_gallery_imgs")
+        .map(file => `/uploads/${file.filename}`);
+
+        // Final gallery image array = retained (existing) + newly uploaded
+        updatedProductData.gallery_imgs = [...retainedImages, ...newGalleryImages];
 
         // ❗️Don't include `variants` when updating product
         delete updatedProductData.variants;
@@ -425,69 +440,92 @@ exports.updateProduct = async (req, res) => {
 
         // ✅ Handle Variant Update/Create/Delete
         if (variants) {
-            const existingVariants = await Variant.find({ product_id: updatedProduct._id });
-            const existingVariantIds = existingVariants.map(v => v._id.toString());
+        const existingVariants = await Variant.find({ product_id: updatedProduct._id });
+        const existingVariantIds = existingVariants.map(v => v._id.toString());
 
-            const variantIds = [];
-            const bulkOperations = [];
+        const variantIds = [];
+        const bulkOperations = [];
 
-            for (const [index, variant] of variants.entries()) {
-                const variantId = variant._id || new mongoose.Types.ObjectId();
-                variant._id = variantId;
-                variantIds.push(variantId);
+        for (const [index, variant] of variants.entries()) {
+            const variantId = variant._id || new mongoose.Types.ObjectId();
+            variant._id = variantId;
+            variantIds.push(variantId);
 
-                // Variant image
-                let variantImgPath = existingVariants.find(v => v._id.toString() === variantId.toString())?.variant_img || "";
-                const variantImgFile = req.files.find(file => file.fieldname === `variant_img_${index}`);
-                if (variantImgFile) {
-                    if (variantImgPath) removeOldImage(variantImgPath);
-                    variantImgPath = `/uploads/${variantImgFile.filename}`;
-                }
-
-                // Variant gallery images
-                let variantGalleryPaths = existingVariants.find(v => v._id.toString() === variantId.toString())?.variant_gallery_imgs || [];
-                const galleryFiles = req.files.filter(file => file.fieldname === `variant_gallery_imgs_${index}`);
-                if (galleryFiles.length > 0) {
-                    if (variantGalleryPaths.length > 0) variantGalleryPaths.forEach(removeOldImage);
-                    variantGalleryPaths = galleryFiles.map(file => `/uploads/${file.filename}`);
-                }
-
-                const baseData = {
-                    product_id: updatedProduct._id,
-                    variant_name: variant.variant_name,
-                    price: variant.price,
-                    stock: variant.stock,
-                    SKU: variant.SKU,
-                    attributes: variant.attributes,
-                    variant_img: variantImgPath,
-                    variant_gallery_imgs: variantGalleryPaths,
-                };
-
-                if (existingVariantIds.includes(variantId.toString())) {
-                    bulkOperations.push({
-                        updateOne: {
-                            filter: { _id: variantId, product_id: updatedProduct._id },
-                            update: baseData,
-                        },
-                    });
-                } else {
-                    bulkOperations.push({
-                        insertOne: {
-                            document: { _id: variantId, ...baseData },
-                        },
-                    });
-                }
+            // ✅ Variant Image (single)
+            let variantImgPath = existingVariants.find(v => v._id.toString() === variantId.toString())?.variant_img || "";
+            const variantImgFile = req.files.find(file => file.fieldname === `variant_img_${index}`);
+            if (variantImgFile) {
+            if (variantImgPath) removeOldImage(variantImgPath);
+            variantImgPath = `/uploads/${variantImgFile.filename}`;
             }
 
-            if (bulkOperations.length > 0) {
-                const bulkResult = await Variant.bulkWrite(bulkOperations);
-                console.log("✅ Variant Bulk Write:", bulkResult);
+            // ✅ Variant Gallery Images (merged approach)
+            let retainedGallery = [];
+
+            try {
+            if (variant.existing_variant_gallery_imgs) {
+                const parsed = typeof variant.existing_variant_gallery_imgs === 'string'
+                ? JSON.parse(variant.existing_variant_gallery_imgs)
+                : variant.existing_variant_gallery_imgs;
+
+                if (Array.isArray(parsed)) retainedGallery = parsed;
+            }
+            } catch (err) {
+            return res.status(400).json({ message: `❌ Invalid existing_variant_gallery_imgs for variant ${index}` });
             }
 
-            await Variant.deleteMany({ product_id: updatedProduct._id, _id: { $nin: variantIds } });
+            const oldVariant = existingVariants.find(v => v._id.toString() === variantId.toString());
+            const oldGalleryImgs = oldVariant?.variant_gallery_imgs || [];
 
-            updatedProduct.variants = variantIds;
-            await updatedProduct.save();
+            // Delete removed images
+            const removed = oldGalleryImgs.filter(img => !retainedGallery.includes(img));
+            removed.forEach(removeOldImage);
+
+            // Add new gallery images
+            const newGalleryFiles = req.files.filter(file => file.fieldname === `variant_gallery_imgs_${index}`);
+            const newGalleryPaths = newGalleryFiles.map(file => `/uploads/${file.filename}`);
+
+            const finalGallery = [...retainedGallery, ...newGalleryPaths];
+
+            // ✅ Final variant data
+            const baseData = {
+            product_id: updatedProduct._id,
+            variant_name: variant.variant_name,
+            price: variant.price,
+            stock: variant.stock,
+            SKU: variant.SKU,
+            attributes: variant.attributes,
+            variant_img: variantImgPath,
+            variant_gallery_imgs: finalGallery,
+            };
+
+            if (existingVariantIds.includes(variantId.toString())) {
+            bulkOperations.push({
+                updateOne: {
+                filter: { _id: variantId, product_id: updatedProduct._id },
+                update: baseData,
+                },
+            });
+            } else {
+            bulkOperations.push({
+                insertOne: {
+                document: { _id: variantId, ...baseData },
+                },
+            });
+            }
+        }
+
+        // ⛏️ Perform bulk write and cleanup
+        if (bulkOperations.length > 0) {
+            const bulkResult = await Variant.bulkWrite(bulkOperations);
+            console.log("✅ Variant Bulk Write:", bulkResult);
+        }
+
+        // ❌ Delete removed variants
+        await Variant.deleteMany({ product_id: updatedProduct._id, _id: { $nin: variantIds } });
+
+        updatedProduct.variants = variantIds;
+        await updatedProduct.save();
         }
 
         res.status(200).json({

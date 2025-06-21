@@ -20,12 +20,22 @@ const ProductForm = ({ product, categories, subCategories, onSave, setIsAddEditM
     },
     tags: Array.isArray(product?.tags) ? product.tags : (product?.tags ? JSON.parse(product.tags) : []),
     category_id: product?.category_id?._id || "",
-    subcategory_id: product?.subcategory_id?._id || "",
-    product_img: null,
+    subcategory_id: product?.subcategory_id?._id || "",    
+    product_img: product?.product_img || null,
     gallery_imgs: [],
     is_variant: product?.is_variant || false,
     variants: product?.variants ?? [],
   });
+
+  // Single Product
+  const [productImagePreview, setProductImagePreview] = useState(null);
+  const [galleryImagePreviews, setGalleryImagePreviews] = useState([]); // URLs for UI
+  const [galleryImageFiles, setGalleryImageFiles] = useState([]);       // New File objects
+  const [existingGalleryImages, setExistingGalleryImages] = useState([]); // For editing existing
+
+  // Variant Product
+  const [variantImagePreview, setVariantImagePreview] = useState('');
+  const [variantGalleryPreviews, setVariantGalleryPreviews] = useState([]); 
 
   console.log('productData', productData);
 
@@ -36,7 +46,8 @@ const ProductForm = ({ product, categories, subCategories, onSave, setIsAddEditM
     SKU: "",
     attributes: [],
     variant_img: "",
-    variant_gallery_imgs: []
+    variant_gallery_imgs: [],
+    existing_variant_gallery_imgs: []
   });
   const [editIndex, setEditIndex] = useState(null); 
   const [errors, setErrors] = useState({});
@@ -58,11 +69,11 @@ const ProductForm = ({ product, categories, subCategories, onSave, setIsAddEditM
     if (!productData.category_id) formErrors.category_id = "Product Category is required";
     if (!productData.subcategory_id) formErrors.subcategory_id = "Product Subcategory is required";
     if(productData.is_variant === true){      
-      if (!variantData.variant_name) formErrors.variant_name = "Product Variant name is required";
-      if (!variantData.price) formErrors.vprice = "Product Variant price is required";
-      if (!variantData.stock) formErrors.vstock = "Product Variant stock is required";
-      if (!variantData.SKU) formErrors.VSKU = "Product Variant SKU is required";
-      if (!variantData.variant_img) formErrors.variant_img = "Product Variant image is required";
+      if (!variantData.variant_name && !productData.variants.length < 1) formErrors.variant_name = "Product Variant name is required";
+      if (!variantData.price && !productData.variants.length < 1) formErrors.vprice = "Product Variant price is required";
+      if (!variantData.stock && !productData.variants.length < 1) formErrors.vstock = "Product Variant stock is required";
+      if (!variantData.SKU && !productData.variants.length < 1) formErrors.VSKU = "Product Variant SKU is required";
+      if (!variantData.variant_img && !productData.variants.length < 1) formErrors.variant_img = "Product Variant image is required";
     }
     return formErrors;
   };  
@@ -105,10 +116,27 @@ const ProductForm = ({ product, categories, subCategories, onSave, setIsAddEditM
 
   // Edit a variant
   const editVariant = (index) => {
-    console.log('productData.variants[index]', productData.variants[index]);
-    setVariantData(productData.variants[index]); // Load variant data into the form
-    console.log('editVariant', variantData);
-    setEditIndex(index); // Set the index to track the variant being edited
+    const selectedVariant = productData.variants[index];
+    console.log('productData.variants[index]', selectedVariant);
+
+    setVariantData((prev) => {
+    const isFileType = selectedVariant.variant_gallery_imgs?.some(
+      (item) => item instanceof File
+    );
+
+    return {
+      ...selectedVariant,
+      existing_variant_gallery_imgs: isFileType
+        ? [...(selectedVariant.existing_variant_gallery_imgs || []),
+            ...(selectedVariant.variant_gallery_imgs || []),]
+        : [...(selectedVariant.variant_gallery_imgs || []),],
+      variant_gallery_imgs: prev.variant_gallery_imgs || [],
+    };
+  });
+
+
+
+    setEditIndex(index);
   };
 
   // Reset variant form
@@ -120,7 +148,8 @@ const ProductForm = ({ product, categories, subCategories, onSave, setIsAddEditM
       SKU: "",
       attributes: [],
       variant_img: "",
-      variant_gallery_imgs: []
+      variant_gallery_imgs: [],
+      existing_variant_gallery_imgs: []
     });
     setEditIndex(null);
   };
@@ -220,36 +249,135 @@ const ProductForm = ({ product, categories, subCategories, onSave, setIsAddEditM
   };
 
   const handleProductImageChange = (e, type) => {
-    if (e.target.files.length > 0) {
-      if (type === 'product') {
-        setProductData((prev) => ({
-          ...prev,
-          product_img: e.target.files[0],
-        }));
-      } else {
-        setVariantData((prev) => ({
-          ...prev,
-          variant_img: e.target.files[0], // Ensure file is stored correctly
-        }));
-      }
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (type === 'product') {
+      setProductData((prev) => ({
+        ...prev,
+        product_img: file,
+      }));
+      setProductImagePreview(URL.createObjectURL(file));
+    } else {
+      setVariantData((prev) => ({
+        ...prev,
+        variant_img: file,
+      }));
+      setVariantImagePreview(URL.createObjectURL(file));
     }
   };
 
   const handleGalleryImagesChange = (e, type) => {
-    if (e.target.files.length > 0) {
-      if (type === 'product') {
-        setProductData((prev) => ({
-          ...prev,
-          gallery_imgs: Array.from(e.target.files),
-        }));
-      } else {
-        setVariantData((prev) => ({
-          ...prev,
-          variant_gallery_imgs: Array.from(e.target.files), // Ensure file array is stored
-        }));
-      }
+    const files = Array.from(e.target.files || []);
+    const newPreviews = files.map(file => ({
+      preview: URL.createObjectURL(file),
+      isExisting: false,
+      file,
+    }));
+    if (files.length === 0) return;
+
+    if (type === 'product') {
+      setProductData((prev) => ({
+        ...prev,
+        gallery_imgs: files,
+      }));
+      setGalleryImagePreviews((prev) => [...prev, ...newPreviews]);
+      setGalleryImageFiles((prev) => [...prev, ...files]);
+    } else {
+      setVariantData((prev) => ({
+        ...prev,
+        variant_gallery_imgs: [...(prev.variant_gallery_imgs || []), ...files],
+      }));
+      setVariantGalleryPreviews(prev => [...prev, ...newPreviews]);
     }
   };
+
+  const handleRemoveGalleryImage = (index) => {
+    const isExisting = index < existingGalleryImages.length;
+
+    if (isExisting) {
+      // Remove from both previews and existing image list
+      setGalleryImagePreviews((prev) => prev.filter((_, i) => i !== index));
+      setExistingGalleryImages((prev) => prev.filter((_, i) => i !== index));
+    } else {
+      // Adjust index to remove new file (after existing ones)
+      const newIndex = index - existingGalleryImages.length;
+      setGalleryImagePreviews((prev) => prev.filter((_, i) => i !== index));
+      setGalleryImageFiles((prev) => prev.filter((_, i) => i !== newIndex));
+    }
+  };
+
+  const removeVariantGalleryImage = (index) => {
+    setVariantGalleryPreviews((prevPreviews) => {
+      const newPreviews = [...prevPreviews];
+      const removed = newPreviews.splice(index, 1)[0];
+
+      if (!removed) return prevPreviews;
+
+      if (!removed.isExisting) {
+        URL.revokeObjectURL(removed.preview);
+      }
+
+      // Update variantData and productData together
+      setVariantData((prevData) => {
+        const updatedExisting = [...(prevData.existing_variant_gallery_imgs || [])];
+        const updatedNew = [...(prevData.variant_gallery_imgs || [])];
+
+        let newVariantData;
+
+        if (removed.isExisting) {
+          const filteredExisting = updatedExisting.filter(
+            (img) => import.meta.env.VITE_API_URL + img !== removed.preview
+          );
+          newVariantData = {
+            ...prevData,
+            existing_variant_gallery_imgs: filteredExisting,
+          };
+        } else {
+          // Adjust index relative to new uploads
+          const relativeIndex = index - updatedExisting.length;
+          updatedNew.splice(relativeIndex, 1);
+          newVariantData = {
+            ...prevData,
+            variant_gallery_imgs: updatedNew,
+          };
+        }
+
+        // Also update inside productData.variants
+        setProductData((prevProduct) => {
+          const updatedVariants = [...(prevProduct.variants || [])];
+          if (editIndex !== null) {
+            const currentVariant = updatedVariants[editIndex] || {};
+            updatedVariants[editIndex] = {
+              ...currentVariant,
+              ...newVariantData,
+              variant_gallery_imgs: [
+                ...(newVariantData.existing_variant_gallery_imgs || []),
+                ...(newVariantData.variant_gallery_imgs || []),
+              ],
+            };
+          }
+          return {
+            ...prevProduct,
+            variants: updatedVariants,
+          };
+        });
+
+        return newVariantData;
+      });
+
+      return newPreviews;
+    });
+  };
+
+  useEffect(() => {
+    console.log('✅ variantGalleryPreviews updated:', variantGalleryPreviews);
+  }, [variantGalleryPreviews]);
+
+  useEffect(() => {
+    console.log('✅ variantData updated:', variantData);
+  }, [variantData]);
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -267,6 +395,10 @@ const ProductForm = ({ product, categories, subCategories, onSave, setIsAddEditM
     Object.keys(productData).forEach((key) => {
       if (key === "gallery_imgs") {
         productData.gallery_imgs.forEach((image) => submissionData.append("gallery_imgs", image));
+        galleryImageFiles.forEach((file) => {
+          submissionData.append("new_gallery_imgs", file);
+        });
+        submissionData.append("existing_gallery_imgs", JSON.stringify(existingGalleryImages));
       } else if (key === "dimensions" || key === "variants" || key === "tags") {
         submissionData.append(key, JSON.stringify(productData[key]));
       } else {
@@ -326,7 +458,67 @@ const ProductForm = ({ product, categories, subCategories, onSave, setIsAddEditM
     });
   };
 
+  useEffect(() => {
+    if (product) {
+      // Set product image preview
+      if (product.product_img) {
+        setProductImagePreview(import.meta.env.VITE_API_URL + product.product_img);
+      }
 
+      // Set gallery image previews
+      if (Array.isArray(product.gallery_imgs)) {
+        const urls = product.gallery_imgs.map((img) => import.meta.env.VITE_API_URL + img);
+        setGalleryImagePreviews(urls);
+        setExistingGalleryImages(product.gallery_imgs); // raw paths for backend
+      }
+
+      // Prepare variants with existing_variant_gallery_imgs
+      let updatedVariants = product.variants?.map((variant) => ({
+        ...variant,
+        existing_variant_gallery_imgs: [...(variant.variant_gallery_imgs || [])],
+      })) || [];
+
+      // Set entire productData with updated variants
+      setProductData((prev) => ({
+        ...prev,
+        variants: updatedVariants,
+      }));
+    }
+  }, [product]);
+
+
+  useEffect(() => {
+    // Handle existing images
+    const existingPreviews = (variantData.existing_variant_gallery_imgs || []).map((url) => ({
+      preview: typeof url === 'string' ? import.meta.env.VITE_API_URL + url : URL.createObjectURL(url),
+      isExisting: true,
+    }));
+
+    // Handle new uploaded images (Files or URLs)
+    const newPreviews = (variantData.variant_gallery_imgs || []).map((file) => ({
+      preview: typeof file === 'string' ? import.meta.env.VITE_API_URL + file : URL.createObjectURL(file),
+      isExisting: false,
+    }));
+
+    setVariantGalleryPreviews([...existingPreviews, ...newPreviews]);
+
+    // Handle variant image preview safely
+    if (variantData.variant_img) {
+      if (typeof variantData.variant_img === 'string') {
+        setVariantImagePreview(import.meta.env.VITE_API_URL + variantData.variant_img);
+      } else if (variantData.variant_img instanceof File) {
+        const objectUrl = URL.createObjectURL(variantData.variant_img);
+        setVariantImagePreview(objectUrl);
+
+        // Clean up object URL to avoid memory leaks
+        return () => {
+          URL.revokeObjectURL(objectUrl);
+        };
+      }
+    } else {
+      setVariantImagePreview('');
+    }
+  }, [variantData]);
 
   return (
     <div className="formSec bg-white shadow-md rounded-2xl h-[85%] relative flex items-center justify-center z-50 fixed inset-0 bg-black">
@@ -487,19 +679,55 @@ const ProductForm = ({ product, categories, subCategories, onSave, setIsAddEditM
                   {errors.subcategory_id && <div className="text-red-800">{errors.subcategory_id}</div>}
                 </div>
               </div>
-              {/* Product Image */}
+              {/* Product Image Upload */}
               <div>
                 <div className="input-item">
-                  <label className="block text-[14px] font-medium text-secondary"> Upload Product Image </label>
-                  <input type="file" accept="image/*" onChange={(e) => handleProductImageChange(e,'product')} className={`w-full p-2 border rounded-lg ${errors.product_img ? 'border-red-700' : 'mb-4'}`} />
+                  <label className="block text-[14px] font-medium text-secondary">Upload Product Image</label>
+                  {productImagePreview && (
+                    <div className="mb-2 w-16 h-16">
+                      <img src={productImagePreview ?? ''} alt="Product Preview" className=" rounded-md w-full h-full object-cover" />
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleProductImageChange(e, 'product')}
+                    className={`w-full p-2 border rounded-lg ${errors.product_img ? 'border-red-700' : 'mb-4'}`}
+                  />
                   {errors.product_img && <div className="text-red-800">{errors.product_img}</div>}
                 </div>
               </div>
-              {/* Gallery Images */}
+
+              {/* Product Gallery Upload */}
               <div>
                 <div className="input-item">
                   <label className="block text-[14px] font-medium text-secondary">Upload Product Gallery Images</label>
-                  <input type="file" accept="image/*" multiple onChange={(e) => handleGalleryImagesChange(e, 'product')} className="w-full p-2 mb-2 border rounded-lg" />
+                  {galleryImagePreviews.length > 0 && (
+                    <div className="flex flex-wrap gap-3">
+                      {galleryImagePreviews.map((src, index) => (
+                        <div key={index} className="relative w-16 h-16 mb-2">
+                          <img src={src} alt={`Gallery ${index}`} className="object-cover w-full h-full rounded-md" />
+                          {/* <button
+                            type="button"
+                            onClick={() => handleRemoveGalleryImage(index)}
+                            className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 text-xs"
+                          >
+                            ✕
+                          </button> */}
+                          <button className="text-2xl bg-white w-6 h-6 rounded-full flex items-center text-red-700 hover:text-red-500 transition absolute top-1 right-1" onClick={() => handleRemoveGalleryImage(index)} type="button">
+                            <i className="ri-close-circle-line"></i>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => handleGalleryImagesChange(e, 'product')}
+                    className="w-full p-2 border rounded-lg"
+                  />
                 </div>
               </div>
             </div>
@@ -537,18 +765,52 @@ const ProductForm = ({ product, categories, subCategories, onSave, setIsAddEditM
                       {errors.VSKU && <div className="text-red-800">{errors.VSKU}</div>}
                     </div>
 
+                    {/* Variant Image Upload */}
                     <div className="w-full mt-3">
                       <div className="input-item">
                         <label className="block text-[14px] font-medium text-secondary mb-[4px]"> Upload Product Image </label>
-                        <input type="file" accept="image/*" onChange={(e) => handleProductImageChange(e,'variant')} className={`w-full p-2 border rounded-lg ${errors.variant_img ? 'border-red-700' : 'mb-4'}`} />
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleProductImageChange(e, 'variant')}
+                          className={`w-full p-2 border rounded-lg ${errors.variant_img ? 'border-red-700' : 'mb-4'}`}
+                        />
                         {errors.variant_img && <div className="text-red-800">{errors.variant_img}</div>}
+                        {variantImagePreview && (
+                          <div className="mt-2">
+                            <img src={variantImagePreview} alt="Variant Preview" className="h-24 rounded" />
+                          </div>
+                        )}
                       </div>
                     </div>
-                    
+
+                    {/* Variant Gallery Upload */}
                     <div className="w-full mt-3">
                       <div className="input-item">
                         <label className="block text-[14px] font-medium text-secondary mb-[4px]"> Upload Product Gallery Images </label>
-                        <input type="file" accept="image/*" multiple onChange={(e) => handleGalleryImagesChange(e, 'variant')} className="w-full p-2 border rounded-lg" />
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={(e) => handleGalleryImagesChange(e, 'variant')}
+                          className="w-full p-2 border rounded-lg"
+                        />
+
+                        {/* Previews of existing + new gallery images */}
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {variantGalleryPreviews.map((img, idx) => (
+                            <div key={idx} className="relative w-24 h-24">
+                              <img src={img.preview} alt="Gallery" className="w-full h-full object-cover rounded" />
+                              <button
+                                type="button"
+                                onClick={() => removeVariantGalleryImage(idx)}
+                                className="absolute top-0 right-0 text-white bg-red-600 rounded-full w-6 h-6 flex items-center justify-center text-xs"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
 

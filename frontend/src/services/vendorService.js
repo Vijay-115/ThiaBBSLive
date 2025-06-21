@@ -15,9 +15,9 @@ export const vendorRegister = async (userData, dispatch, navigate) => {
     }
 };
 
-export const vendorRequest = async () => {
+export const vendorRequest = async (role) => {
     try {
-        const response = await api.get("/vendor/get-request");
+        const response = await api.get(`/vendor/get-request?role=${encodeURIComponent(role)}`);
         return response.data; // Returns userId and role if valid
     } catch (error) {
         localStorage.removeItem("token");

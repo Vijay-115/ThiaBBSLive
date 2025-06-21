@@ -2,6 +2,7 @@ import React from "react";
 import { useDispatch } from "react-redux";
 import { logout } from "../../../services/authService";
 import { useSelector } from 'react-redux';
+import { Link } from "react-router-dom";
 
 const Navbar = ({
     isDarkMode,
@@ -67,7 +68,7 @@ const Navbar = ({
                 <div className="profile-menu">
                     <ul>                        
                         <li>
-                            <a href="#">My Profile</a>
+                            <Link to="/my-account">My Profile</Link>
                         </li>
                         <li>
                             <a href="#">Settings</a>

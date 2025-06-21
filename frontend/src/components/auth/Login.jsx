@@ -10,6 +10,7 @@ const Login = () => {
     const [errors, setErrors] = useState({});
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const [showPassword, setShowPassword] = useState(false);
 
     // Validation function for login
     const validateLogin = () => {
@@ -75,15 +76,24 @@ const Login = () => {
                                 </div>
                                 <div>
                                     <label htmlFor="password" className="mb-2 dark:text-gray-400 text-md">Password</label>
-                                    <input
+                                    <div className="relative">
+                                        <input
                                         id="password"
                                         name="lpassword"
-                                        className={`border p-3 shadow-md dark:bg-indigo-700 dark:text-gray-300  dark:border-gray-700 placeholder:text-base focus:scale-105 ease-in-out duration-300 border-gray-300 rounded-lg w-full placeholder-gray-300 ${errors.lpassword ? 'border-red-700' : ''}`}
-                                        type="password"
+                                        type={showPassword ? "text" : "password"}
                                         placeholder="********"
                                         onChange={handleChange}
                                         value={loginData.lpassword}
-                                    />
+                                        className={`border p-3 shadow-md dark:bg-indigo-700 dark:text-gray-300 dark:border-gray-700 placeholder:text-base focus:scale-105 ease-in-out duration-300 border-gray-300 rounded-lg w-full placeholder-gray-300 ${errors.lpassword ? 'border-red-700' : ''}`}
+                                        />
+                                        <button
+                                        type="button"
+                                        onClick={() => setShowPassword((prev) => !prev)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500 dark:text-gray-300"
+                                        >
+                                        <i className={showPassword ? "ri-eye-off-line" : "ri-eye-line"}></i>
+                                        </button>
+                                    </div>
                                     {errors.lpassword && <div className="text-red-800">{errors.lpassword}</div>}
                                 </div>
                                 <Link
