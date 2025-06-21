@@ -14,6 +14,9 @@ const axios = require('axios');
 const client = redis.createClient();
 client.connect().catch(console.error);
 
+const { Resend } = require('resend');
+const resend = new Resend('re_Kwdg2csA_A3De7JEabPeYrUMCKPZD1BnZ');
+
 // Function to generate a 7-digit alphanumeric referral code
 const generateReferralCode = () => {
     return crypto.randomBytes(4).toString('hex').toUpperCase().slice(0, 7);
@@ -263,22 +266,13 @@ exports.sendPasswordResetEmail = async (req, res) => {
         // Generate a password reset token (e.g., JWT with a short expiration)
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "15m" });
 
-        // Configure email transporter
-        const transporter = nodemailer.createTransport({
-            host: 'smtp.zoho.com',
-            port: 465,
-            secure: true,   
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS
-            }
-        });
-
         const resetLink = `${process.env.REACT_APP_CLI_URL}/reset-password/${token}`;
-        await transporter.sendMail({
-            from: process.env.EMAIL,
-            to: email,
-            subject: "Password Reset Request",
+        
+        (async function () {
+        const { data, error } = await resend.emails.send({
+            from: 'BBSCart <info@bbscart.com>',
+            to: [email],
+            subject: 'Password Reset Request',
             html: `
             <div style="font-family: Montserrat, sans-serif; line-height: 1.6;">
                 <h2 style="color: #333;">Password Reset Request</h2>
@@ -294,7 +288,12 @@ exports.sendPasswordResetEmail = async (req, res) => {
             </div>
             `,
         });
-        
+
+        if (error) {
+            return console.error({ error });
+        }
+        console.log({ data });
+        })();
 
         res.status(200).json({ message: "Password reset email sent" });
     } catch (error) {

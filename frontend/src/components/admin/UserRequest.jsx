@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {  NavLink } from 'react-router-dom';
+import {  NavLink, useNavigate } from 'react-router-dom';
 import './assets/dashboard.css';
 import Sidebar from './layout/sidebar';
 import Navbar from './layout/Navbar';
@@ -26,6 +26,7 @@ const UserRequest = () => {
     toggleProfileMenu,
   } = useDashboardLogic();
 
+  const navigate = useNavigate();
   const [vendors, setVendors] = useState([]);
   const [role, setRole] = useState('');
   const [filteredvendors, setFilteredvendors] = useState([]);
