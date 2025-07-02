@@ -40,6 +40,8 @@ import CustomerOrders from './components/auth/Orders';
 import AboutPage from './components/pages/AboutPage';
 import TermsOfUse from './components/pages/TermsOfUse';
 import ServicesTermsOfUse from './components/pages/ServicesTermsofUse';
+import BusinessRegistrationTermsConditions from './components/pages/BusinessRegistrationTermsConditions';
+import ExchangeOfferTerms from './components/pages/ExchangeOfferTerms';
 import PrivacyPolicy from './components/pages/PrivacyPolicy';
 import CancellationPolicy from './components/pages/CancellationPolicy';
 import ShippingPolicy from './components/pages/ShippingPolicy';
@@ -131,6 +133,8 @@ function App() {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/terms-of-use" element={<TermsOfUse />} />
         <Route path="/services-terms-of-use" element={<ServicesTermsOfUse />} />
+        <Route path="/business-registration-terms-and-conditions" element={<BusinessRegistrationTermsConditions />} />
+        <Route path="/exchange-offer-terms" element={<ExchangeOfferTerms />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/cancellation-policy" element={<CancellationPolicy />} />
         <Route path="/shipping-policy" element={<ShippingPolicy />} />

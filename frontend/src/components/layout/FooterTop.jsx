@@ -83,7 +83,7 @@ function FooterTop() {
                                             <Link to="/services-terms-of-use" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Services Terms of Use</Link>
                                         </li>
                                         <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
-                                            <Link to="/product/category/womens-jewellery" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Jewellery</Link>
+                                            <Link to="/business-registration-terms-and-conditions" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Business Registration Terms</Link>
                                         </li>
                                     </ul>
                                 </div>

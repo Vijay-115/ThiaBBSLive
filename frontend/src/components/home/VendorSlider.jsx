@@ -93,13 +93,13 @@ const VendorCard = ({ vendor }) => (
       </div>
       <div>Sales {vendor.sales}</div>
     </div>
-    <div className="grid grid-cols-2 gap-2">
+    {/* <div className="grid grid-cols-2 gap-2">
       {vendor.products.map((src, i) => (
         <div key={i} className="p-2 border rounded-md">
           <img src={src} alt="" className="h-16 object-contain mx-auto" />
         </div>
       ))}
-    </div>
+    </div> */}
   </div>
 );
 

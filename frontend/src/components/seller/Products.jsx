@@ -288,152 +288,143 @@ const Products = () => {
                             className="modal-content"
                             overlayClassName="modal-overlay"
                         >
-                            <div className="p-8 bg-white rounded-lg">
-                            <h3 className="text-lg">Are you sure you want to delete this product?</h3>
-                            <p className="mt-2">This action cannot be undone.</p>
-                            <div className="mt-4">
-                                <button
-                                onClick={handleDeleteProduct}
-                                className="bg-red-500 text-white px-4 py-2 rounded-md mr-2"
-                                >
-                                Yes, Delete
-                                </button>
-                                <button
-                                onClick={() => setIsDeleteModalOpen(false)}
-                                className="bg-gray-500 text-white px-4 py-2 rounded-md"
-                                >
-                                Cancel
-                                </button>
-                            </div>
-                            </div>
+                            <div className="flex flex-col items-center justify-center p-8 bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-gray-200 dark:border-gray-700 max-w-sm mx-auto">
+      <div className="flex items-center justify-center w-16 h-16 rounded-full bg-red-100 dark:bg-red-900 mb-4">
+        <i className="bx bxs-trash-alt text-3xl text-red-600 dark:text-red-300"></i>
+      </div>
+      <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2 text-center">Delete Product?</h3>
+      <p className="text-gray-600 dark:text-gray-300 text-center mb-6">Are you sure you want to delete this product? This action cannot be undone.</p>
+      <div className="flex gap-3 w-full">
+        <button
+          onClick={handleDeleteProduct}
+          className="flex-1 py-2 px-4 rounded-xl bg-gradient-to-r from-red-600 to-red-400 hover:from-red-700 hover:to-red-500 text-white font-bold shadow transition-all duration-200 border-0 focus:outline-none focus:ring-2 focus:ring-red-400"
+        >
+          Yes, Delete
+        </button>
+        <button
+          onClick={() => setIsDeleteModalOpen(false)}
+          className="flex-1 py-2 px-4 rounded-xl bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 font-semibold shadow border border-gray-300 dark:border-gray-600 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
                         </Modal>
 
-                        <div className="mb-4 flex gap-4 justify-between">
+                        {/* Enhanced Add Product & Search Bar UI (replicated from admin) */}
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
+                          <div className="flex items-center gap-3 w-full md:w-auto">
                             <button
-                            onClick={openAddProductModal}
-                            className="bg-blue-500 text-white px-4 py-2 rounded-md text-sm"
+                              onClick={openAddProductModal}
+                              className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500 text-white font-semibold px-6 py-2 rounded-lg shadow transition-all duration-200 text-base"
                             >
-                            Add New Product
+                              <i className="bx bx-plus text-xl"></i>
+                              Add New Product
                             </button>
-                            <input
-                            type="text"
-                            placeholder="Search products..."
-                            className="border p-2 rounded-md text-sm"
-                            value={searchQuery}
-                            onChange={handleSearchChange}
-                            />
+                          </div>
+                          <div className="flex-1 flex items-center justify-end">
+                            <div className="relative w-full md:w-80">
+                              <input
+                                type="text"
+                                placeholder="Search products..."
+                                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm transition-all"
+                                value={searchQuery}
+                                onChange={handleSearchChange}
+                              />
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
+                                <i className="bx bx-search text-lg"></i>
+                              </span>
+                            </div>
+                          </div>
                         </div>
 
                         <div className="mt-8">
-                            <h2 className="text-2xl font-semibold mb-4">Product List</h2>
-                            <div className="flex flex-wrap w-full mb-[-24px]">
-                              <div className="w-full px-[12px] mb-[24px]">
-                                  <div className="bb-table border-none border-[1px] md:border-solid border-[#eee] rounded-none md:rounded-[20px] overflow-hidden max-[1399px]:overflow-y-auto aos-init aos-animate" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="400">
+                            <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100 tracking-tight">Product List</h2>
+                            <div className="flex flex-wrap w-full mb-[-16px]">
+                              <div className="w-full px-2 mb-4">
+                                <div className="overflow-x-auto rounded-xl shadow border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
                                   {paginatedProducts.length === 0 ? (
-                                  <p className="text-gray-500">No products available.</p>
+                                    <p className="text-gray-500 p-4 text-center text-sm">No products available.</p>
                                   ) : (
-                                  <table className="w-full table-auto border-collapse">
-                                      <thead className="hidden md:table-header-group">
-                                      <tr className="border-b-[1px] border-solid border-[#eee]">
-                                          <th
-                                          className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize"
-                                          onClick={() => handleSort("_id")}
-                                          >
-                                          Products
-                                          </th>
-                                          <th className="font-Poppins p-[12px] text-left text-[16px] font-medium text-secondary leading-[26px] tracking-[0.02rem] capitalize">Actions</th>
-                                      </tr>
+                                    <table className="w-full table-auto border-collapse text-sm">
+                                      <thead className="bg-gray-100 dark:bg-gray-800">
+                                        <tr>
+                                          <th className="font-Poppins p-2 text-left font-semibold text-gray-700 dark:text-gray-200 tracking-wide">Image</th>
+                                          <th className="font-Poppins p-2 pl-6 text-left font-semibold text-gray-700 dark:text-gray-200 tracking-wide">Name</th>
+                                          <th className="font-Poppins p-2 text-left font-semibold text-gray-700 dark:text-gray-200 tracking-wide">Category</th>
+                                          <th className="font-Poppins p-2 text-left font-semibold text-gray-700 dark:text-gray-200 tracking-wide">Subcategory</th>
+                                          <th className="font-Poppins p-2 text-left font-semibold text-gray-700 dark:text-gray-200 tracking-wide">Description</th>
+                                          <th className="font-Poppins p-2 text-right font-semibold text-gray-700 dark:text-gray-200 tracking-wide pr-6">Actions</th>
+                                        </tr>
                                       </thead>
                                       <tbody>
-                                      {paginatedProducts.map((product) => (
-                                          <tr key={product._id} className="border-b-[1px] border-solid border-[#eee]">
-                                          <td data-label="Products" className="p-[12px]">
-                                              <div className="Product flex justify-end md:justify-normal md:items-center">
-                                                  <img src={import.meta.env.VITE_API_URL+''+product.product_img ?? ''} alt="new-product-1" className="w-[70px] border-[1px] border-solid border-[#eee] rounded-[10px]"/>
-                                                  <div>   
-                                                      <span className="ml-[10px] block font-Poppins text-[14px] font-semibold leading-[24px] tracking-[0.03rem] text-secondary">{product.name ?? ''}</span>
-                                                      <span className="ml-[10px] block font-Poppins text-[12px] font-normal leading-[16px] tracking-[0.03rem] text-secondary">{product.description ?? ''}</span>
-                                                      { product.category_id && (
-                                                        <span className="ml-[10px] block font-Poppins text-[12px] font-normal leading-[16px] tracking-[0.03rem] text-secondary">Category: {product.category_id.name ?? ''}</span>
-                                                      )}
-                                                      { product.subcategory_id && (
-                                                        <span className="ml-[10px] block font-Poppins text-[12px] font-normal leading-[16px] tracking-[0.03rem] text-secondary">Sub Category: {product.subcategory_id.name ?? ''}</span>
-                                                      )}
-                                                      { product.variants && product.variants.length > 0 && (() => {
-                                                          let names = '';
-                                                          
-                                                          product.variants.forEach((variant, index) => {
-                                                              if (index === 0) {
-                                                                  names = variant.variant_name;
-                                                              } else {
-                                                                  names += ', ' + variant.variant_name;
-                                                              }
-                                                          });
-
-                                                          return (
-                                                              <span className="ml-[10px] block font-Poppins text-[12px] font-normal leading-[16px] tracking-[0.03rem] text-secondary">
-                                                                  Variants: {names}
-                                                              </span>
-                                                          );
-                                                      })()}
-                                                      { product.is_review === true && (
-                                                        <div className='px-2'>
-                                                        {Array.from({ length: 5 }).map((_, index) => (
-                                                        <i
-                                                            key={index}
-                                                            className={`ri-star-fill float-left text-[15px] mr-[3px] ${
-                                                            index < product.rating ? 'text-[#e7d52e]' : 'text-[#777]'
-                                                            }`}
-                                                        ></i>
-                                                        ))}
-                                                        </div>
-                                                      )}
-                                                  </div>
+                                        {paginatedProducts.map((product) => (
+                                          <tr key={product._id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-blue-50 dark:hover:bg-gray-800/60 transition">
+                                            <td className="p-3 align-middle">
+                                              <img src={import.meta.env.VITE_API_URL + '' + product.product_img ?? ''} alt="product" className="w-12 h-12 object-cover border border-gray-200 dark:border-gray-700 rounded-md shadow-sm" />
+                                            </td>
+                                            <td className="p-3 pl-6 align-middle font-medium text-gray-900 dark:text-gray-100">{product.name ?? ''}</td>
+                                            <td className="p-3 align-middle text-gray-700 dark:text-gray-300">{product.category_id?.name ?? '-'}</td>
+                                            <td className="p-3 align-middle text-gray-700 dark:text-gray-300">{product.subcategory_id?.name ?? '-'}</td>
+                                            <td className="p-3 align-middle text-gray-600 dark:text-gray-400 max-w-xs truncate">{product.description ?? ''}</td>
+                                            <td className="p-3 align-middle text-right">
+                                              <div className="flex justify-end gap-2">
+                                                <button
+                                                  className="rounded-full bg-yellow-50 hover:bg-yellow-200 text-yellow-700 hover:text-yellow-900 transition shadow border border-yellow-200 hover:border-yellow-300"
+                                                  onClick={() => handleEditProduct(product)}
+                                                  title="Edit"
+                                                  style={{ width: '30px', height: '30px', lineHeight: '35px' }}
+                                                >
+                                                  <i className="bx bxs-pencil text-lg"></i>
+                                                </button>
+                                                <button
+                                                  className="rounded-full bg-red-50 hover:bg-red-200 text-red-600 hover:text-red-800 transition shadow border border-red-200 hover:border-red-300"
+                                                  onClick={() => openDeleteModal(product)}
+                                                  title="Delete"
+                                                  style={{ width: '30px', height: '30px', lineHeight: '35px' }}
+                                                >
+                                                  <i className="bx bxs-trash-alt text-lg"></i>
+                                                </button>
                                               </div>
-                                          </td>
-                                          <td data-label="Action" className="p-[12px]">
-                                              <button
-                                              className="bg-yellow-500 text-white px-4 py-1 rounded-md"
-                                              onClick={() => handleEditProduct(product)}
-                                              >
-                                              Edit
-                                              </button>
-                                              <button
-                                              className="bg-red-500 text-white px-4 py-1 ml-2 rounded-md"
-                                              onClick={() => openDeleteModal(product)}
-                                              >
-                                              Delete
-                                              </button>
-                                          </td>
+                                            </td>
                                           </tr>
-                                      ))}
+                                        ))}
                                       </tbody>
-                                  </table>
+                                    </table>
                                   )}
-                                  </div>
+                                </div>
                               </div>
                             </div>
 
-                            <div className="mt-4 flex justify-between items-center">
-                            <button
-                                className="bg-gray-500 text-white px-4 py-2 rounded-md"
+                            {/* Super UI Pagination */}
+                            <div className="mt-6 flex flex-wrap justify-center md:justify-between items-center gap-4">
+                              <button
+                                className="flex items-center gap-1 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 px-4 py-2 rounded-lg font-medium shadow disabled:opacity-50"
                                 onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                                 disabled={currentPage === 1}
-                            >
-                                Previous
-                            </button>
-                            <span>
-                                Page {currentPage} of {totalPages}
-                            </span>
-                            <button
-                                className="bg-gray-500 text-white px-4 py-2 rounded-md"
+                              >
+                                <i className="bx bx-chevron-left"></i> Previous
+                              </button>
+                              <div className="flex gap-1">
+                                {Array.from({ length: totalPages }).map((_, idx) => (
+                                  <button
+                                    key={idx}
+                                    onClick={() => setCurrentPage(idx + 1)}
+                                    className={`w-9 h-9 rounded-full font-semibold transition border-2 ${currentPage === idx + 1 ? 'bg-blue-500 border-blue-500 text-white' : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-blue-100 dark:hover:bg-gray-700'}`}
+                                  >
+                                    {idx + 1}
+                                  </button>
+                                ))}
+                              </div>
+                              <button
+                                className="flex items-center gap-1 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-100 px-4 py-2 rounded-lg font-medium shadow disabled:opacity-50"
                                 onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
                                 disabled={currentPage === totalPages}
-                            >
-                                Next
-                            </button>
+                              >
+                                Next <i className="bx bx-chevron-right"></i>
+                              </button>
                             </div>
-                        </div>
+                          </div>
                         </div>                  
                     </main>
                 </section>
