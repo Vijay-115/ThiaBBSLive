@@ -12,6 +12,7 @@ import BannerOne from "../home/BannerOne";
 import Services from "../home/Services";
 import CallToActionSection from "../home/CallToActionSection";
 import { useLocation } from 'react-router-dom';
+import AppDownloadCTA from '../layout/AppDownloadCTA';
 
 function HomePage() {
   const location = useLocation();
@@ -35,6 +36,7 @@ function HomePage() {
         <OfferSection />
         <HeroVideoCarousel />
         <WhatsAppChat />
+        <AppDownloadCTA />
       </div>
       <CallToActionSection />
       <div className="homepage bbscontainer">

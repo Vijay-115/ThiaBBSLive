@@ -92,10 +92,12 @@ const HeroVideoCarousel = () => {
           return (
             <div
               key={idx}
-              className={`relative transform transition-all duration-700 ease-in-out bg-black rounded-xl overflow-hidden ${style}`}
+              className={`relative transform transition-all duration-700 ease-in-out    bg-red-300 rounded-xl overflow-hidden ${style}`}
               style={{
-                width: isActive ? "300px" : "200px",
-                height: isActive ? "500px" : "380px",
+                width: isActive ? "500px" : "300px",
+                height: isActive ? "400px" : "380px",
+                margin:"-40px",
+                padding:"1px"
               }}
             >
               <video
@@ -106,7 +108,7 @@ const HeroVideoCarousel = () => {
                 loop
                 playsInline
                 preload="metadata"
-                className="w-full h-full object-cover rounded-xl"
+                className="w-full h-full object-cover rounded-xl "
               />
               {isActive && (
                 <>

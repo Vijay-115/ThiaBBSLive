@@ -2,6 +2,7 @@ import React from "react";
 import { useDispatch } from "react-redux";
 import { logout } from "../../../services/authService";
 import { useSelector } from 'react-redux';
+import { Link } from "react-router-dom";
 
 const Navbar = ({
     isDarkMode,
@@ -40,11 +41,11 @@ const Navbar = ({
                 checked={isDarkMode}
                 onChange={toggleDarkMode}
             />
-            <label className="swith-lm" htmlFor="switch-mode">
+            {/* <label className="swith-lm" htmlFor="switch-mode">
                 <i className="bx bxs-moon" />
                 <i className="bx bx-sun" />
                 <div className="ball" />
-            </label>
+            </label> */}
             <div className="notification" onClick={toggleNotificationMenu}>
                 <i className="bx bxs-bell bx-tada-hover" />
                 <span className="num">8</span>
@@ -68,7 +69,7 @@ const Navbar = ({
                 <div className="profile-menu">
                     <ul>                        
                         <li>
-                            <a href="#">My Profile</a>
+                            <Link to="/my-account">My Profile</Link>
                         </li>
                         <li>
                             <a href="#">Settings</a>
