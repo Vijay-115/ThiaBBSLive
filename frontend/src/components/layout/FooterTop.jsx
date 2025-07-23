@@ -119,81 +119,173 @@ function FooterTop() {
                       </Link>
                     </li>
                   </ul>
+
                 </div>
               </div>
             </div>
-            <div className="min-[992px]:w-[16.66%] max-[991px]:w-full w-full px-[12px] bb-footer-toggle bb-footer-account">
-              <div className="bb-footer-widget">
-                <h4 className="bb-footer-heading font-quicksand leading-[1.2] text-[18px] font-bold mb-[20px] text-secondary tracking-[0] relative block w-full pb-[15px] capitalize border-b-[1px] border-solid border-[#eee] max-[991px]:text-[14px]">
-                  Customer Service
-                </h4>
-                <div className="bb-footer-links bb-footer-dropdown  max-[991px]:mb-[35px]">
-                  <ul className="align-items-center">
-                    <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
-                      <Link
-                        to="/terms-of-use"
-                        className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal"
-                      >
-                        Terms of use
-                      </Link>
-                    </li>
-                    <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
-                      <Link
-                        to="/privacy-policy"
-                        className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal"
-                      >
-                        Privacy Policy
-                      </Link>
-                    </li>
-                    <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
-                      <Link
-                        to="/cancellation-policy"
-                        className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal"
-                      >
-                        Cancellation Policy
-                      </Link>
-                    </li>
-                    <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
-                      <Link
-                        to="/shipping-policy"
-                        className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal"
-                      >
-                        Shipping Policy
-                      </Link>
-                    </li>
-                    <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
-                      <Link
-                        to="/refund-policy"
-                        className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal"
-                      >
-                        Refund Policy
-                      </Link>
-                    </li>
-                    <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
-                      <Link
-                        to="/buyback-policy"
-                        className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal"
-                      >
-                        Buyback Policy
-                      </Link>
-                    </li>
-                    <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
-                      <Link
-                        to="/exchange-policy"
-                        className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal"
-                      >
-                        Exchange Policy
-                      </Link>
-                    </li>
-                    <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
-                      <Link
-                        to="/bank-cashback-policy"
-                        className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal"
-                      >
-                        Bank Cashback Policy
-                      </Link>
-                    </li>
-                  </ul>
+
+            <div className="footer-top bbscontainer py-[50px] max-[1199px]:py-[35px]">
+                <div className="flex flex-wrap justify-between relative items-center">
+                    <div className="flex flex-wrap w-full max-[991px]:mb-[-30px]" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="200">
+                        <div className="min-[992px]:w-[25%] max-[991px]:w-full w-full px-[12px] bb-footer-toggle bb-footer-cat">
+                            <div className="bb-footer-widget bb-footer-company flex flex-col max-[991px]:mb-[24px]">
+                                <Link to="/"><img src="/img/logo/BBSCART_LOGO.PNG" className="bb-footer-logo max-w-[144px] mb-[10px] max-[767px]:max-w-[100px]" alt="footer logo" /></Link>
+                                <p className="bb-footer-detail max-w-[400px] mb-[30px] p-[0] font-Poppins text-[14px] leading-[27px] font-normal text-secondary inline-block relative max-[1399px]:text-[15px] max-[1199px]:text-[14px]">BSS Cart is the biggest market of grocery products. Get
+                                    your daily needs from our store.</p>
+                                <div className="bb-app-store m-[-7px] flex flex-wrap">
+                                    <Link to="/" className="app-img">
+                                        <img src="/img/app/android.png" className="adroid max-w-[140px] m-[7px] rounded-[5px] max-[1399px]:max-w-[120px]" alt="apple" />
+                                    </Link>
+                                    <Link to="/" className="app-img">
+                                        <img src="/img/app/apple.png" className="apple max-w-[140px] m-[7px] rounded-[5px] max-[1399px]:max-w-[120px]" alt="apple" />
+                                    </Link>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="min-[992px]:w-[16.66%] max-[991px]:w-full w-full px-[12px] bb-footer-toggle bb-footer-info">
+                            <div className="bb-footer-widget">
+                                <h4 className="bb-footer-heading font-quicksand leading-[1.2] text-[18px] font-bold mb-[20px] text-secondary tracking-[0] relative block w-full pb-[15px] capitalize border-b-[1px] border-solid border-[#eee] max-[991px]:text-[14px]">Quick Links</h4>
+                                <div className="bb-footer-links bb-footer-dropdown  max-[991px]:mb-[35px]">
+                                    <ul className="align-items-center">
+                                        <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
+                                            <Link to="/services-terms-of-use" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Services Terms of Use</Link>
+                                        </li>
+                                        <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
+                                            <Link to="/product/category/womens-jewellery" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Jewellery</Link>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="min-[992px]:w-[16.66%] max-[991px]:w-full w-full px-[12px] bb-footer-toggle bb-footer-account">
+                            <div className="bb-footer-widget">
+                                <h4 className="bb-footer-heading font-quicksand leading-[1.2] text-[18px] font-bold mb-[20px] text-secondary tracking-[0] relative block w-full pb-[15px] capitalize border-b-[1px] border-solid border-[#eee] max-[991px]:text-[14px]">Customer Service</h4>
+                                <div className="bb-footer-links bb-footer-dropdown  max-[991px]:mb-[35px]">
+                                    <ul className="align-items-center">
+                                        <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
+                                            <Link to="/terms-of-use" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Terms of use</Link>
+                                        </li>
+                                        <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
+                                            <Link to="/privacy-policy" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Privacy Policy</Link>
+                                        </li>
+                                        <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
+                                            <Link to="/cancellation-policy" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Cancellation Policy</Link>
+                                        </li>
+                                        <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
+                                            <Link to="/shipping-policy" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Shipping Policy</Link>
+                                        </li>
+                                        <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
+                                            <Link to="/refund-policy" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Refund Policy</Link>
+                                        </li>
+                                        <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
+                                            <Link to="/buyback-policy" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Buyback Policy</Link>
+                                        </li>
+                                        <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
+                                            <Link to="/exchange-policy" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Exchange Policy</Link>
+                                        </li>
+                                        <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
+                                            <Link to="/bank-cashback-policy" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Bank Cashback Policy</Link>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="min-[992px]:w-[16.66%] max-[991px]:w-full w-full px-[12px] bb-footer-toggle bb-footer-service">
+                            <div className="bb-footer-widget">
+                                <h4 className="bb-footer-heading font-quicksand leading-[1.2] text-[18px] font-bold mb-[20px] text-secondary tracking-[0] relative block w-full pb-[15px] capitalize border-b-[1px] border-solid border-[#eee] max-[991px]:text-[14px]">Vendors</h4>
+                                <div className="bb-footer-links bb-footer-dropdown  max-[991px]:mb-[35px]">
+                                    <ul className="align-items-center">
+                                        <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
+                                            <Link to="/login" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Sign In</Link>
+                                        </li>
+                                        <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
+                                            <Link to="/cart" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">View Cart</Link>
+                                        </li>
+                                        {
+                                            isAuthenticated && (
+                                                <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
+                                                    <Link to="/orders" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Order History</Link>
+                                                </li>
+                                            )
+                                        }
+                                        <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
+                                            <Link to="/wishlist" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Wish List</Link>
+                                        </li>
+                                        <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
+                                            <Link to="/customer-become-a-vendor" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Customer Become A Vendor</Link>
+                                        </li>
+                                        <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
+                                            <Link to="/become-a-vendor" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Become a Vendor</Link>
+                                        </li>
+                                        <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
+                                            <Link to="/become-a-agent" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Become a Agent</Link>
+                                        </li>
+                                        <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
+                                            <Link to="/become-a-territory-head" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Become a Territory Head</Link>
+                                        </li>
+                                        <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
+                                            <Link to="/become-a-franchise-head " className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal">Become a Franchise Head</Link>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="min-[992px]:w-[25%] max-[991px]:w-full w-full px-[12px] bb-footer-toggle bb-footer-cont-social">
+                            <div className="bb-footer-contact mb-[30px]">
+                                <div className="bb-footer-widget">
+                                    <h4 className="bb-footer-heading font-quicksand leading-[1.2] text-[18px] font-bold mb-[20px] text-secondary tracking-[0] relative block w-full pb-[15px] capitalize border-b-[1px] border-solid border-[#eee] max-[991px]:text-[14px]">Contact</h4>
+                                    <div className="bb-footer-links bb-footer-dropdown  max-[991px]:mb-[35px]">
+                                        <ul className="align-items-center">
+                                            <li className="bb-footer-link bb-foo-location flex items-start max-[991px]:mb-[15px] mb-[16px]">
+                                                <span className="mt-[3px] w-[25px] basis-[auto] grow-[0] shrink-[0]">
+                                                    <i className="ri-map-pin-line leading-[0] text-[18px] text-primary"></i>
+                                                </span>
+                                                <p className="m-[0] font-Poppins text-[14px] text-secondary font-normal leading-[28px] tracking-[0.03rem]">Floor, 1st, 5, 2nd, Cross, Bharathy Street, extension Ellaipillaichavady, Anna Nagar, Puducherry, 605005</p>
+                                            </li>
+                                            <li className="bb-footer-link bb-foo-call flex items-center max-[991px]:mb-[15px] mb-[16px]">
+                                                <span className="w-[25px] basis-[auto] grow-[0] shrink-[0]">
+                                                    <i className="ri-phone-fill leading-[0] text-[18px] text-primary"></i>
+                                                </span>
+                                                <Link to="tel:04132915916" target="_blank" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary inline-block relative break-all tracking-[0] font-normal max-[1399px]:text-[15px] max-[1199px]:text-[14px]">0413 291 5916</Link>
+                                            </li>
+                                            <li className="bb-footer-link bb-foo-call flex items-start max-[991px]:mb-[15px] mb-[16px]">
+                                                <span className="w-[25px] basis-[auto] grow-[0] shrink-[0]">
+                                                    <i className="ri-whatsapp-line leading-[0] text-[18px] text-primary"></i>
+                                                </span>
+                                                <Link to="https://wa.me/9600729596" target="_blank" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary inline-block relative break-all tracking-[0] font-normal max-[1399px]:text-[15px] max-[1199px]:text-[14px]">+91 9600729596</Link>
+                                            </li>
+                                            <li className="bb-footer-link bb-foo-mail flex items-cente">
+                                                <span className="w-[25px] basis-[auto] grow-[0] shrink-[0]">
+                                                    <i className="ri-mail-line leading-[0] text-[18px] text-primary"></i>
+                                                </span>
+                                                <Link to="mailto:example@email.com" className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary inline-block relative break-all tracking-[0] font-normal max-[1399px]:text-[15px] max-[1199px]:text-[14px]">info@bbscart.com</Link>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bb-footer-social">
+                                <div className="bb-footer-widget">
+                                    <div className="bb-footer-links bb-footer-dropdown  max-[991px]:mb-[35px]">
+                                        <ul className="align-items-center flex flex-wrap items-center">
+                                            <li className="bb-footer-link leading-[1.5] flex items-center pr-[5px]">
+                                                <Link to="https://www.facebook.com/profile.php?id=100090804256179" target='blank' className="transition-all duration-[0.3s] ease-in-out w-[30px] h-[30px] rounded-[5px] bg-secondary hover:bg-tertiary capitalize flex items-center justify-center text-[15px] leading-[20px] text-secondary relative break-all font-normal"><i className="ri-facebook-fill text-[16px] text-[#fff]"></i></Link>
+                                            </li>
+                                            <li className="bb-footer-link leading-[1.5] flex items-center pr-[5px]">
+                                                <Link to="https://www.youtube.com/channel/UCNiBeRvAW1bQOUEcaqc0hYA" target='blank' className="transition-all duration-[0.3s] ease-in-out w-[30px] h-[30px] rounded-[5px] bg-secondary hover:bg-tertiary capitalize flex items-center justify-center text-[15px] leading-[20px] text-secondary relative break-all font-normal"><i className="ri-youtube-fill text-[16px] text-[#fff]"></i></Link>
+                                            </li>
+                                            <li className="bb-footer-link leading-[1.5] flex items-center pr-[5px]">
+                                                <Link to="https://www.linkedin.com/in/pavarasu-mayavan-50a171355/?lipi=urn%3Ali%3Apage%3Ad_flagship3_feed%3B%2FT2G%2FN4ESaqdyBnClTXhtQ%3D%3D" target='blank' className="transition-all duration-[0.3s] ease-in-out w-[30px] h-[30px] rounded-[5px] bg-secondary hover:bg-tertiary capitalize flex items-center justify-center text-[15px] leading-[20px] text-secondary relative break-all font-normal"><i className="ri-linkedin-fill text-[16px] text-[#fff]"></i></Link>
+                                            </li>
+                                            <li className="bb-footer-link leading-[1.5] flex items-center pr-[5px]">
+                                                <Link to="https://www.instagram.com/bbscart/?hl=en#" target='blank' className="transition-all duration-[0.3s] ease-in-out w-[30px] h-[30px] rounded-[5px] bg-secondary hover:bg-tertiary capitalize flex items-center justify-center text-[15px] leading-[20px] text-secondary relative break-all font-normal"><i className="ri-instagram-line text-[16px] text-[#fff]"></i></Link>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
               </div>
             </div>

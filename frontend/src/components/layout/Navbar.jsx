@@ -87,6 +87,7 @@ const MegaMenu = ({ menuType }) => {
       title: 'BBS Global Health Access',
       externalLink: 'http://healthcare.bbscart.com/'
     }
+
   ];
 
   const cn = (...classes) => classes.filter(Boolean).join(' ');
@@ -94,13 +95,13 @@ const MegaMenu = ({ menuType }) => {
   return (
     <>
       <div className="w-full bg-[#3d1757] text-white py-2 text-center overflow-hidden sticky top-0 z-50" style={{ boxShadow: '1px 1px 6px rgba(79, 50, 103, 0.2)' }}>
+
         <ul className="offer-msg list-none m-0 p-0">
           <li key={currentIndex} className="bounce-text text-sm font-medium text-white">
             {offers[currentIndex]}
           </li>
         </ul>
       </div>
-
       <nav className="relative bg-white shadow-md border-b border-gray-100 z-30">
         <div className="container mx-auto px-2 flex items-center justify-between">
           <button className="lg:hidden p-2 text-[#cf1717] focus:outline-none" onClick={() => setMobileSidebarOpen(true)} aria-label="Open menu">
@@ -136,6 +137,7 @@ const MegaMenu = ({ menuType }) => {
                 {!item.externalLink && activeMenu === item.id && item.submenu && ReactDOM.createPortal(
                   <div className="fixed left-0 top-20 w-full h-full z-[9999] pointer-events-none">
                     <div className="absolute left-1/2 -translate-x-1/2 top-40 w-[95vw] max-w-5xl bg-white border border-[#cf1717] rounded-xl shadow-2xl p-6 flex flex-col pointer-events-auto">
+
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
                         {item.submenu.map((submenu) => (
                           <div key={submenu.id} className="flex-1 min-w-[180px] max-w-xs">
@@ -164,12 +166,12 @@ const MegaMenu = ({ menuType }) => {
           </ul>
         </div>
       </nav>
-
       {isMobile && mobileSidebarOpen && ReactDOM.createPortal(
         <div className="fixed inset-0 z-[9999] flex">
           <div className="absolute inset-0 bg-black bg-opacity-40" onClick={() => setMobileSidebarOpen(false)}></div>
           <div className="relative w-80 max-w-full h-full bg-white shadow-2xl border-r border-[#cf1717] flex flex-col animate-slideInLeft">
             <button className="absolute top-3 right-3 text-gray-400 hover:text-[#cf1717] text-2xl z-10"
+
               onClick={() => setMobileSidebarOpen(false)}
               aria-label="Close"
             >
@@ -227,6 +229,8 @@ const MegaMenu = ({ menuType }) => {
         </div>,
         document.body
       )}
+
+
 
       <style>{`
         .bounce-text {
