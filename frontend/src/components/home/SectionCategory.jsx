@@ -5,10 +5,10 @@ import "slick-carousel/slick/slick-theme.css";
 
 const SectionCategory = () => {
   const categories = [
-    { id: 1, name: "Fruits", items: 485, bgColor: "#fef1f1", icon: "/img/category/1.png" },
-    { id: 2, name: "Grocery", items: 291, bgColor: "#e1fcf2", icon: "/img/category/2.png" },
-    { id: 3, name: "Cold Drinks", items: 49, bgColor: "#f4f1fe", icon: "/img/category/3.png" },
-    { id: 4, name: "Jewellery", items: 8, bgColor: "#fbf9e4", icon: "/img/category/4.png" },
+    { id: 1, name: "Fruits", items: 485, bgColor: "#fef1f1", icon: "/img/category/icon2.png" },
+    { id: 2, name: "Grocery", items: 291, bgColor: "#e1fcf2", icon: "/img/category/icon4.png" },
+    { id: 3, name: "Cold Drinks", items: 49, bgColor: "#f4f1fe", icon: "/img/category/icon3.png" },
+    { id: 4, name: "Jewellery", items: 8, bgColor: "#fbf9e4", icon: "/img/category/icon1.png" },
   ];
 
   const settings = {
@@ -43,8 +43,9 @@ const SectionCategory = () => {
           {categories.map((category) => (
             <div key={category.id} className="p-4">
               <div
-                className="category-box p-6 rounded-lg flex flex-col items-center text-center"
-                style={{ backgroundColor: category.bgColor }}
+                className="category-box p-6 rounded-lg flex flex-col items-center text-center shadow-md  "
+                style={{ backgroundColor: category.bgColor   }}
+                
               >
                 <div className="category-image mb-4">
                   <img src={category.icon} alt={category.name} className="max-w-16 max-h-16 w-full h-full" />

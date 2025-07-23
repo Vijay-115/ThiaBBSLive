@@ -62,6 +62,10 @@ import { fetchWishlistItems } from './slice/wishlistSlice';
 
 import ScrollToTopOnRouteChange from "./components/ScrollToTopOnRouteChange";
 import CustomerBecomeVendor from './components/auth/CustomerBecomeVendor';
+import GalleryMediaTestimonials from './components/pages/GalleryMediaTestimonials';
+import LegalAndBlogPage from './components/pages/LegalAndBlogPage';
+import BBSCARTCMSPage from './components/pages/admin/cms/BBSCARTCMSPage';
+import ThiaJewelleryCMS from './components/pages/admin/ThiaJewelleryCMS/ThiaJewelleryCMS';
 
 // Main App Component
 function App() {
@@ -114,6 +118,8 @@ function App() {
         <Route path="/product/:id" element={<SingleProductPage />} />
         <Route path="/product/category/:category" element={<ProductsCategoryPage />} />
         <Route path="/product/subcategory/:subcategory" element={<ProductsSubCategoryPage />} /> 
+        <Route path="/gallery" element={<GalleryMediaTestimonials />} />
+        <Route path="/legal-and-blog" element={<LegalAndBlogPage/>} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -164,7 +170,19 @@ function App() {
             <Route path="products/subcategories" element={<SellerSubCategories />} />
             <Route path="orders" element={<SellerOrders />} />
         </Route>
+
+        {/* Made by medun */}
+          {/* GLOBAL CMS CORE MODULES (Shared Across All 3) */}
+        <Route path="/admin-cms" element={<BBSCARTCMSPage/>}>
+          <Route path="dashboard" element={<BBSCARTCMSPage />} />
+        </Route>
+        
+          {/* Thia CMS */}
+           <Route path="/thia-jewellery-cms" element={<ThiaJewelleryCMS/>}>
+          <Route path="dashboard" element={<BBSCARTCMSPage />} />
+        </Route>
       </Routes>
+
       {shouldRenderHeaderFooter && <FooterTop />}
       <Toaster position="top-right" />
     </>
