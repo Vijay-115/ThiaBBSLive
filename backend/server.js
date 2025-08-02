@@ -98,7 +98,6 @@ app.use("/api", orderRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/users", userRoutes);
-app.use("/api/auth", authRoutes);
 
 
 // ✅ Global Error Handler

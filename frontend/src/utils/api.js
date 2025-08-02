@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "/api/";    // <— no env var, just the relative prefix
+const API_URL = "/api";    // <— no env var, just the relative prefix
 
 const api = axios.create({
   baseURL: API_URL,
