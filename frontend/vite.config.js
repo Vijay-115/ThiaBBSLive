@@ -7,4 +7,9 @@ export default defineConfig({
   optimizeDeps: {
     include: ['swiper'],
   },
+  server: {
+proxy: {
+"/api": "http://localhost:5000", // Proxy API to Node backend
+},
+},
 })
