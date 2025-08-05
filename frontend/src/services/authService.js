@@ -5,7 +5,7 @@ import api from "../utils/api"; // Import the centralized Axios instance
 // Register function
 export const register = async (userData, dispatch, navigate) => {
     try {
-        const response = await api.post("auth/register", userData);
+        const response = await api.post("/auth/register", userData);
         if (response.status === 200 && response.data?.user) {
             const user = response.data.user;
 
@@ -26,7 +26,7 @@ export const register = async (userData, dispatch, navigate) => {
 // Login function
 export const login = async (dispatch, email, password, navigate) => {
     try {
-        const response = await api.post("auth/login", { email, password }, { withCredentials: true });
+        const response = await api.post("/auth/login", { email, password }, { withCredentials: true });
 
         if (response.status === 200 && response.data?.user) {
             const user = response.data.user;

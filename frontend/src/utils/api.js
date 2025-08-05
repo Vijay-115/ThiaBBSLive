@@ -1,10 +1,10 @@
 import axios from "axios";
 
-const API_URL = "/api";    // <— no env var, just the relative prefix
+const API_URL = import.meta.env.VITE_API_URL+"/api";
 
 const api = axios.create({
-  baseURL: "",
-  withCredentials: true,
+    baseURL: API_URL,
+    withCredentials: true, // Ensure cookies are sent with requests
 });
 
 // Flag to track refresh attempts
