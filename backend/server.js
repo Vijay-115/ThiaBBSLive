@@ -9,24 +9,17 @@ const path = require("path");
 
 // Load environment variables
 dotenv.config();
-
-// ✅ Connect to BBSCart Product DB
-mongoose.connect("mongodb://localhost:27017/BBSCartLocal1", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
-mongoose.connection.on("connected", () => {
-  console.log("✅ Connected to BBSCartLocal1 (Product DB)");
-});
-
-
+mongoose
+  .connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log("✅ Connected toMongoDBcare (Default DB)"))
+  .catch((err) => console.error("❌ Main DB error:", err));
 // ✅ Route imports
 const authRoutes = require("./routes/auth");
 const adminRoutes = require("./routes/adminRoutes");
 const productRoutes = require("./routes/productRoutes");
-const categoryRoutes = require("./routes/categoryRoutes");
-const variantRoutes = require("./routes/variantRoutes");
-const orderRoutes = require("./routes/orderRoutes");
 const cartRoutes = require("./routes/cartRoutes");
 const wishlistRoutes = require("./routes/wishlistRoutes");
 const userRoutes = require("./routes/userRoutes");
@@ -78,9 +71,6 @@ app.use("/api/vendor", vendorRoutes);
 app.use("/api/auth", authRoutes); // 🔐 Shared Login/Register from bbs-auth
 app.use("/api/admin", adminRoutes);
 app.use("/api/products", productRoutes);
-app.use("/api", categoryRoutes);
-app.use("/api", variantRoutes);
-app.use("/api", orderRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/users", userRoutes);
