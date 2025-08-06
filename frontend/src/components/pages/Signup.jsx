@@ -1,5 +1,5 @@
 // pages/Signup.jsx
-import SignupForm from "../Auth/SignupForm";
+import SignupForm from "../auth/SignupForm";
 
 const Signup = () => (
   <div className="container mt-5">

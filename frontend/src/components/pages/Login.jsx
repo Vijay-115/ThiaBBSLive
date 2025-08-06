@@ -1,5 +1,5 @@
 // pages/Login.jsx
-import LoginForm from "../Auth/LoginForm";
+import LoginForm from "../auth/LoginForm";
 
 const Login = () => (
   <div className="container mt-5  min-vh-100  ">
