@@ -11,7 +11,7 @@ const SignupForm = () => {
     phone: "",
     password: "",
     role: "user",          // from SignupForm
-    createdFrom: "thiaworld", // from SignupForm
+    createdFrom: "bbscart", // from SignupForm
   });
 
   const [errors, setErrors] = useState({});
