@@ -1,4 +1,3 @@
-
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
@@ -16,8 +15,9 @@ mongoose
   })
   .then(() => console.log("✅ Connected toMongoDBcare (Default DB)"))
   .catch((err) => console.error("❌ Main DB error:", err));
+
 // ✅ Route imports
-const authRoutes = require("./routes/auth");
+const authRoutes = require("./routes/authRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const productRoutes = require("./routes/productRoutes");
 const cartRoutes = require("./routes/cartRoutes");
@@ -27,26 +27,56 @@ const vendorRoutes = require("./routes/vendorRoutes");
 
 const app = express();
 
-// ✅ CORS Setup
+/* =======================
+   ✅ CORS Setup (dev + prod)
+   ======================= */
+const allowedOrigins = [
+  process.env.CLIENT_URL_DEV || "http://localhost:5173",
+  process.env.CLIENT_URL_PROD || "https://bbscart.com",
+];
+
 app.use(
   cors({
-    origin: (origin, callback) => {
-      const allowedOrigin = process.env.REACT_APP_CLI_URL.replace(/\/$/, "");
-      if (!origin || origin === allowedOrigin) {
-        callback(null, true);
-      } else {
-        callback(new Error("CORS policy violation"));
+    origin: function (origin, callback) {
+      // Allow non-browser requests (no Origin) and known origins
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
       }
+      return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
-    methods: "GET,POST,PUT,DELETE",
-    allowedHeaders: "Content-Type,Authorization",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+// Handle preflight for all routes
+app.options(
+  "*",
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
+// (Optional) log incoming Origin for debugging
 app.use((req, res, next) => {
-  console.log("Request Origin:", req.headers.origin);
+  console.log("Request Origin:", req.headers.origin || "N/A");
   next();
 });
+
+mongoose
+  .connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log("✅ Connected to bbshealthcare (Default DB)"))
+  .catch((err) => console.error("❌ Main DB error:", err));
 
 // ✅ Session & Cookie
 app.use(
@@ -82,5 +112,5 @@ app.use((err, req, res, next) => {
 });
 
 // ✅ Start Server
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

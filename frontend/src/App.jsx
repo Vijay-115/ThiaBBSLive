@@ -12,8 +12,9 @@ import SingleProductPage from './components/pages/SingleProductPage';
 import ProductsCategoryPage from './components/pages/ProductsCategoryPage'; 
 import ProductsSubCategoryPage from './components/pages/ProductsSubCategoryPage'; 
 import CartPage from './components/pages/CartPage';  
-import Login from './components/auth/Login'; 
-import Register from './components/auth/Register'; 
+import Login from './pages/Login'; 
+import Register from './pages/Signup'; 
+
 import BecomeVendor from './components/auth/BecomeVendor'; 
 import Forgot from './components/auth/ForgotPassword'; 
 import ResetPassword from "./components/auth/ResetPassword"; 
