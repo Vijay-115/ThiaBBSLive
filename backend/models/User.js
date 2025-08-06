@@ -1,90 +1,19 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
-const userDB = require("../config/userDB"); // ✅ This connection goes to BBSCartLocal1
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
-const UserSchema = new mongoose.Schema(
-  {
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      lowercase: true,
-      trim: true,
-    },
-    phone: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    password: {
-      type: String,
-      required: true,
-    },
-    roles: {
-      type: [String], // e.g., ["user", "healthcare"]
-      default: ["user"],
-    },
-    createdFrom: {
-      type: String, // e.g., "healthcare", "thiaworld", "bbscart"
-      required: true,
-    },
-    referralCode: {
-      type: String,
-      default: null,
-    },
-    isVerified: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  { timestamps: true }
-);
+// Explicitly import ObjectId from mongoose.Schema.Types
+const { ObjectId } = mongoose.Schema.Types;
 
-// ✅ Auto-hash password before save
-UserSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
-  try {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-  } catch (err) {
-    next(err);
-  }
+const UserSchema = new mongoose.Schema({
+    role: { type: String, enum: ['user', 'admin', 'seller', 'customer', 'agent', 'territory_head', 'franchise_head'], default: 'user' },
+    name: String,
+    email: { type: String, unique: true }, // User's email (unique)
+    password: String, // Encrypted user password
+    refreshToken: String,
+    userdetails: { type: ObjectId, ref: 'UserDetails' },
+    created_at: { type: Date, default: Date.now }, // Account creation date
+    updated_at: { type: Date, default: Date.now }, // Last updated date
 });
 
-// ✅ Method to compare entered password
-UserSchema.methods.matchPassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password);
-};
-
-module.exports = userDB.model("User", UserSchema);
-
-
-// const mongoose = require("mongoose");
-// const bcrypt = require("bcryptjs");
-
-// const userSchema = new mongoose.Schema({
-//   name: { type: String, required: true },
-//   email: {
-//     type: String,
-//     required: true,
-//     unique: true,
-//     lowercase: true,
-//   },
-//   phone: { type: String, required: true },
-//   password: { type: String, required: true },
-//   userdetails: {
-//     type: mongoose.Schema.Types.ObjectId,
-//     ref: "UserDetails", // must match your model name
-//   },
-//   role: { type: String, enum: ["admin", "user"], default: "user" },
-// });
-
-// // ✅ Log and export using shared auth DB
-// const User = mongoose.model("User", userSchema);
-// module.exports = User;
+const User = mongoose.model('User', UserSchema);
+module.exports = User;
