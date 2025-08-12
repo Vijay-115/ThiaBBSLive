@@ -63,7 +63,7 @@ const AnimationCards = () => {
 
   return (
     <>
-      <div className="grid lg:grid-cols-2 gap-6 px-8 py-8 min-h-screen cardSlide align-items-center">
+      <div className="grid lg:grid-cols-2 gap-6 px-12 py-8 min-h-screen cardSlide align-items-center">
         <div className="flex flex-col justify-center">
           <h2 className="text-[36px] font-bold text-yellow-600 mb-6">
             Introducing the Thia Secure Plan
@@ -137,7 +137,7 @@ const AnimationCards = () => {
             <div
               key={index}
               className="card border-2 border-blue-900 rounded-xl shadow-2xl"
-              style={{ height: "620px", width: "500px" }}
+              style={{ height: "520px", width: "400px" }}
             >
               <img src={src} alt="Patisserie" />
             </div>

@@ -67,6 +67,11 @@ import GalleryMediaTestimonials from './components/pages/GalleryMediaTestimonial
 import LegalAndBlogPage from './components/pages/LegalAndBlogPage';
 import BBSCARTCMSPage from './components/pages/admin/cms/BBSCARTCMSPage';
 import ThiaJewelleryCMS from './components/pages/admin/ThiaJewelleryCMS/ThiaJewelleryCMS';
+import AllProducts from './components/home/AllProducts';
+import FruitsDetails from './components/home/Fruits';
+import GroceryDetails from './components/home/Grocery';
+import PricingPage from './components/home/PricingPage';
+// import CheckoutPage from './components/home/CheckoutPage';
 
 // Main App Component
 function App() {
@@ -150,6 +155,16 @@ function App() {
         <Route path="/thia" element={<ThiaPage />} />
         
 
+      {/* Home Page card navigation */}
+         <Route path="/all-products" element={<AllProducts />} />
+ <Route path="/fruits" element={<FruitsDetails/>} />
+         <Route path="/grocery" element={<GroceryDetails/>} />
+
+         {/* ✅ Home>PricingPage */}
+          <Route path="/pricing" element={<PricingPage/>} />
+
+        {/* ✅ Checkout */}
+        {/* <Route path="/checkout" element={<CheckoutPage />} /> */}
          {/* ✅ Admin Routes */}
          <Route path="/admin" element={<AdminRoutes />}>
             <Route path="dashboard" element={<AdminDashboard />} />

@@ -85,10 +85,10 @@ function FooterTop() {
                       alt="apple"
                     />
                   </Link>
-                  <Link to="/" className="app-img">
+                  <Link to="/" className="app-img mt-2">
                     <img
                       src="/img/hero/app.svg"
-                      className="apple max-w-[140px] m-[7px] rounded-[5px] max-[1399px]:max-w-[120px]"
+                      className="apple max-w-[110px] m-[7px] rounded-[5px] max-[1399px]:max-w-[120px]"
                       alt="apple"
                     />
                   </Link>
@@ -238,20 +238,22 @@ function FooterTop() {
                         Wish List
                       </Link>
                     </li>
+
                     <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
                       <Link
-                        to="/customer-become-a-vendor"
+                        to="/become-a-franchise-head "
                         className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal"
                       >
-                        Customer Become A Vendor
+                        Become a Franchise Head
                       </Link>
                     </li>
+
                     <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
                       <Link
-                        to="/become-a-vendor"
+                        to="/become-a-territory-head"
                         className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal"
                       >
-                        Become a Vendor
+                        Become a Territory Head
                       </Link>
                     </li>
                     <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
@@ -264,18 +266,27 @@ function FooterTop() {
                     </li>
                     <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
                       <Link
-                        to="/become-a-territory-head"
+                        to="/become-a-vendor"
                         className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal"
                       >
-                        Become a Territory Head
+                        Become a Vendor
+                      </Link>
+                    </li>
+
+                    <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
+                      <Link
+                        to="/delivery-partner"
+                        className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal"
+                      >
+                        Delivery Partner
                       </Link>
                     </li>
                     <li className="bb-footer-link leading-[1.5] flex items-center mb-[16px] max-[991px]:mb-[15px]">
                       <Link
-                        to="/become-a-franchise-head "
+                        to="/customer-become-a-vendor"
                         className="transition-all duration-[0.3s] ease-in-out font-Poppins text-[14px] leading-[20px] text-secondary hover:text-primary mb-[0] inline-block break-all tracking-[0] font-normal"
                       >
-                        Become a Franchise Head
+                        Customer Become A Vendor
                       </Link>
                     </li>
                   </ul>
@@ -341,41 +352,41 @@ function FooterTop() {
               <div className="bb-footer-social">
                 <div className="bb-footer-widget">
                   <div className="bb-footer-links bb-footer-dropdown  max-[991px]:mb-[35px]">
-                    <ul className="align-items-center flex flex-wrap items-center">
-                      <li className="bb-footer-link leading-[1.5] flex items-center pr-[5px]">
+                    <ul className="flex items-start flex-wrap gap-[5px]">
+                      <li>
                         <Link
                           to="https://www.facebook.com/profile.php?id=100090804256179"
-                          target="blank"
-                          className="transition-all duration-[0.3s] ease-in-out w-[30px] h-[30px] rounded-[5px] bg-secondary hover:bg-tertiary capitalize flex items-center justify-center text-[15px] leading-[20px] text-secondary relative break-all font-normal"
+                          target="_blank"
+                          className="flex items-start justify-center w-[30px] h-[30px]"
                         >
-                          <i className="ri-facebook-fill text-[16px] text-[#fff]"></i>
+                          <i className="ri-facebook-fill text-[28px] text-[#0e3edb] leading-none"></i>
                         </Link>
                       </li>
-                      <li className="bb-footer-link leading-[1.5] flex items-center pr-[5px]">
+                      <li>
                         <Link
                           to="https://www.youtube.com/channel/UCNiBeRvAW1bQOUEcaqc0hYA"
-                          target="blank"
-                          className="transition-all duration-[0.3s] ease-in-out w-[30px] h-[30px] rounded-[5px] bg-secondary hover:bg-tertiary capitalize flex items-center justify-center text-[15px] leading-[20px] text-secondary relative break-all font-normal"
+                          target="_blank"
+                          className="flex items-start justify-center w-[30px] h-[30px]"
                         >
-                          <i className="ri-youtube-fill text-[16px] text-[#fff]"></i>
+                          <i className="ri-youtube-fill text-[28px] text-[#7a1111] leading-none"></i>
                         </Link>
                       </li>
-                      <li className="bb-footer-link leading-[1.5] flex items-center pr-[5px]">
+                      <li>
                         <Link
-                          to="https://www.linkedin.com/in/pavarasu-mayavan-50a171355/?lipi=urn%3Ali%3Apage%3Ad_flagship3_feed%3B%2FT2G%2FN4ESaqdyBnClTXhtQ%3D%3D"
-                          target="blank"
-                          className="transition-all duration-[0.3s] ease-in-out w-[30px] h-[30px] rounded-[5px] bg-secondary hover:bg-tertiary capitalize flex items-center justify-center text-[15px] leading-[20px] text-secondary relative break-all font-normal"
+                          to="https://www.linkedin.com/in/pavarasu-mayavan-50a171355/"
+                          target="_blank"
+                          className="flex items-start justify-center w-[30px] h-[30px]"
                         >
-                          <i className="ri-linkedin-fill text-[16px] text-[#fff]"></i>
+                          <i className="ri-linkedin-fill text-[28px] text-[#1479d8] leading-none"></i>
                         </Link>
                       </li>
-                      <li className="bb-footer-link leading-[1.5] flex items-center pr-[5px]">
+                      <li>
                         <Link
                           to="https://www.instagram.com/bbscart/?hl=en#"
-                          target="blank"
-                          className="transition-all duration-[0.3s] ease-in-out w-[30px] h-[30px] rounded-[5px] bg-secondary hover:bg-tertiary capitalize flex items-center justify-center text-[15px] leading-[20px] text-secondary relative break-all font-normal"
+                          target="_blank"
+                          className="flex items-start justify-center w-[30px] h-[30px]"
                         >
-                          <i className="ri-instagram-line text-[16px] text-[#fff]"></i>
+                          <i className="ri-instagram-line text-[28px] text-[#b40909] leading-none"></i>
                         </Link>
                       </li>
                     </ul>
