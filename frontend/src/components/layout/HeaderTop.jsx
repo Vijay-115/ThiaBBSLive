@@ -140,15 +140,17 @@ function HeaderTop({ toggleMenu }) {
               <div className="flex items-center cursor-pointer">
                 <RiUserShared2Fill className="text-red-600 w-6 h-6" />
               </div>
-                 <div className="bb-btn-desc flex flex-col ml-[10px] max-[1199px]:hidden">
+                 <div className="absolute right-15 top-full mb-2 w-48 bg-white rounded-md shadow-lg overflow-hidden z-10">
                             {!isAuthenticated ? (
                               <>
+                              <div className="d-flex flex-column">
                                 <span className="bb-btn-title font-Poppins transition-all duration-[0.3s] ease-in-out text-[12px] leading-[1] text-secondary mb-[4px] tracking-[0.6px] capitalize font-medium whitespace-nowrap">
                                   Account
                                 </span>
                                 <span className="bb-btn-stitle font-Poppins transition-all duration-[0.3s] ease-in-out text-[14px] leading-[16px] font-semibold text-secondary  tracking-[0.03rem] whitespace-nowrap">
                                   Login
                                 </span>
+                                </div>
                               </>
                             ) : (
                               <>
