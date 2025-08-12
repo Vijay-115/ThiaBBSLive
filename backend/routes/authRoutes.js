@@ -4,6 +4,7 @@ const { auth } = require("../middleware/authMiddleware");
 const { uploadAny } = require('../middleware/upload');
 const router = express.Router();
 
+<<<<<<< HEAD
 router.post('/register', register);
 router.post('/login', login);
 router.post("/forgot-password", sendPasswordResetEmail);
