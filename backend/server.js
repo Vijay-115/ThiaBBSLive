@@ -17,7 +17,7 @@ mongoose
   .catch((err) => console.error("❌ Main DB error:", err));
 
 // ✅ Route imports
-const authRoutes = require("./routes/auth");
+const authRoutes = require("./routes/authRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const productRoutes = require("./routes/productRoutes");
 const cartRoutes = require("./routes/cartRoutes");
