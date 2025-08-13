@@ -101,6 +101,9 @@ app.use("/api/vendor", vendorRoutes);
 app.use("/api/auth", authRoutes); // 🔐 Shared Login/Register from bbs-auth
 app.use("/api/admin", adminRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/groceries", require("./routes/groceryRoutes"));
+app.use("/api/fruits", require("./routes/FruitsRoutes"));
+
 app.use("/api/cart", cartRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/users", userRoutes);
