@@ -1,244 +1,844 @@
 import React, { useState, useEffect } from "react";
-import { toast } from "react-hot-toast";
+import API from "../../utils/api";
+import { Form, Button, Spinner, Row, Col } from "react-bootstrap";
 
-const VendorForm = ({ seller, onSave, setIsAddEditModalOpen }) => {
+export default function VendorForm() {
+  const [step, setStep] = useState(1);
+  const [vendorId, setVendorId] = useState(() => localStorage.getItem("vendorId") || "");
+
+  const [mismatch, setMismatch] = useState({ show: false, title: "", items: [] });
+
+  const [loadingPan, setLoadingPan] = useState(false);
+  const [loadingAFront, setLoadingAFront] = useState(false);
+  const [loadingABack, setLoadingABack] = useState(false);
+  const [loadingGST, setLoadingGST] = useState(false);
+
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    role: "seller",
-    phone: "",
+    firstName: "",
+    lastName: "",
+    dob: "",
+    panNumber: "",
+    aadharNumber: "",
+    gender: "",
+    register_street: "",
+    register_city: "",
+    register_state: "",
+    register_country: "India",
+    register_postalCode: "",
+    // GST manual fields
+    gstNumber: "",
+    gstLegalName: "",
+    gstConstitution: "",
+    gst_floorNo: "",
+    gst_buildingNo: "",
+    gst_street: "",
+    gst_locality: "",
+    gst_district: "",
   });
 
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const fmtAadhaarUI = (digits) =>
+    (digits || "").replace(/\D/g, "").replace(/(\d{4})(?=\d)/g, "$1 ").trim();
 
-  useEffect(() => {
-    if (seller) {
-      setFormData({
-        name: seller?.name || "",
-        email: seller?.email || "",
-        password: seller?.password || "",
-        confirmPassword: seller?.password || "",
-        role: "seller",
-        phone: seller?.userdetails?.phone || "",
+  function findDiffs(current, next, labelMap) {
+    const items = [];
+    for (const key of Object.keys(labelMap)) {
+      const before = (current[key] ?? "").toString().trim();
+      const after = (next[key] ?? "").toString().trim();
+      if (!before && !after) continue;
+      if (before !== after) items.push({ label: labelMap[key], before, after });
+    }
+    return items;
+  }
+
+  // -------------------- PAN (Step 1) --------------------
+  const onPanUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const fd = new FormData();
+    fd.append("document", file);
+
+    setLoadingPan(true);
+    try {
+      const resp = await API.post("/api/vendors/ocr", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+        timeout: 30000,
       });
+
+      const data = resp?.data || {};
+      if (!data.success) throw new Error("PAN OCR failed");
+
+      const extracted = data.extracted || {};
+      const fileUrl = data.fileUrl || null;
+
+      const nextValues = {
+        firstName: extracted.name || formData.firstName,
+        lastName: extracted.fatherName || formData.lastName,
+        dob: extracted.dob || formData.dob,
+        panNumber: (extracted.panNumber || formData.panNumber || "").toUpperCase(),
+      };
+
+      const diffs = findDiffs(formData, nextValues, {
+        firstName: "First name",
+        lastName: "Surname (Last name)",
+        dob: "DOB",
+        panNumber: "PAN number",
+      });
+      setFormData((prev) => ({ ...prev, ...nextValues }));
+      if (diffs.length) setMismatch({ show: true, title: "Please review PAN details", items: diffs });
+
+      const pan = nextValues.panNumber;
+      if (pan && fileUrl) {
+        const r = await API.post("/api/vendors/step-by-key", {
+          vendorId,               // send if present
+          pan_number: pan,
+          pan_pic: fileUrl,
+        });
+        const id = r?.data?.data?._id;
+        if (id && !vendorId) {
+          setVendorId(id);
+          localStorage.setItem("vendorId", id);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      alert("PAN OCR failed");
+    } finally {
+      setLoadingPan(false);
     }
-  }, [seller]);
+  };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+  const saveStep1AndNext = async () => {
+    try {
+      const payload = {
+        vendorId,
+        pan_number: (formData.panNumber || "").toUpperCase(),
+        vendor_fname: formData.firstName || "",
+        vendor_lname: formData.lastName || "",
+        dob: formData.dob || "",
+      };
+      const resp = await API.post("/api/vendors/step-by-key", payload);
+      if (!resp?.data?.ok) throw new Error("Save failed");
+      const id = resp?.data?.data?._id;
+      if (id) {
+        setVendorId(id);
+        localStorage.setItem("vendorId", id);
+      }
+      setStep(2);
+    } catch (e) {
+      console.error(e);
+      alert(e?.response?.data?.message || e.message || "Save failed");
+    }
+  };
 
-    if (name === "phone") {
-      // Allow only digits and max length of 10
-      const numericValue = value.replace(/\D/g, "").slice(0, 10);
-      setFormData((prev) => ({
-        ...prev,
-        [name]: numericValue,
+  // -------------------- Aadhaar (Step 2) --------------------
+  const onAadhaarFront = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const fd = new FormData();
+    fd.append("document", file);
+
+    setLoadingAFront(true);
+    try {
+      const resp = await API.post("/api/vendors/ocr?side=aadhaar_front", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+        timeout: 30000,
+      });
+
+      const data = resp?.data || {};
+      if (!data.success) throw new Error("Aadhaar front OCR failed");
+
+      const extracted = data.extracted || {};
+      const fileUrl = data.fileUrl || null;
+
+      const aNumRaw = (extracted.aadhaarNumber || "").replace(/\D/g, "");
+      const aNumUI = aNumRaw.replace(/(\d{4})(?=\d)/g, "$1 ").trim();
+      setFormData((prev) => ({ ...prev, aadharNumber: aNumUI || prev.aadharNumber }));
+
+      if (aNumRaw && fileUrl) {
+        const r = await API.post("/api/vendors/step-by-key", {
+          vendorId,
+          aadhar_number: aNumRaw,
+          aadhar_pic_front: fileUrl,
+          side: "front",
+        });
+        const id = r?.data?.data?._id;
+        if (id && !vendorId) {
+          setVendorId(id);
+          localStorage.setItem("vendorId", id);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Aadhaar front OCR failed");
+    } finally {
+      setLoadingAFront(false);
+    }
+  };
+
+  const onAadhaarBack = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const fd = new FormData();
+    fd.append("document", file);
+
+    setLoadingABack(true);
+    try {
+      const resp = await API.post("/api/vendors/ocr?side=aadhaar_back", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+        timeout: 30000,
+      });
+
+      const { success, extracted, fileUrl } = resp.data || {};
+      if (!success) throw new Error("Aadhaar back OCR failed");
+
+      const aNumRaw = (extracted?.aadhaarNumber || "").replace(/\D/g, "");
+      const aNumUI = aNumRaw.replace(/(\d{4})(?=\d)/g, "$1 ").trim();
+      const addr = extracted?.address || {};
+
+      setFormData((p) => ({
+        ...p,
+        aadharNumber: aNumUI || p.aadharNumber,
+        register_street: addr.street || "",
+        register_city: addr.city || "",
+        register_state: addr.state || "",
+        register_postalCode: addr.postalCode || "",
+        register_country: "India",
       }));
+
+      if (aNumRaw) {
+        const r = await API.post("/api/vendors/step-by-key", {
+          vendorId,
+          aadhar_number: aNumRaw,
+          aadhar_pic_back: fileUrl || undefined,
+          side: "back",
+          register_business_address: {
+            street: addr.street || "",
+            city: addr.city || "",
+            state: addr.state || "",
+            country: "India",
+            postalCode: addr.postalCode || "",
+          },
+        });
+        const id = r?.data?.data?._id;
+        if (id && !vendorId) {
+          setVendorId(id);
+          localStorage.setItem("vendorId", id);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Aadhaar back OCR failed");
+    } finally {
+      setLoadingABack(false);
+    }
+  };
+
+  const saveStep2AndNext = async () => {
+    try {
+      const aNumRaw = (formData.aadharNumber || "").replace(/\D/g, "");
+      if (!aNumRaw) { alert("Missing Aadhaar number"); return; }
+
+      const r = await API.post("/api/vendors/step-by-key", {
+        vendorId,
+        aadhar_number: aNumRaw,
+        register_business_address: {
+          street: formData.register_street || "",
+          city: formData.register_city || "",
+          state: formData.register_state || "",
+          country: formData.register_country || "India",
+          postalCode: formData.register_postalCode || "",
+        },
+      });
+      const id = r?.data?.data?._id;
+      if (id && !vendorId) {
+        setVendorId(id);
+        localStorage.setItem("vendorId", id);
+      }
+
+      alert("Aadhaar slide saved");
+      setStep(3);
+    } catch (e) {
+      console.error(e);
+      alert("Save failed");
+    }
+  };
+
+  // -------------------- GST (Step 3, no OCR) --------------------
+  const [gstFile, setGstFile] = useState(null);
+
+  const onGstFileChange = (e) => {
+    const file = e.target.files?.[0] || null;
+    setGstFile(file);
+  };
+
+  const saveGstAndNext = async () => {
+    try {
+      if (!vendorId) { alert("Missing vendorId. Complete Step 1 first."); return; }
+      if (!gstFile) { alert("Please upload the GST certificate file."); return; }
+
+      const fd = new FormData();
+      fd.append("vendorId", vendorId);
+      fd.append("document", gstFile);
+      fd.append("gst_number", (formData.gstNumber || "").toUpperCase());
+      fd.append("gst_legal_name", formData.gstLegalName || "");
+      fd.append("gst_constitution", formData.gstConstitution || "");
+      fd.append("gst_address[floorNo]", formData.gst_floorNo || "");
+      fd.append("gst_address[buildingNo]", formData.gst_buildingNo || "");
+      fd.append("gst_address[street]", formData.gst_street || "");
+      fd.append("gst_address[locality]", formData.gst_locality || "");
+      fd.append("gst_address[district]", formData.gst_district || "");
+
+      setLoadingGST(true);
+      const r = await API.put("/api/vendors/gst", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+        timeout: 45000,
+      });
+
+      if (!r?.data?.ok) throw new Error(r?.data?.message || "Save failed");
+
+      // advance to Bank step
+      setStep(4);
+      // optional: small toast instead of alert
+      // toast.success("GST saved");
+    } catch (e) {
+      console.error(e);
+      alert("Save failed");
+    } finally {
+      setLoadingGST(false);
+    }
+  };
+
+  // -------------------- Bank Details (Step 4) --------------------
+  const [bankFile, setBankFile] = useState(null);
+  const [bankData, setBankData] = useState({
+    account_holder_name: "",
+    account_no: "",
+    ifcs_code: "",
+    bank_name: "",
+    branch_name: "",
+    bank_address: "",
+  });
+
+  const onBankFileChange = (e) => {
+    const file = e.target.files?.[0] || null;
+    setBankFile(file);
+  };
+
+  const saveBankDetails = async () => {
+    const vid = vendorId || localStorage.getItem("vendorId");
+    if (!vid) {
+      alert("Vendor ID is required. Complete PAN/Aadhaar step first.");
+      return;
+    }
+
+    const fd = new FormData();
+    fd.append("document", bankFile);              // your uploaded file
+    fd.append("account_holder_name", bankData.account_holder_name || "");
+    fd.append("account_no", bankData.account_no || "");
+    fd.append("ifcs_code", (bankData.ifcs_code || "").toUpperCase());
+    fd.append("bank_name", bankData.bank_name || "");
+    fd.append("branch_name", bankData.branch_name || "");
+    fd.append("bank_address", bankData.bank_address || "");
+
+    try {
+      const response = await API.put(`/api/vendors/${vid}/bank`, fd, { headers: { "Content-Type": "multipart/form-data" } });
+      if (!response?.data?.ok) throw new Error(response?.data?.message || "Save failed");
+
+      alert("Bank details saved successfully.");
+      setStep(5); // Move to outlet details step
+    } catch (error) {
+      console.error("Error saving bank details:", error);
+      alert("Failed to save bank details.");
+    }
+  };
+
+  // -------------------- Outlet Details (Step 5) --------------------
+  const [outlet, setOutlet] = useState({
+    outlet_name: "",
+    manager_name: "",
+    manager_mobile: "",
+    outlet_phone: "",
+    street: "",
+    city: "",
+    district: "",
+    state: "",
+    country: "India",
+    postalCode: "",
+    lat: "",
+    lng: "",
+  });
+  const [outletImage, setOutletImage] = useState(null);
+
+  // file change handler
+  const handleOutletImageChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setOutletImage(e.target.files[0]);
+    }
+  };
+
+  const fetchLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setOutlet((prev) => ({ ...prev, lat: latitude, lng: longitude }));
+          alert(`Location fetched: Latitude ${latitude}, Longitude ${longitude}`);
+        },
+        (error) => {
+          console.error("Error fetching location:", error);
+          alert("Failed to fetch location. Please enable location services.");
+        }
+      );
     } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
+      alert("Geolocation is not supported by your browser.");
     }
   };
 
-
-  const validateForm = () => {
-    if (!formData.name.trim()) {
-      toast.error('Name is required.');
-      return false;
+  const saveOutletAndNext = async () => {
+    const vid = vendorId || localStorage.getItem("vendorId");
+    if (!vid) {
+      alert("Missing vendorId. Complete earlier steps first.");
+      return;
     }
 
-    if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
-      toast.error('Please enter a valid email address.');
-      return false;
-    }
+    const fd = new FormData();
+    fd.append("vendorId", vid);
+    fd.append("outlet_name", outlet.outlet_name);
+    fd.append("outlet_manager_name", outlet.manager_name);
+    fd.append("outlet_contact_no", outlet.manager_mobile);
+    fd.append("outlet_phone_no", outlet.outlet_phone);
 
-    if (!/^\d{10}$/.test(formData.phone)) {
-      toast.error('Phone number must be exactly 10 digits.');
-      return false;
-    }
+    fd.append("outlet_location[street]", outlet.street);
+    fd.append("outlet_location[city]", outlet.city);
+    fd.append("outlet_location[district]", outlet.district);
+    fd.append("outlet_location[state]", outlet.state);
+    fd.append("outlet_location[country]", outlet.country || "India");
+    fd.append("outlet_location[postalCode]", outlet.postalCode);
 
-    if (!seller) {
-      const passwordRegex = /^.*(?=.{6,})(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).*$/;
-      if (!passwordRegex.test(formData.password)) {
-        toast.error('Password must be at least 6 characters, include 1 uppercase, 1 lowercase, and 1 special character.');
-        return false;
-      }
+    if (outlet.lat) fd.append("outlet_coords[lat]", outlet.lat);
+    if (outlet.lng) fd.append("outlet_coords[lng]", outlet.lng);
 
-      if (formData.password !== formData.confirmPassword) {
-        toast.error("Passwords do not match.");
-        return false;
-      }
-    }
+    if (outletImage) fd.append("outlet_nameboard_image", outletImage);
 
-    return true;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
-
-    const submissionData = new FormData();
-
-    if (seller?._id) {
-      submissionData.append("_id", seller._id);
-    }
-
-    submissionData.append("name", formData.name);
-    submissionData.append("email", formData.email);
-    submissionData.append("phone", formData.phone);
-    submissionData.append("role", formData.role);
-    submissionData.append("password", formData.password);
-
-    console.log("Submitting User Data:", formData);
-    onSave(submissionData);
-
-    setFormData({
-      name: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-      role: "seller",
-      phone: "",
+    const r = await API.put("/api/vendors/outlet", fd, {
+      headers: { "Content-Type": "multipart/form-data" },
     });
+
+    if (!r?.data?.ok) throw new Error(r?.data?.message || "Save failed");
+
+    alert("Outlet details saved");
+    // setStep(6);
   };
+
+  const registerVendor = async () => {
+    const fd = new FormData();
+    fd.append("vendorId", vendorId);
+    fd.append("pan_number", formData.panNumber);
+    fd.append("aadhar_number", formData.aadharNumber);
+    fd.append("gst_number", formData.gstNumber);
+    fd.append("account_no", bankData.account_no);
+    fd.append("outlet_name", outlet.outlet_name);
+    fd.append("outlet_coords[lat]", outlet.lat);
+    fd.append("outlet_coords[lng]", outlet.lng);
+
+    try {
+      const response = await API.post("/api/vendors/register", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      if (!response?.data?.ok) throw new Error(response?.data?.message || "Registration failed");
+
+      alert("Registration successful!");
+      window.location.href = "/vendor-success";
+    } catch (error) {
+      console.error("Error registering vendor:", error);
+      alert("Failed to register vendor.");
+    }
+  };
+
+  // Added useEffect to restore vendorId on component mount
+  useEffect(() => {
+    const id = localStorage.getItem("vendorId");
+    if (id) setVendorId(id);
+  }, []);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-      <div className="relative w-full max-w-md mx-auto bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col" style={{ maxHeight: '90vh' }}>
-        
-        {/* Close Button */}
-        <button
-          className="absolute top-2 right-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 text-2xl transition z-10"
-          onClick={() => setIsAddEditModalOpen(false)}
-          aria-label="Close"
-        >
-          <i className="ri-close-circle-line"></i>
-        </button>
+    <div>
+      <h4 className="mb-3">Vendor Registration</h4>
+      <div className="mb-3"><strong>Step {step} of 5</strong></div>
 
-        {/* Header */}
-        <div className="px-4 pt-4 pb-2 border-b border-gray-100 dark:border-gray-800 rounded-t-3xl bg-gradient-to-r from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-900">
-          <h2 className="text-xl font-bold text-center text-blue-800 dark:text-blue-300 tracking-tight">
-            {seller ? "Edit Vendor" : "Add Vendor"}
-          </h2>
+      {step === 1 && (
+        <div>
+          <h5 className="mb-3">Step 1: PAN Card Details</h5>
+          <Form.Group className="mb-3">
+            <Form.Label>Upload PAN (JPG, JPEG, PNG, PDF)</Form.Label>
+            <Form.Control type="file" accept=".jpg,.jpeg,.png,.pdf" onChange={onPanUpload} />
+            {loadingPan && <div className="mt-2"><Spinner size="sm" /> Reading PAN…</div>}
+          </Form.Group>
+
+          <Row>
+            <Col md={6} className="mb-3">
+              <Form.Label>First Name</Form.Label>
+              <Form.Control value={formData.firstName} onChange={(e)=>setFormData(p=>({...p,firstName:e.target.value}))} />
+            </Col>
+            <Col md={6} className="mb-3">
+              <Form.Label>Surname (Last Name)</Form.Label>
+              <Form.Control value={formData.lastName} onChange={(e)=>setFormData(p=>({...p,lastName:e.target.value}))} />
+            </Col>
+          </Row>
+
+          <Row>
+            <Col md={6} className="mb-3">
+              <Form.Label>DOB (DD/MM/YYYY)</Form.Label>
+              <Form.Control value={formData.dob} onChange={(e)=>setFormData(p=>({...p,dob:e.target.value}))} />
+            </Col>
+            <Col md={6} className="mb-3">
+              <Form.Label>PAN Number</Form.Label>
+              <Form.Control value={formData.panNumber} onChange={(e)=>setFormData(p=>({...p,panNumber:e.target.value.toUpperCase()}))} />
+            </Col>
+          </Row>
+
+          <div className="d-flex justify-content-end gap-2">
+            <Button variant="primary" onClick={saveStep1AndNext}>Save & Continue</Button>
+          </div>
         </div>
+      )}
 
-        {/* Form Area */}
-        <div className="flex-1 overflow-y-auto px-4 py-4">
-          <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">
-            
-            {/* Name */}
-            <div>
-              <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-200">
-                First Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="name"
-                placeholder="Enter your First Name"
-                value={formData.name}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-400"
+      {step === 2 && (
+        <div>
+          <h5 className="mb-3">Step 2: Aadhaar Details</h5>
+
+          <Form.Group className="mb-3">
+            <Form.Label>Upload Aadhaar Front (JPG, JPEG, PNG, PDF)</Form.Label>
+            <Form.Control type="file" accept=".jpg,.jpeg,.png,.pdf" onChange={onAadhaarFront} />
+            {loadingAFront && <div className="mt-2"><Spinner size="sm" /> Reading front…</div>}
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label>Upload Aadhaar Back (JPG, JPEG, PNG, PDF)</Form.Label>
+            <Form.Control type="file" accept=".jpg,.jpeg,.png,.pdf" onChange={onAadhaarBack} />
+            {loadingABack && <div className="mt-2"><Spinner size="sm" /> Reading back…</div>}
+          </Form.Group>
+
+          <Row>
+            <Col md={6} className="mb-3">
+              <Form.Label>First Name</Form.Label>
+              <Form.Control value={formData.firstName} onChange={(e)=>setFormData(p=>({...p,firstName:e.target.value}))} />
+            </Col>
+            <Col md={6} className="mb-3">
+              <Form.Label>Surname (Last Name)</Form.Label>
+              <Form.Control value={formData.lastName} onChange={(e)=>setFormData(p=>({...p,lastName:e.target.value}))} />
+            </Col>
+          </Row>
+
+          <Row>
+            <Col md={6} className="mb-3">
+              <Form.Label>DOB (DD/MM/YYYY)</Form.Label>
+              <Form.Control value={formData.dob} onChange={(e)=>setFormData(p=>({...p,dob:e.target.value}))} />
+            </Col>
+            <Col md={6} className="mb-3">
+              <Form.Label>Aadhaar Number</Form.Label>
+              <Form.Control value={formData.aadharNumber} onChange={(e)=>setFormData(p=>({...p,aadharNumber:fmtAadhaarUI(e.target.value)}))} />
+            </Col>
+          </Row>
+
+          <Form.Group className="mb-2">
+            <Form.Label>Street</Form.Label>
+            <Form.Control value={formData.register_street} onChange={(e)=>setFormData(p=>({...p,register_street:e.target.value}))} />
+          </Form.Group>
+
+          <Row>
+            <Col md={4} className="mb-2">
+              <Form.Label>City</Form.Label>
+              <Form.Control value={formData.register_city} onChange={(e)=>setFormData(p=>({...p,register_city:e.target.value}))} />
+            </Col>
+            <Col md={4} className="mb-2">
+              <Form.Label>State/UT</Form.Label>
+              <Form.Control value={formData.register_state} onChange={(e)=>setFormData(p=>({...p,register_state:e.target.value}))} />
+            </Col>
+            <Col md={4} className="mb-3">
+              <Form.Label>PIN</Form.Label>
+              <Form.Control value={formData.register_postalCode} onChange={(e)=>setFormData(p=>({...p,register_postalCode:e.target.value}))} />
+            </Col>
+          </Row>
+
+          <div className="d-flex justify-content-end gap-2">
+            <button type="button" onClick={saveStep2AndNext}>Save & Continue</button>
+          </div>
+        </div>
+      )}
+
+      {step === 3 && (
+        <div>
+          <h5 className="mb-3">Step 3: GST Details</h5>
+
+          <div className="mb-3">
+            <label>Upload GST Certificate (PDF/JPG/PNG)</label>
+            <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={onGstFileChange} />
+            {loadingGST && <div className="mt-2">Saving GST…</div>}
+          </div>
+
+          <div className="mb-3">
+            <label>GST Number</label>
+            <input value={formData.gstNumber} onChange={(e)=>setFormData(p=>({...p,gstNumber:e.target.value.toUpperCase()}))} />
+          </div>
+
+          <div className="mb-3">
+            <label>Legal Name</label>
+            <input value={formData.gstLegalName} onChange={(e)=>setFormData(p=>({...p,gstLegalName:e.target.value}))} />
+          </div>
+
+          <div className="mb-3">
+            <label>Constitution of Business</label>
+            <select value={formData.gstConstitution} onChange={(e)=>setFormData(p=>({...p,gstConstitution:e.target.value}))}>
+              <option value="">Select</option>
+              <option value="Proprietorship">Proprietorship</option>
+              <option value="Partnership Firm">Partnership Firm</option>
+              <option value="Private Limited Company">Private Limited Company</option>
+              <option value="Public Company">Public Company</option>
+              <option value="LLP">LLP</option>
+              <option value="HUF">HUF</option>
+              <option value="Society/Trust">Society/Trust</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div className="mt-3">
+            <label>Floor No.</label>
+            <input value={formData.gst_floorNo} onChange={(e)=>setFormData(p=>({...p,gst_floorNo:e.target.value}))} />
+            <label>Building/Flat No.</label>
+            <input value={formData.gst_buildingNo} onChange={(e)=>setFormData(p=>({...p,gst_buildingNo:e.target.value}))} />
+            <label>Road/Street</label>
+            <input value={formData.gst_street} onChange={(e)=>setFormData(p=>({...p,gst_street:e.target.value}))} />
+            <label>Locality/Sub-locality</label>
+            <input value={formData.gst_locality} onChange={(e)=>setFormData(p=>({...p,gst_locality:e.target.value}))} />
+            <label>District</label>
+            <input value={formData.gst_district} onChange={(e)=>setFormData(p=>({...p,gst_district:e.target.value}))} />
+          </div>
+
+          <div className="d-flex justify-content-end gap-2">
+            <button type="button" onClick={saveGstAndNext}>Save & Continue</button>
+          </div>
+        </div>
+      )}
+
+      {step === 4 && (
+        <div>
+          <h5 className="mb-3">Step 4: Bank Details</h5>
+
+          <Form.Group className="mb-3">
+            <Form.Label>Upload Cancelled Cheque or Bank Letter (PDF/JPG/PNG)</Form.Label>
+            <Form.Control type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={onBankFileChange} />
+          </Form.Group>
+
+          <Row>
+            <Col md={6} className="mb-3">
+              <Form.Label>Account Holder Name</Form.Label>
+              <Form.Control
+                value={bankData.account_holder_name}
+                onChange={(e) => setBankData((p) => ({ ...p, account_holder_name: e.target.value }))}
               />
-            </div>
-
-            {/* Email */}
-            <div>
-              <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-200">
-                Email <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="email"
-                name="email"
-                placeholder="Enter your Email"
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-400"
+            </Col>
+            <Col md={6} className="mb-3">
+              <Form.Label>Account Number</Form.Label>
+              <Form.Control
+                value={bankData.account_no}
+                onChange={(e) => setBankData((p) => ({ ...p, account_no: e.target.value }))}
               />
-            </div>
+            </Col>
+          </Row>
 
-            {/* Phone */}
-            <div>
-              <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-200">
-                Phone <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="phone"
-                placeholder="88888 88888"
-                inputMode="numeric"
-                maxLength={10}
-                className="w-full px-4 py-2 border rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-400"
-                value={formData.phone}
-                onChange={handleChange}
+          <Row>
+            <Col md={6} className="mb-3">
+              <Form.Label>IFSC Code</Form.Label>
+              <Form.Control
+                value={bankData.ifcs_code}
+                onChange={(e) => setBankData((p) => ({ ...p, ifcs_code: e.target.value.toUpperCase() }))}
               />
-            </div>
+            </Col>
+            <Col md={6} className="mb-3">
+              <Form.Label>Bank Name</Form.Label>
+              <Form.Control
+                value={bankData.bank_name}
+                onChange={(e) => setBankData((p) => ({ ...p, bank_name: e.target.value }))}
+              />
+            </Col>
+          </Row>
 
-            {/* Password */}
-            {!seller && (
-              <>
-                <div className="relative">
-                  <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-200">
-                    Password <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    name="password"
-                    placeholder="Enter your Password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-400"
-                  />
-                  <span
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-10 cursor-pointer text-gray-500 dark:text-gray-300"
-                  >
-                    <i className={showPassword ? "ri-eye-off-line" : "ri-eye-line"}></i>
-                  </span>
+          <Row>
+            <Col md={6} className="mb-3">
+              <Form.Label>Branch</Form.Label>
+              <Form.Control
+                value={bankData.branch_name}
+                onChange={(e) => setBankData((p) => ({ ...p, branch_name: e.target.value }))}
+              />
+            </Col>
+            <Col md={6} className="mb-3">
+              <Form.Label>Bank Address</Form.Label>
+              <Form.Control
+                as="textarea"
+                value={bankData.bank_address}
+                onChange={(e) => setBankData((p) => ({ ...p, bank_address: e.target.value }))}
+              />
+            </Col>
+          </Row>
+
+          <div className="d-flex justify-content-end gap-2">
+            <button
+              type="button"
+              onClick={() => saveBankDetails(bankFile, bankData)}
+            >
+              Save Bank Details
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === 5 && (
+        <div>
+          <h5 className="mb-3">Step 5: Outlet Details</h5>
+
+          <Row className="mb-3">
+            <Col md={6}>
+              <Form.Label>Outlet Name</Form.Label>
+              <Form.Control
+                value={outlet.outlet_name}
+                onChange={(e) => setOutlet((p) => ({ ...p, outlet_name: e.target.value }))}
+              />
+            </Col>
+            <Col md={6}>
+              <Form.Label>Manager Name</Form.Label>
+              <Form.Control
+                value={outlet.manager_name}
+                onChange={(e) => setOutlet((p) => ({ ...p, manager_name: e.target.value }))}
+              />
+            </Col>
+          </Row>
+
+          <Row className="mb-3">
+            <Col md={6}>
+              <Form.Label>Manager Mobile</Form.Label>
+              <Form.Control
+                value={outlet.manager_mobile}
+                onChange={(e) => setOutlet((p) => ({ ...p, manager_mobile: e.target.value }))}
+              />
+            </Col>
+            <Col md={6}>
+              <Form.Label>Outlet Phone</Form.Label>
+              <Form.Control
+                value={outlet.outlet_phone}
+                onChange={(e) => setOutlet((p) => ({ ...p, outlet_phone: e.target.value }))}
+              />
+            </Col>
+          </Row>
+
+          <Row className="mb-3">
+            <Col md={6}>
+              <Form.Label>Street</Form.Label>
+              <Form.Control
+                value={outlet.street}
+                onChange={(e) => setOutlet((p) => ({ ...p, street: e.target.value }))}
+              />
+            </Col>
+            <Col md={6}>
+              <Form.Label>City</Form.Label>
+              <Form.Control
+                value={outlet.city}
+                onChange={(e) => setOutlet((p) => ({ ...p, city: e.target.value }))}
+              />
+            </Col>
+          </Row>
+
+          <Row className="mb-3">
+            <Col md={6}>
+              <Form.Label>District</Form.Label>
+              <Form.Control
+                value={outlet.district}
+                onChange={(e) => setOutlet((p) => ({ ...p, district: e.target.value }))}
+              />
+            </Col>
+            <Col md={6}>
+              <Form.Label>State</Form.Label>
+              <Form.Control
+                value={outlet.state}
+                onChange={(e) => setOutlet((p) => ({ ...p, state: e.target.value }))}
+              />
+            </Col>
+          </Row>
+
+          <Row className="mb-3">
+            <Col md={6}>
+              <Form.Label>Country</Form.Label>
+              <Form.Control
+                value={outlet.country}
+                onChange={(e) => setOutlet((p) => ({ ...p, country: e.target.value }))}
+              />
+            </Col>
+            <Col md={6}>
+              <Form.Label>Postal Code</Form.Label>
+              <Form.Control
+                value={outlet.postalCode}
+                onChange={(e) => setOutlet((p) => ({ ...p, postalCode: e.target.value }))}
+              />
+            </Col>
+          </Row>
+
+          <Row className="mb-3">
+            <Col md={6}>
+              <Form.Label>Latitude</Form.Label>
+              <Form.Control
+                value={outlet.lat}
+                onChange={(e) => setOutlet((p) => ({ ...p, lat: e.target.value }))}
+              />
+            </Col>
+            <Col md={6}>
+              <Form.Label>Longitude</Form.Label>
+              <Form.Control
+                value={outlet.lng}
+                onChange={(e) => setOutlet((p) => ({ ...p, lng: e.target.value }))}
+              />
+            </Col>
+          </Row>
+
+          <Form.Group className="mb-3">
+            <Form.Label>Fetch Location</Form.Label>
+            <Button variant="secondary" onClick={fetchLocation}>Use Current Location</Button>
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label>Upload Outlet Nameboard Image (JPG, PNG)</Form.Label>
+            <Form.Control type="file" accept=".jpg,.png" onChange={handleOutletImageChange} />
+          </Form.Group>
+
+          <div className="d-flex justify-content-end gap-2">
+            <button type="button" onClick={saveOutletAndNext}>Save & Continue</button>
+          </div>
+        </div>
+      )}
+
+      {mismatch.show && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }}>
+          <div style={{ width: "min(680px, 92vw)", background: "#fff", borderRadius: 12, boxShadow: "0 10px 30px rgba(0,0,0,0.25)", padding: "20px 22px" }}>
+            <h3 style={{ margin: "0 0 8px 0" }}>{mismatch.title}</h3>
+            <div style={{ maxHeight: 260, overflow: "auto", border: "1px solid #eee", borderRadius: 8, padding: "10px 12px" }}>
+              {mismatch.items.map((it, idx) => (
+                <div key={idx} style={{ marginBottom: 10 }}>
+                  <div style={{ fontWeight: 600 }}>{it.label}</div>
+                  <div style={{ fontSize: 13, color: "#666" }}>Previous: {it.before || "(empty)"}</div>
+                  <div style={{ fontSize: 13 }}>Now: {it.after || "(empty)"}</div>
                 </div>
-
-                {/* Confirm Password */}
-                <div className="relative">
-                  <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-200">
-                    Confirm Password <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type={showConfirmPassword ? "text" : "password"}
-                    name="confirmPassword"
-                    placeholder="Confirm your Password"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-400"
-                  />
-                  <span
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-4 top-10 cursor-pointer text-gray-500 dark:text-gray-300"
-                  >
-                    <i className={showConfirmPassword ? "ri-eye-off-line" : "ri-eye-line"}></i>
-                  </span>
-                </div>
-              </>
-            )}
-          </form>
+              ))}
+            </div>
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 12 }}>
+              <button onClick={() => setMismatch({ show: false, title: "", items: [] })} style={{ padding: "8px 14px", borderRadius: 8, border: "1px solid #ddd", background: "#f7f7f7", cursor: "pointer" }}>
+                OK, I’ll review
+              </button>
+            </div>
+          </div>
         </div>
-
-        {/* Footer */}
-        <div className="px-4 py-2 border-t border-gray-100 dark:border-gray-800 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-900 rounded-b-3xl">
-          <button
-            type="submit"
-            onClick={handleSubmit}
-            className="w-full py-2 px-4 font-bold rounded-xl bg-gradient-to-r from-blue-700 to-blue-500 hover:from-blue-800 hover:to-blue-600 text-white shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-          >
-            {seller ? "Update Vendor" : "Create Vendor"}
-          </button>
-        </div>
-      </div>
+      )}
     </div>
   );
-};
-
-export default VendorForm;
+}

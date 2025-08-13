@@ -21,7 +21,7 @@ const VendorSchema = new mongoose.Schema({
     vendor_fname: { type: String },
     vendor_lname: { type: String },
     dob: { type: Date },
-    business_type: { type: String, enum: ['','Individual', 'Proprietorship', 'Partnership Firm', 'Private Limited Company', 'Public Company'], required: false, default: '' },
+    business_type: { type: String, enum: ['', 'Individual', 'Proprietorship', 'Partnership Firm', 'Private Limited Company', 'Public Company'], required: false, default: '' },
     brand_name: { type: String, default: null },
     contact_person: { type: String, default: null },
     email: { type: String, required: true },
@@ -32,9 +32,12 @@ const VendorSchema = new mongoose.Schema({
     education_qualify: { type: String, required: false },
     work_experience: { type: String, required: false },
     aadhar_number: { type: String, required: true },
-    aadhar_pic: { type: String, default: null },
-    self_declaration: { type: String, required: true }, 
-    criminal_history: { type: String, required: false }, 
+    // add these alongside pan_pic / aadhar_pic
+    aadhar_pic_front: { type: String, default: null },
+    aadhar_pic_back: { type: String, default: null },
+
+    self_declaration: { type: String, required: true },
+    criminal_history: { type: String, required: false },
     referral_details: { type: String, required: false },
     lang_proficiency: { type: String, required: false },
     pan_number: { type: String, required: true },
@@ -53,13 +56,14 @@ const VendorSchema = new mongoose.Schema({
     account_no: { type: String, required: true },
     ifcs_code: { type: String, required: true },
     branch_name: { type: String, required: true },
+    bank_address: { type: String, default: "" },
     cancel_cheque_passbook: { type: String, default: null },
     profile_pic: { type: String, default: null },
     cover_pic: { type: String, default: null },
     vendor_bio: { type: String, default: null },
-    product_category: { type: String, enum: ['','Jewelry', 'Electronics', 'Garments', 'Supermarket/FMCG', 'Health & Beauty', 'Home & Kitchen', 'Books & Stationery', 'Other'], required: false, default: '' },
+    product_category: { type: String, enum: ['', 'Jewelry', 'Electronics', 'Garments', 'Supermarket/FMCG', 'Health & Beauty', 'Home & Kitchen', 'Books & Stationery', 'Other'], required: false, default: '' },
     product_category_other: { type: String, default: null },
-    address_proof : { type: String, required: true },
+    address_proof: { type: String, required: true },
     termsConditions: { type: Boolean, required: true },
     privacyPolicy: { type: Boolean, required: true },
     sellerPolicy: { type: Boolean, required: true },
@@ -69,7 +73,24 @@ const VendorSchema = new mongoose.Schema({
     is_decline: { type: Boolean, default: false },
     decline_reason: { type: String, default: null },
     created_at: { type: Date, default: Date.now },
-    updated_at: { type: Date, default: Date.now }
+    updated_at: { type: Date, default: Date.now },
+    // GST fields
+    gst_number: { type: String, index: true, default: "" },
+    gst_legal_name: { type: String, default: "" },
+    gst_constitution: { type: String, default: "" },
+    gst_cert_pic: { type: String, default: null },
+
+    gst_address: {
+        floorNo: { type: String, default: "" },
+        buildingNo: { type: String, default: "" },
+        street: { type: String, default: "" },     // Road/Street
+        locality: { type: String, default: "" },     // Locality/Sub Locality
+        city: { type: String, default: "" },     // City/Town/Village
+        district: { type: String, default: "" },
+        state: { type: String, default: "" },
+        postalCode: { type: String, default: "" }
+    },
+    outlet_nameboard_image: { type: String, default: null }, // stores filename only
 });
 
 // Middleware to update `updated_at` before saving

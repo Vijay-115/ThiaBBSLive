@@ -97,13 +97,14 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // ✅ Routes
-app.use("/api/vendor", vendorRoutes);
+app.use("/api/vendors", vendorRoutes);
 app.use("/api/auth", authRoutes); // 🔐 Shared Login/Register from bbs-auth
 app.use("/api/admin", adminRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/users", userRoutes);
+app.get("/api/health", (req, res) => res.json({ ok: true }));
 
 // ✅ Global Error Handler
 app.use((err, req, res, next) => {

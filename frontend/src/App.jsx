@@ -71,6 +71,7 @@ import AllProducts from './components/home/AllProducts';
 import FruitsDetails from './components/home/Fruits';
 import GroceryDetails from './components/home/Grocery';
 import PricingPage from './components/home/PricingPage';
+import VendorForm from './components/admin/VendorForm';
 // import CheckoutPage from './components/home/CheckoutPage';
 
 // Main App Component
@@ -130,7 +131,8 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/customer-become-a-vendor" element={<CustomerBecomeVendor />} />
-        <Route path="/become-a-vendor" element={<BecomeVendor />} />
+        {/* <Route path="/become-a-vendor" element={<BecomeVendor />} /> */}
+        <Route path="/become-a-vendor" element={<VendorForm />} />
         <Route path="/become-a-agent" element={<BecomeAgent />} />
         <Route path="/become-a-territory-head" element={<BecomeTerritoryHead />} />
         <Route path="/become-a-franchise-head" element={<BecomeFranchiseHead />} />
