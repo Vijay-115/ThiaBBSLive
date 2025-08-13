@@ -59,13 +59,11 @@
 import axios from "axios";
 
 const API = axios.create({
+  // backend base — note: server.js is on port 5000 and vendor routes mounted at /vendors
 
-// backend base — note: server.js is on port 4000 and vendor routes mounted at /vendors
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000",
 
-baseURL: import.meta.env.VITE_API_URL || "http://localhost:4000",
-
-timeout: 30000,
-
+  timeout: 30000,
 });
 
 export default API;
