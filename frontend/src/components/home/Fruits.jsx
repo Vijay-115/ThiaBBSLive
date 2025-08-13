@@ -1,128 +1,38 @@
-// ProductListingFull.jsx
-import React, { useMemo, useState } from "react";
+// ProductListingFull.jsx  (Fruits.jsx)
+import React, { useEffect, useMemo, useState } from "react";
+import axios from "axios";
 
-const sampleFruits = [
-  {
-    id: 101,
-    name: "Mango",
-    variety: "Alphonso",
-    weight: "300-350 g",
-    color: "Golden Yellow",
-    taste: "Sweet and aromatic",
-    origin: "Ratnagiri, India",
-    rating: 4.8,
-    reviewsText: "12,300 Ratings & 850 Reviews",
-    pricePerKg: 350,
-    oldPricePerKg: 400,
-    discountText: "13% off",
-    seasonalOffer: "Available only in summer",
-    image: "https://upload.wikimedia.org/wikipedia/commons/9/90/Hapus_Mango.jpg",
-    organic: true,
-    deliveryIn1Day: true,
-    freshnessDays: 7,
-    addedAt: "2024-03-01",
-    bestseller: true,
-    specs: ["300-350 g", "Golden Yellow", "Sweet & Aromatic", "From Ratnagiri"], // added
-  },
-  {
-    id: 102,
-    name: "Apple",
-    variety: "Fuji",
-    weight: "200-250 g",
-    color: "Red with yellow stripes",
-    taste: "Sweet and crisp",
-    origin: "Shimla, India",
-    rating: 4.5,
-    reviewsText: "8,500 Ratings & 600 Reviews",
-    pricePerKg: 250,
-    oldPricePerKg: 280,
-    discountText: "11% off",
-    seasonalOffer: "Available in autumn",
-    image: "https://upload.wikimedia.org/wikipedia/commons/1/15/Red_Apple.jpg",
-    organic: false,
-    deliveryIn1Day: false,
-    freshnessDays: 10,
-    addedAt: "2024-04-15",
-    bestseller: false,
-    specs: ["200-250 g", "Red with yellow stripes", "Sweet & Crisp", "From Shimla"],
-  },
-  {
-    id: 103,
-    name: "Banana",
-    variety: "Cavendish",
-    weight: "120-150 g",
-    color: "Yellow",
-    taste: "Sweet and soft",
-    origin: "Kerala, India",
-    rating: 4.2,
-    reviewsText: "15,000 Ratings & 1,200 Reviews",
-    pricePerKg: 60,
-    oldPricePerKg: 70,
-    discountText: "14% off",
-    seasonalOffer: "Available year-round",
-    image: "https://upload.wikimedia.org/wikipedia/commons/8/8a/Banana-Single.jpg",
-    organic: true,
-    deliveryIn1Day: true,
-    freshnessDays: 5,
-    addedAt: "2024-05-10",
-    bestseller: true,
-    specs: ["120-150 g", "Yellow", "Sweet & Soft", "From Kerala"],
-  },
-  {
-    id: 104,
-    name: "Strawberry",
-    variety: "Albion",
-    weight: "15-20 g per berry",
-    color: "Bright Red",
-    taste: "Sweet and slightly tart",
-    origin: "Mahabaleshwar, India",
-    rating: 4.7,
-    reviewsText: "7,200 Ratings & 540 Reviews",
-    pricePerKg: 600,
-    oldPricePerKg: 650,
-    discountText: "8% off",
-    seasonalOffer: "Available in spring",
-    image: "https://upload.wikimedia.org/wikipedia/commons/2/29/PerfectStrawberry.jpg",
-    organic: false,
-    deliveryIn1Day: false,
-    freshnessDays: 4,
-    addedAt: "2024-02-28",
-    bestseller: false,
-    specs: ["15-20 g per berry", "Bright Red", "Sweet & Tart", "From Mahabaleshwar"],
-  },
-  {
-    id: 105,
-    name: "Pineapple",
-    variety: "Queen",
-    weight: "1.2-1.5 kg",
-    color: "Golden brown",
-    taste: "Sweet and tangy",
-    origin: "Assam, India",
-    rating: 4.3,
-    reviewsText: "4,900 Ratings & 380 Reviews",
-    pricePerKg: 120,
-    oldPricePerKg: 140,
-    discountText: "14% off",
-    seasonalOffer: "Available in summer",
-    image: "https://upload.wikimedia.org/wikipedia/commons/c/cb/Pineapple_and_cross_section.jpg",
-    organic: true,
-    deliveryIn1Day: true,
-    freshnessDays: 6,
-    addedAt: "2024-03-20",
-    bestseller: false,
-    specs: ["1.2-1.5 kg", "Golden Brown", "Sweet & Tangy", "From Assam"],
-  },
-];
+const sampleFruits = [];
+
+// API endpoints
+const API_LIST = `${import.meta.env.VITE_API_URL}/api/fruits/public`;
+const API_FACETS = `${import.meta.env.VITE_API_URL}/api/fruits/facets`;
 
 const inr = (n) => new Intl.NumberFormat("en-IN").format(n);
 
 export default function FruitsDetails({ products = sampleFruits }) {
+  // NEW: live items from API
+  const [apiItems, setApiItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState("");
+
+  // Use live items if present, else fallback to prop/static
+  const data = useMemo(
+    () => (apiItems && apiItems.length ? apiItems : products),
+    [apiItems, products]
+  );
+
   const [search, setSearch] = useState("");
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(30000);
+
+  // Price range from server (to clamp slider/inputs)
+  const [rangeMin, setRangeMin] = useState(0);
+  const [rangeMax, setRangeMax] = useState(30000);
+
   const allBrands = useMemo(
-    () => Array.from(new Set(products.map((p) => p.brand).filter(Boolean))),
-    [products]
+    () => Array.from(new Set(data.map((p) => p.brand).filter(Boolean))),
+    [data]
   );
   const [selectedBrands, setSelectedBrands] = useState(new Set());
   const [minRating, setMinRating] = useState(0);
@@ -143,8 +53,8 @@ export default function FruitsDetails({ products = sampleFruits }) {
 
   function resetFilters() {
     setSearch("");
-    setMinPrice(0);
-    setMaxPrice(30000);
+    setMinPrice(rangeMin);
+    setMaxPrice(rangeMax);
     setSelectedBrands(new Set());
     setMinRating(0);
     setSelectedRatings(new Set());
@@ -152,8 +62,87 @@ export default function FruitsDetails({ products = sampleFruits }) {
     setDelivery1DayOnly(false);
   }
 
+  // NEW: fetch facets (price range) once
+  useEffect(() => {
+    let live = true;
+    (async () => {
+      try {
+        const { data } = await axios.get(API_FACETS);
+        const min = Math.max(0, Math.floor(data?.price?.min ?? 0));
+        const max = Math.ceil(data?.price?.max ?? 30000);
+        if (!live) return;
+        setRangeMin(min);
+        setRangeMax(max);
+        setMinPrice(min);
+        setMaxPrice(max);
+      } catch {
+        // ignore; fall back to defaults
+      }
+    })();
+    return () => {
+      live = false;
+    };
+  }, []);
+
+  // NEW: fetch fruits whenever filters/sort change
+  useEffect(() => {
+    const controller = new AbortController();
+    setLoading(true);
+    setErr("");
+
+    const params = {
+      search: search || undefined,
+      minPrice: Number(minPrice),
+      maxPrice: Number(maxPrice),
+      rating_gte: selectedRatings.size
+        ? Math.max(...Array.from(selectedRatings))
+        : minRating || undefined,
+      delivery1Day: delivery1DayOnly || undefined,
+      sort:
+        sortBy === "price-asc"
+          ? "price-asc"
+          : sortBy === "price-desc"
+          ? "price-desc"
+          : sortBy === "newest"
+          ? "newest"
+          : "popularity",
+      page: 1,
+      limit: 100, // plenty for this page
+    };
+
+    (async () => {
+      try {
+        const { data } = await axios.get(API_LIST, {
+          params,
+          signal: controller.signal,
+        });
+        setApiItems(Array.isArray(data.items) ? data.items : []);
+      } catch (e) {
+        if (e.name !== "CanceledError") {
+          setErr(
+            e?.response?.data?.error || e?.message || "Failed to load fruits"
+          );
+          setApiItems([]); // fall back to local sample via data memo
+        }
+      } finally {
+        setLoading(false);
+      }
+    })();
+
+    return () => controller.abort();
+  }, [
+    search,
+    minPrice,
+    maxPrice,
+    selectedRatings,
+    minRating,
+    delivery1DayOnly,
+    sortBy,
+  ]);
+
   const filtered = useMemo(() => {
-    return products
+    // your original local filtering, now runs against `data`
+    return data
       .filter((p) => {
         if (
           search.trim() &&
@@ -180,13 +169,11 @@ export default function FruitsDetails({ products = sampleFruits }) {
         if (sortBy === "price-asc") return a.pricePerKg - b.pricePerKg;
         if (sortBy === "price-desc") return b.pricePerKg - a.pricePerKg;
         if (sortBy === "newest")
-          return (
-            new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime()
-          );
+          return new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime();
         return 0;
       });
   }, [
-    products,
+    data,
     search,
     selectedBrands,
     minPrice,
@@ -229,13 +216,17 @@ export default function FruitsDetails({ products = sampleFruits }) {
             <input
               type="number"
               value={minPrice}
-              onChange={(e) => setMinPrice(Number(e.target.value || 0))}
+              min={rangeMin}
+              max={maxPrice}
+              onChange={(e) => setMinPrice(Number(e.target.value || rangeMin))}
               className="w-1/2 border rounded px-2 py-1 text-sm"
             />
             <input
               type="number"
               value={maxPrice}
-              onChange={(e) => setMaxPrice(Number(e.target.value || 0))}
+              min={minPrice}
+              max={rangeMax}
+              onChange={(e) => setMaxPrice(Number(e.target.value || rangeMax))}
               className="w-1/2 border rounded px-2 py-1 text-sm"
             />
           </div>
@@ -255,9 +246,7 @@ export default function FruitsDetails({ products = sampleFruits }) {
                   onChange={() => toggleSetItem(setSelectedRatings, rating)}
                   className="cursor-pointer w-3 h-4 mx-3"
                 />
-                <span>
-                  {"★".repeat(rating)} &amp; above
-                </span>
+                <span>{"★".repeat(rating)} &amp; above</span>
               </label>
             ))}
           </div>
@@ -289,9 +278,10 @@ export default function FruitsDetails({ products = sampleFruits }) {
       {/* Main */}
       <main className="flex-1">
         <div className="mb-4">
-          <h1 className="text-2xl font-semibold">Fruits</h1>
+          <h1 className="text-2xl font-semibold">Fruits & Vegetables</h1>
           <div className="text-sm text-gray-600">
-            Showing {filtered.length} products
+            {loading ? "Loading..." : `Showing ${filtered.length} products`}
+            {err && <span className="text-red-600 ml-2">({err})</span>}
           </div>
         </div>
 
