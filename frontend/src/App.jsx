@@ -15,7 +15,6 @@ import CartPage from './components/pages/CartPage';
 import Login from './components/auth/Login'; 
 import Register from './components/auth/Register'; 
 
-import BecomeVendor from './components/auth/BecomeVendor'; 
 import Forgot from './components/auth/ForgotPassword'; 
 import ResetPassword from "./components/auth/ResetPassword"; 
 import { Toaster } from 'react-hot-toast'; 
@@ -72,6 +71,15 @@ import FruitsDetails from './components/home/Fruits';
 import GroceryDetails from './components/home/Grocery';
 import PricingPage from './components/home/PricingPage';
 import VendorForm from './components/admin/VendorForm';
+import VendorSuccess from './components/VendorSuccess';
+import FranchiseHeadForm from './components/admin/FranchiseHeadForm';
+import AgentForm from './components/admin/AgentForm';
+import AgentSuccess from './components/AgentSuccess';
+import FranchiseSuccess from './components/FranchiseSuccess';
+import TerritoryHeadSuccess from './components/TerritoryHeadSuccess';
+import TerritoryHeadForm from './components/admin/TerritoryHeadForm';
+import CustomerBecomeVendorForm from './components/admin/CustomerBecomeVendorForm';
+import CustomerBecomeVendorSuccess from './components/CustomerBecomeVendorSuccess';
 // import CheckoutPage from './components/home/CheckoutPage';
 
 // Main App Component
@@ -118,24 +126,41 @@ function App() {
   return (
     <>
       {shouldRenderHeaderFooter && <HeaderTop toggleMenu={toggleMenu} />}
-      {shouldRenderHeaderFooter && <Navbar menuOpen={menuOpen} closeMenu={closeMenu} />}
-      <ScrollToTopOnRouteChange /> 
+      {shouldRenderHeaderFooter && (
+        <Navbar menuOpen={menuOpen} closeMenu={closeMenu} />
+      )}
+      <ScrollToTopOnRouteChange />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/product/:id" element={<SingleProductPage />} />
-        <Route path="/product/category/:category" element={<ProductsCategoryPage />} />
-        <Route path="/product/subcategory/:subcategory" element={<ProductsSubCategoryPage />} /> 
+        <Route
+          path="/product/category/:category"
+          element={<ProductsCategoryPage />}
+        />
+        <Route
+          path="/product/subcategory/:subcategory"
+          element={<ProductsSubCategoryPage />}
+        />
         <Route path="/gallery" element={<GalleryMediaTestimonials />} />
-        <Route path="/legal-and-blog" element={<LegalAndBlogPage/>} />
+        <Route path="/legal-and-blog" element={<LegalAndBlogPage />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/customer-become-a-vendor" element={<CustomerBecomeVendor />} />
+        <Route
+          path="/customer-become-a-vendor"
+          element={<CustomerBecomeVendorForm />}
+        />
         {/* <Route path="/become-a-vendor" element={<BecomeVendor />} /> */}
         <Route path="/become-a-vendor" element={<VendorForm />} />
-        <Route path="/become-a-agent" element={<BecomeAgent />} />
-        <Route path="/become-a-territory-head" element={<BecomeTerritoryHead />} />
-        <Route path="/become-a-franchise-head" element={<BecomeFranchiseHead />} />
+        <Route path="/become-a-agent" element={<AgentForm />} />
+        <Route
+          path="/become-a-territory-head"
+          element={<TerritoryHeadForm />}
+        />
+        <Route
+          path="/become-a-franchise-head"
+          element={<FranchiseHeadForm />}
+        />
         <Route path="/forgot-password" element={<Forgot />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/checkout" element={<CheckoutPage />} />
@@ -155,48 +180,57 @@ function App() {
         <Route path="/contact" element={<ContactUs />} />
         <Route path="/orders" element={<CustomerOrders />} />
         <Route path="/thia" element={<ThiaPage />} />
-        
+        <Route path="/vendor-success" element={<VendorSuccess />} />
+        <Route path="/agent-success" element={<AgentSuccess />} />
+        <Route path="/franchise-head-success" element={<FranchiseSuccess />} />
+        <Route
+          path="/customer-vendor-success"
+          element={<CustomerBecomeVendorSuccess />}
+        />
 
-      {/* Home Page card navigation */}
-         <Route path="/all-products" element={<AllProducts />} />
- <Route path="/fruits" element={<FruitsDetails/>} />
-         <Route path="/grocery" element={<GroceryDetails/>} />
+        <Route
+          path="territory-head-success"
+          element={<TerritoryHeadSuccess />}
+        />
 
-         {/* ✅ Home>PricingPage */}
-          <Route path="/pricing" element={<PricingPage/>} />
-
+        {/* Home Page card navigation */}
+        <Route path="/all-products" element={<AllProducts />} />
+        <Route path="/fruits" element={<FruitsDetails />} />
+        <Route path="/grocery" element={<GroceryDetails />} />
+        {/* ✅ Home>PricingPage */}
+        <Route path="/pricing" element={<PricingPage />} />
         {/* ✅ Checkout */}
         {/* <Route path="/checkout" element={<CheckoutPage />} /> */}
-         {/* ✅ Admin Routes */}
-         <Route path="/admin" element={<AdminRoutes />}>
-            <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="products" element={<Products />} />
-            <Route path="products/categories" element={<Categories />} />
-            <Route path="products/subcategories" element={<SubCategories />} />
-            <Route path="orders" element={<Orders />} />
-            <Route path="vendors" element={<Vendor />} />
-            <Route path="customers" element={<Customers />} />            
-            <Route path="other-users" element={<OtherUser />} />
-            <Route path="users-request" element={<UserRequest />} />            
+        {/* ✅ Admin Routes */}
+        <Route path="/admin" element={<AdminRoutes />}>
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="products" element={<Products />} />
+          <Route path="products/categories" element={<Categories />} />
+          <Route path="products/subcategories" element={<SubCategories />} />
+          <Route path="orders" element={<Orders />} />
+          <Route path="vendors" element={<Vendor />} />
+          <Route path="customers" element={<Customers />} />
+          <Route path="other-users" element={<OtherUser />} />
+          <Route path="users-request" element={<UserRequest />} />
         </Route>
-
         {/* ✅ Seller Routes */}
         <Route path="/seller" element={<SellerRoutes />}>
-            <Route path="dashboard" element={<SellerDashboard />} />
-            <Route path="products" element={<SellerProducts />} />
-            <Route path="products/categories" element={<SellerCategories />} />
-            <Route path="products/subcategories" element={<SellerSubCategories />} />
-            <Route path="orders" element={<SellerOrders />} />
+          <Route path="dashboard" element={<SellerDashboard />} />
+          <Route path="products" element={<SellerProducts />} />
+          <Route path="products/categories" element={<SellerCategories />} />
+          <Route
+            path="products/subcategories"
+            element={<SellerSubCategories />}
+          />
+          <Route path="orders" element={<SellerOrders />} />
         </Route>
-
         {/* Made by medun */}
-          {/* GLOBAL CMS CORE MODULES (Shared Across All 3) */}
-        <Route path="/admin-cms" element={<BBSCARTCMSPage/>}>
+        {/* GLOBAL CMS CORE MODULES (Shared Across All 3) */}
+        <Route path="/admin-cms" element={<BBSCARTCMSPage />}>
           <Route path="dashboard" element={<BBSCARTCMSPage />} />
         </Route>
-        
-          {/* Thia CMS */}
-           <Route path="/thia-jewellery-cms" element={<ThiaJewelleryCMS/>}>
+        {/* Thia CMS */}
+        <Route path="/thia-jewellery-cms" element={<ThiaJewelleryCMS />}>
           <Route path="dashboard" element={<BBSCARTCMSPage />} />
         </Route>
       </Routes>

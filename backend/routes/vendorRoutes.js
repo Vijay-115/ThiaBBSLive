@@ -1,25 +1,3 @@
-// // routes/vendorRoutes.js
-// const express = require("express");
-// const router = express.Router();
-// const vendorController = require("../controllers/vendorController");
-// const { upload } = require("../middleware/upload");
-
-// // OCR (PAN / Aadhaar). Field name must be 'document'. Accepts JPG/JPEG/PNG/PDF.
-// router.post("/ocr", upload.single("document"), vendorController.uploadOCR);
-
-
-// // ✅ Upsert WITHOUT vendorId
-// router.patch("/step-by-key", vendorController.saveStepByKey);
-// router.post("/step-by-key", vendorController.saveStepByKey); // <- add this too
-
-// // (Optional) Old patterns — keep if you still use them elsewhere
-// router.patch("/:vendorId/step", vendorController.saveStep);
-// router.post("/", vendorController.createVendor);
-
-// // Health check
-// router.get("/", (req, res) => res.json({ ok: true, msg: "vendors root" }));
-
-// module.exports = router;
 
 
 // routes/vendorRoutes.js

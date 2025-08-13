@@ -1,10 +1,10 @@
+// frontend/pages/AgentForm.jsx
 import React, { useState, useEffect } from "react";
 import API from "../../utils/api";
 import { Form, Button, Spinner, Row, Col } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import Select from "react-select";
 
-// put near the top of the file (outside the component)
 const constitutionOptions = [
   { value: "proprietorship", label: "Proprietorship" },
   { value: "partnership", label: "Partnership" },
@@ -14,13 +14,12 @@ const constitutionOptions = [
   { value: "trust", label: "Trust" },
   { value: "society", label: "Society" },
 ];
-
-export default function VendorForm() {
+export default function AgentForm() {
   const navigate = useNavigate();
 
   const [step, setStep] = useState(1);
-  const [vendorId, setVendorId] = useState(
-    () => localStorage.getItem("vendorId") || ""
+  const [agentId, setAgentId] = useState(
+    () => localStorage.getItem("agentId") || ""
   );
 
   const [mismatch, setMismatch] = useState({
@@ -89,7 +88,7 @@ const handleSelectChange = (selectedOption, field) => {
 
     setLoadingPan(true);
     try {
-      const resp = await API.post("/api/vendors/ocr", fd, {
+      const resp = await API.post("/api/agent/ocr", fd, {
         headers: { "Content-Type": "multipart/form-data" },
         timeout: 30000,
       });
@@ -127,15 +126,15 @@ const handleSelectChange = (selectedOption, field) => {
 
       const pan = nextValues.panNumber;
       if (pan && fileUrl) {
-        const r = await API.post("/api/vendors/step-by-key", {
-          vendorId, // send if present
+        const r = await API.post("/api/agent/step-by-key", {
+          vendorId: agentId,
           pan_number: pan,
           pan_pic: fileUrl,
         });
         const id = r?.data?.data?._id;
-        if (id && !vendorId) {
-          setVendorId(id);
-          localStorage.setItem("vendorId", id);
+        if (id && !agentId) {
+          setAgentId(id);
+          localStorage.setItem("agentId", id);
         }
       }
     } catch (err) {
@@ -149,18 +148,18 @@ const handleSelectChange = (selectedOption, field) => {
   const saveStep1AndNext = async () => {
     try {
       const payload = {
-        vendorId,
+        vendorId: agentId,
         pan_number: (formData.panNumber || "").toUpperCase(),
         vendor_fname: formData.firstName || "",
         vendor_lname: formData.lastName || "",
         dob: formData.dob || "",
       };
-      const resp = await API.post("/api/vendors/step-by-key", payload);
+      const resp = await API.post("/api/agent/step-by-key", payload);
       if (!resp?.data?.ok) throw new Error("Save failed");
       const id = resp?.data?.data?._id;
       if (id) {
-        setVendorId(id);
-        localStorage.setItem("vendorId", id);
+        setAgentId(id);
+        localStorage.setItem("agentId", id);
       }
       setStep(2);
     } catch (e) {
@@ -179,7 +178,7 @@ const handleSelectChange = (selectedOption, field) => {
 
     setLoadingAFront(true);
     try {
-      const resp = await API.post("/api/vendors/ocr?side=aadhaar_front", fd, {
+      const resp = await API.post("/api/agent/ocr?side=aadhaar_front", fd, {
         headers: { "Content-Type": "multipart/form-data" },
         timeout: 30000,
       });
@@ -198,16 +197,16 @@ const handleSelectChange = (selectedOption, field) => {
       }));
 
       if (aNumRaw && fileUrl) {
-        const r = await API.post("/api/vendors/step-by-key", {
-          vendorId,
+        const r = await API.post("/api/agent/step-by-key", {
+          vendorId: agentId,
           aadhar_number: aNumRaw,
           aadhar_pic_front: fileUrl,
           side: "front",
         });
         const id = r?.data?.data?._id;
-        if (id && !vendorId) {
-          setVendorId(id);
-          localStorage.setItem("vendorId", id);
+        if (id && !agentId) {
+          setAgentId(id);
+          localStorage.setItem("agentId", id);
         }
       }
     } catch (err) {
@@ -227,7 +226,7 @@ const handleSelectChange = (selectedOption, field) => {
 
     setLoadingABack(true);
     try {
-      const resp = await API.post("/api/vendors/ocr?side=aadhaar_back", fd, {
+      const resp = await API.post("/api/agent/ocr?side=aadhaar_back", fd, {
         headers: { "Content-Type": "multipart/form-data" },
         timeout: 30000,
       });
@@ -250,8 +249,8 @@ const handleSelectChange = (selectedOption, field) => {
       }));
 
       if (aNumRaw) {
-        const r = await API.post("/api/vendors/step-by-key", {
-          vendorId,
+        const r = await API.post("/api/agent/step-by-key", {
+          vendorId: agentId,
           aadhar_number: aNumRaw,
           aadhar_pic_back: fileUrl || undefined,
           side: "back",
@@ -264,9 +263,9 @@ const handleSelectChange = (selectedOption, field) => {
           },
         });
         const id = r?.data?.data?._id;
-        if (id && !vendorId) {
-          setVendorId(id);
-          localStorage.setItem("vendorId", id);
+        if (id && !agentId) {
+          setAgentId(id);
+          localStorage.setItem("agentId", id);
         }
       }
     } catch (e) {
@@ -285,8 +284,8 @@ const handleSelectChange = (selectedOption, field) => {
         return;
       }
 
-      const r = await API.post("/api/vendors/step-by-key", {
-        vendorId,
+      const r = await API.post("/api/agent/step-by-key", {
+        vendorId: agentId,
         aadhar_number: aNumRaw,
         register_business_address: {
           street: formData.register_street || "",
@@ -297,9 +296,9 @@ const handleSelectChange = (selectedOption, field) => {
         },
       });
       const id = r?.data?.data?._id;
-      if (id && !vendorId) {
-        setVendorId(id);
-        localStorage.setItem("vendorId", id);
+      if (id && !agentId) {
+        setAgentId(id);
+        localStorage.setItem("agentId", id);
       }
 
       alert("Aadhaar slide saved");
@@ -321,7 +320,7 @@ const handleSelectChange = (selectedOption, field) => {
 
     setLoadingGST(true);
     try {
-      const resp = await API.post("/api/vendors/ocr?side=gst", fd, {
+      const resp = await API.post("/api/agent/ocr?side=gst", fd, {
         headers: { "Content-Type": "multipart/form-data" },
         timeout: 45000,
       });
@@ -332,7 +331,6 @@ const handleSelectChange = (selectedOption, field) => {
       const extracted = data.extracted || {};
       const fileUrl = data.fileUrl || null;
 
-      // Auto-fill formData with OCR results
       setFormData((prev) => ({
         ...prev,
         gstNumber: extracted.gst_number || prev.gstNumber,
@@ -345,10 +343,9 @@ const handleSelectChange = (selectedOption, field) => {
         gst_district: extracted.address?.district || prev.gst_district,
       }));
 
-      // Save file + gst number immediately (optional)
       if (extracted.gst_number && fileUrl) {
-        await API.post("/api/vendors/step-by-key", {
-          vendorId,
+        await API.post("/api/agent/step-by-key", {
+          vendorId: agentId,
           gst_number: extracted.gst_number,
           gst_cert_pic: fileUrl,
         });
@@ -363,14 +360,13 @@ const handleSelectChange = (selectedOption, field) => {
 
   const saveGstAndNext = async () => {
     try {
-      if (!vendorId) {
-        alert("Missing vendorId. Complete Step 1 first.");
+      if (!agentId) {
+        alert("Missing agentId. Complete Step 1 first.");
         return;
       }
-      // if (!gstFile) { alert("Please upload the GST certificate file."); return; }
 
       const fd = new FormData();
-      fd.append("vendorId", vendorId);
+      fd.append("vendorId", agentId);
       fd.append("document", gstFile);
       fd.append("gst_number", (formData.gstNumber || "").toUpperCase());
       fd.append("gst_legal_name", formData.gstLegalName || "");
@@ -382,17 +378,13 @@ const handleSelectChange = (selectedOption, field) => {
       fd.append("gst_address[district]", formData.gst_district || "");
 
       setLoadingGST(true);
-      const r = await API.put("/api/vendors/gst", fd, {
+      const r = await API.put("/api/agent/gst", fd, {
         headers: { "Content-Type": "multipart/form-data" },
         timeout: 45000,
       });
 
       if (!r?.data?.ok) throw new Error(r?.data?.message || "Save failed");
-
-      // advance to Bank step
       setStep(4);
-      // optional: small toast instead of alert
-      // toast.success("GST saved");
     } catch (e) {
       console.error(e);
       alert("Save failed");
@@ -412,11 +404,6 @@ const handleSelectChange = (selectedOption, field) => {
     bank_address: "",
   });
 
-  // const onBankFileChange = (e) => {
-  //   const file = e.target.files?.[0] || null;
-  //   setBankFile(file);
-  // };
-  // -------------------- Bank OCR Upload --------------------
   const onBankUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -424,9 +411,9 @@ const handleSelectChange = (selectedOption, field) => {
     const fd = new FormData();
     fd.append("document", file);
 
-    setLoadingGST(true); // reuse loading spinner state or create new for bank
+    setLoadingGST(true); // reuse spinner state
     try {
-      const resp = await API.post("/api/vendors/ocr?side=bank", fd, {
+      const resp = await API.post("/api/agent/ocr?side=bank", fd, {
         headers: { "Content-Type": "multipart/form-data" },
         timeout: 45000,
       });
@@ -448,10 +435,9 @@ const handleSelectChange = (selectedOption, field) => {
         bank_address: extracted.bank_address || prev.bank_address,
       }));
 
-      // optional: immediately save bank file + minimal details
       if (extracted.account_number && fileUrl) {
-        await API.post("/api/vendors/step-by-key", {
-          vendorId,
+        await API.post("/api/agent/step-by-key", {
+          vendorId: agentId,
           bank_doc_pic: fileUrl,
           account_no: extracted.account_number,
           ifcs_code: extracted.ifsc_code,
@@ -466,14 +452,14 @@ const handleSelectChange = (selectedOption, field) => {
   };
 
   const saveBankDetails = async () => {
-    const vid = vendorId || localStorage.getItem("vendorId");
-    if (!vid) {
-      alert("Vendor ID is required. Complete PAN/Aadhaar step first.");
+    const aid = agentId || localStorage.getItem("agentId");
+    if (!aid) {
+      alert("Agent ID is required. Complete PAN/Aadhaar step first.");
       return;
     }
 
     const fd = new FormData();
-    fd.append("document", bankFile); // your uploaded file
+    fd.append("document", bankFile);
     fd.append("account_holder_name", bankData.account_holder_name || "");
     fd.append("account_no", bankData.account_no || "");
     fd.append("ifcs_code", (bankData.ifcs_code || "").toUpperCase());
@@ -482,14 +468,14 @@ const handleSelectChange = (selectedOption, field) => {
     fd.append("bank_address", bankData.bank_address || "");
 
     try {
-      const response = await API.put(`/api/vendors/${vid}/bank`, fd, {
+      const response = await API.put(`/api/agent/${aid}/bank`, fd, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       if (!response?.data?.ok)
         throw new Error(response?.data?.message || "Save failed");
 
       alert("Bank details saved successfully.");
-      setStep(5); // Move to outlet details step
+      setStep(5);
     } catch (error) {
       console.error("Error saving bank details:", error);
       alert("Failed to save bank details.");
@@ -513,7 +499,6 @@ const handleSelectChange = (selectedOption, field) => {
   });
   const [outletImage, setOutletImage] = useState(null);
 
-  // file change handler
   const handleOutletImageChange = (e) => {
     if (e.target.files && e.target.files[0]) {
       setOutletImage(e.target.files[0]);
@@ -541,14 +526,14 @@ const handleSelectChange = (selectedOption, field) => {
   };
 
   const saveOutletAndNext = async () => {
-    const vid = vendorId || localStorage.getItem("vendorId");
-    if (!vid) {
-      alert("Missing vendorId. Complete earlier steps first.");
+    const aid = agentId || localStorage.getItem("agentId");
+    if (!aid) {
+      alert("Missing agentId. Complete earlier steps first.");
       return;
     }
 
     const fd = new FormData();
-    fd.append("vendorId", vid);
+    fd.append("vendorId", aid);
     fd.append("outlet_name", outlet.outlet_name);
     fd.append("outlet_manager_name", outlet.manager_name);
     fd.append("outlet_contact_no", outlet.manager_mobile);
@@ -566,20 +551,20 @@ const handleSelectChange = (selectedOption, field) => {
 
     if (outletImage) fd.append("outlet_nameboard_image", outletImage);
 
-    const r = await API.put("/api/vendors/outlet", fd, {
+    const r = await API.put("/api/agent/outlet", fd, {
       headers: { "Content-Type": "multipart/form-data" },
     });
 
     if (!r?.data?.ok) throw new Error(r?.data?.message || "Save failed");
-    navigate("/vendor-success");
+    navigate("/agent-success");
 
     alert("Outlet details saved");
-    // setStep(6);
   };
 
-  const registerVendor = async () => {
+  // Optional final registration helper
+  const registerAgent = async () => {
     const fd = new FormData();
-    fd.append("vendorId", vendorId);
+    fd.append("vendorId", agentId);
     fd.append("pan_number", formData.panNumber);
     fd.append("aadhar_number", formData.aadharNumber);
     fd.append("gst_number", formData.gstNumber);
@@ -589,29 +574,28 @@ const handleSelectChange = (selectedOption, field) => {
     fd.append("outlet_coords[lng]", outlet.lng);
 
     try {
-      const response = await API.post("/api/vendors/register", fd, {
+      const response = await API.post("/api/agent/register", fd, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       if (!response?.data?.ok)
         throw new Error(response?.data?.message || "Registration failed");
 
       alert("Registration successful!");
-      window.location.href = "/vendor-success";
+      window.location.href = "/agent-success";
     } catch (error) {
-      console.error("Error registering vendor:", error);
-      alert("Failed to register vendor.");
+      console.error("Error registering agent:", error);
+      alert("Failed to register agent.");
     }
   };
 
-  // Added useEffect to restore vendorId on component mount
   useEffect(() => {
-    const id = localStorage.getItem("vendorId");
-    if (id) setVendorId(id);
+    const id = localStorage.getItem("agentId");
+    if (id) setAgentId(id);
   }, []);
 
   return (
     <div>
-      <h4 className="mb-3">Vendor Registration</h4>
+      <h4 className="mb-3">Agent Registration</h4>
       <div className="mb-3">
         <strong>Step {step} of 5</strong>
       </div>
@@ -817,6 +801,7 @@ const handleSelectChange = (selectedOption, field) => {
       {step === 3 && (
         <div>
           <h5 className="mb-3">Step 3: GST Details</h5>
+
           <div className="mb-3">
             <label>Upload GST Certificate (PDF/JPG/PNG)</label>
             <input
@@ -826,6 +811,7 @@ const handleSelectChange = (selectedOption, field) => {
             />
             {loadingGST && <div className="mt-2">Saving GST…</div>}
           </div>
+
           <div className="mb-3">
             <label>GST Number</label>
             <input
@@ -838,6 +824,7 @@ const handleSelectChange = (selectedOption, field) => {
               }
             />
           </div>
+
           <div className="mb-3">
             <label>Legal Name</label>
             <input
@@ -847,6 +834,7 @@ const handleSelectChange = (selectedOption, field) => {
               }
             />
           </div>
+
           <div className="col-span-1 mt-3 w-full">
             <div className="input-item mb-[8px]">
               <label className="block text-[14px] font-medium text-secondary mb-[8px]">
@@ -909,6 +897,7 @@ const handleSelectChange = (selectedOption, field) => {
               }
             />
           </div>
+
           <div className="d-flex justify-content-end gap-2">
             <button type="button" onClick={saveGstAndNext}>
               Save & Continue

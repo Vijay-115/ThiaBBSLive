@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
-import API from "../../utils/api";
+import API from "../../utils/api"; // same helper you use
 import { Form, Button, Spinner, Row, Col } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import Select from "react-select";
 
-// put near the top of the file (outside the component)
 const constitutionOptions = [
   { value: "proprietorship", label: "Proprietorship" },
   { value: "partnership", label: "Partnership" },
@@ -14,13 +13,11 @@ const constitutionOptions = [
   { value: "trust", label: "Trust" },
   { value: "society", label: "Society" },
 ];
-
-export default function VendorForm() {
+export default function FranchiseHeadForm() {
   const navigate = useNavigate();
-
   const [step, setStep] = useState(1);
-  const [vendorId, setVendorId] = useState(
-    () => localStorage.getItem("vendorId") || ""
+  const [docId, setDocId] = useState(
+    () => localStorage.getItem("franchiseHeadId") || ""
   );
 
   const [mismatch, setMismatch] = useState({
@@ -33,6 +30,7 @@ export default function VendorForm() {
   const [loadingAFront, setLoadingAFront] = useState(false);
   const [loadingABack, setLoadingABack] = useState(false);
   const [loadingGST, setLoadingGST] = useState(false);
+  const [bankFile, setBankFile] = useState(null);
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -46,7 +44,6 @@ export default function VendorForm() {
     register_state: "",
     register_country: "India",
     register_postalCode: "",
-    // GST manual fields
     gstNumber: "",
     gstLegalName: "",
     gstConstitution: "",
@@ -68,39 +65,21 @@ const handleSelectChange = (selectedOption, field) => {
       .replace(/(\d{4})(?=\d)/g, "$1 ")
       .trim();
 
-  function findDiffs(current, next, labelMap) {
-    const items = [];
-    for (const key of Object.keys(labelMap)) {
-      const before = (current[key] ?? "").toString().trim();
-      const after = (next[key] ?? "").toString().trim();
-      if (!before && !after) continue;
-      if (before !== after) items.push({ label: labelMap[key], before, after });
-    }
-    return items;
-  }
-
-  // -------------------- PAN (Step 1) --------------------
+  // ---------- Step 1: PAN ----------
   const onPanUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     const fd = new FormData();
     fd.append("document", file);
-
     setLoadingPan(true);
     try {
-      const resp = await API.post("/api/vendors/ocr", fd, {
+      const { data } = await API.post("/api/franchise-head/ocr", fd, {
         headers: { "Content-Type": "multipart/form-data" },
-        timeout: 30000,
       });
+      if (!data?.success) throw new Error("PAN OCR failed");
 
-      const data = resp?.data || {};
-      if (!data.success) throw new Error("PAN OCR failed");
-
-      const extracted = data.extracted || {};
-      const fileUrl = data.fileUrl || null;
-
-      const nextValues = {
+      const { extracted = {}, fileUrl } = data;
+      const next = {
         firstName: extracted.name || formData.firstName,
         lastName: extracted.fatherName || formData.lastName,
         dob: extracted.dob || formData.dob,
@@ -110,32 +89,18 @@ const handleSelectChange = (selectedOption, field) => {
           ""
         ).toUpperCase(),
       };
+      setFormData((p) => ({ ...p, ...next }));
 
-      const diffs = findDiffs(formData, nextValues, {
-        firstName: "First name",
-        lastName: "Surname (Last name)",
-        dob: "DOB",
-        panNumber: "PAN number",
-      });
-      setFormData((prev) => ({ ...prev, ...nextValues }));
-      if (diffs.length)
-        setMismatch({
-          show: true,
-          title: "Please review PAN details",
-          items: diffs,
-        });
-
-      const pan = nextValues.panNumber;
-      if (pan && fileUrl) {
-        const r = await API.post("/api/vendors/step-by-key", {
-          vendorId, // send if present
-          pan_number: pan,
+      if (next.panNumber && fileUrl) {
+        const r = await API.post("/api/franchise-head/step-by-key", {
+          vendorId: docId,
+          pan_number: next.panNumber,
           pan_pic: fileUrl,
         });
         const id = r?.data?.data?._id;
-        if (id && !vendorId) {
-          setVendorId(id);
-          localStorage.setItem("vendorId", id);
+        if (id && !docId) {
+          setDocId(id);
+          localStorage.setItem("franchiseHeadId", id);
         }
       }
     } catch (err) {
@@ -148,19 +113,17 @@ const handleSelectChange = (selectedOption, field) => {
 
   const saveStep1AndNext = async () => {
     try {
-      const payload = {
-        vendorId,
+      const r = await API.post("/api/franchise-head/step-by-key", {
+        vendorId: docId,
         pan_number: (formData.panNumber || "").toUpperCase(),
         vendor_fname: formData.firstName || "",
         vendor_lname: formData.lastName || "",
         dob: formData.dob || "",
-      };
-      const resp = await API.post("/api/vendors/step-by-key", payload);
-      if (!resp?.data?.ok) throw new Error("Save failed");
-      const id = resp?.data?.data?._id;
+      });
+      const id = r?.data?.data?._id;
       if (id) {
-        setVendorId(id);
-        localStorage.setItem("vendorId", id);
+        setDocId(id);
+        localStorage.setItem("franchiseHeadId", id);
       }
       setStep(2);
     } catch (e) {
@@ -169,45 +132,36 @@ const handleSelectChange = (selectedOption, field) => {
     }
   };
 
-  // -------------------- Aadhaar (Step 2) --------------------
+  // ---------- Step 2: Aadhaar ----------
   const onAadhaarFront = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     const fd = new FormData();
     fd.append("document", file);
-
     setLoadingAFront(true);
     try {
-      const resp = await API.post("/api/vendors/ocr?side=aadhaar_front", fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-        timeout: 30000,
-      });
+      const { data } = await API.post(
+        "/api/franchise-head/ocr?side=aadhaar_front",
+        fd,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+      if (!data?.success) throw new Error("Aadhaar front OCR failed");
 
-      const data = resp?.data || {};
-      if (!data.success) throw new Error("Aadhaar front OCR failed");
-
-      const extracted = data.extracted || {};
-      const fileUrl = data.fileUrl || null;
-
-      const aNumRaw = (extracted.aadhaarNumber || "").replace(/\D/g, "");
-      const aNumUI = aNumRaw.replace(/(\d{4})(?=\d)/g, "$1 ").trim();
-      setFormData((prev) => ({
-        ...prev,
-        aadharNumber: aNumUI || prev.aadharNumber,
-      }));
-
-      if (aNumRaw && fileUrl) {
-        const r = await API.post("/api/vendors/step-by-key", {
-          vendorId,
-          aadhar_number: aNumRaw,
-          aadhar_pic_front: fileUrl,
+      const a12 = (data?.extracted?.aadhaarNumber || "").replace(/\D/g, "");
+      if (a12) {
+        setFormData((p) => ({ ...p, aadharNumber: fmtAadhaarUI(a12) }));
+        const r = await API.post("/api/franchise-head/step-by-key", {
+          vendorId: docId,
+          aadhar_number: a12,
+          aadhar_pic_front: data.fileUrl || undefined,
           side: "front",
         });
         const id = r?.data?.data?._id;
-        if (id && !vendorId) {
-          setVendorId(id);
-          localStorage.setItem("vendorId", id);
+        if (id && !docId) {
+          setDocId(id);
+          localStorage.setItem("franchiseHeadId", id);
         }
       }
     } catch (err) {
@@ -221,27 +175,24 @@ const handleSelectChange = (selectedOption, field) => {
   const onAadhaarBack = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     const fd = new FormData();
     fd.append("document", file);
-
     setLoadingABack(true);
     try {
-      const resp = await API.post("/api/vendors/ocr?side=aadhaar_back", fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-        timeout: 30000,
-      });
+      const { data } = await API.post(
+        "/api/franchise-head/ocr?side=aadhaar_back",
+        fd,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+      if (!data?.success) throw new Error("Aadhaar back OCR failed");
 
-      const { success, extracted, fileUrl } = resp.data || {};
-      if (!success) throw new Error("Aadhaar back OCR failed");
-
-      const aNumRaw = (extracted?.aadhaarNumber || "").replace(/\D/g, "");
-      const aNumUI = aNumRaw.replace(/(\d{4})(?=\d)/g, "$1 ").trim();
-      const addr = extracted?.address || {};
-
+      const a12 = (data?.extracted?.aadhaarNumber || "").replace(/\D/g, "");
+      const addr = data?.extracted?.address || {};
       setFormData((p) => ({
         ...p,
-        aadharNumber: aNumUI || p.aadharNumber,
+        aadharNumber: a12 ? fmtAadhaarUI(a12) : p.aadharNumber,
         register_street: addr.street || "",
         register_city: addr.city || "",
         register_state: addr.state || "",
@@ -249,28 +200,21 @@ const handleSelectChange = (selectedOption, field) => {
         register_country: "India",
       }));
 
-      if (aNumRaw) {
-        const r = await API.post("/api/vendors/step-by-key", {
-          vendorId,
-          aadhar_number: aNumRaw,
-          aadhar_pic_back: fileUrl || undefined,
-          side: "back",
-          register_business_address: {
-            street: addr.street || "",
-            city: addr.city || "",
-            state: addr.state || "",
-            country: "India",
-            postalCode: addr.postalCode || "",
-          },
-        });
-        const id = r?.data?.data?._id;
-        if (id && !vendorId) {
-          setVendorId(id);
-          localStorage.setItem("vendorId", id);
-        }
-      }
-    } catch (e) {
-      console.error(e);
+      await API.post("/api/franchise-head/step-by-key", {
+        vendorId: docId,
+        aadhar_number: a12,
+        aadhar_pic_back: data.fileUrl || undefined,
+        side: "back",
+        register_business_address: {
+          street: addr.street || "",
+          city: addr.city || "",
+          state: addr.state || "",
+          country: "India",
+          postalCode: addr.postalCode || "",
+        },
+      });
+    } catch (e2) {
+      console.error(e2);
       alert("Aadhaar back OCR failed");
     } finally {
       setLoadingABack(false);
@@ -278,79 +222,52 @@ const handleSelectChange = (selectedOption, field) => {
   };
 
   const saveStep2AndNext = async () => {
-    try {
-      const aNumRaw = (formData.aadharNumber || "").replace(/\D/g, "");
-      if (!aNumRaw) {
-        alert("Missing Aadhaar number");
-        return;
-      }
-
-      const r = await API.post("/api/vendors/step-by-key", {
-        vendorId,
-        aadhar_number: aNumRaw,
-        register_business_address: {
-          street: formData.register_street || "",
-          city: formData.register_city || "",
-          state: formData.register_state || "",
-          country: formData.register_country || "India",
-          postalCode: formData.register_postalCode || "",
-        },
-      });
-      const id = r?.data?.data?._id;
-      if (id && !vendorId) {
-        setVendorId(id);
-        localStorage.setItem("vendorId", id);
-      }
-
-      alert("Aadhaar slide saved");
-      setStep(3);
-    } catch (e) {
-      console.error(e);
-      alert("Save failed");
-    }
+    const aRaw = (formData.aadharNumber || "").replace(/\D/g, "");
+    if (!aRaw) return alert("Missing Aadhaar number");
+    await API.post("/api/franchise-head/step-by-key", {
+      vendorId: docId,
+      aadhar_number: aRaw,
+      register_business_address: {
+        street: formData.register_street || "",
+        city: formData.register_city || "",
+        state: formData.register_state || "",
+        country: formData.register_country || "India",
+        postalCode: formData.register_postalCode || "",
+      },
+    });
+    setStep(3);
   };
 
-  // -------------------- GST (Step 3, no OCR) --------------------
-  const [gstFile, setGstFile] = useState(null);
+  // ---------- Step 3: GST ----------
   const onGstUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     const fd = new FormData();
     fd.append("document", file);
-
     setLoadingGST(true);
     try {
-      const resp = await API.post("/api/vendors/ocr?side=gst", fd, {
+      const { data } = await API.post("/api/franchise-head/ocr?side=gst", fd, {
         headers: { "Content-Type": "multipart/form-data" },
-        timeout: 45000,
       });
+      if (!data?.success) throw new Error("GST OCR failed");
 
-      const data = resp?.data || {};
-      if (!data.success) throw new Error("GST OCR failed");
-
-      const extracted = data.extracted || {};
-      const fileUrl = data.fileUrl || null;
-
-      // Auto-fill formData with OCR results
-      setFormData((prev) => ({
-        ...prev,
-        gstNumber: extracted.gst_number || prev.gstNumber,
-        gstLegalName: extracted.legal_name || prev.gstLegalName,
-        gstConstitution: extracted.constitution || prev.gstConstitution,
-        gst_floorNo: extracted.address?.floorNo || prev.gst_floorNo,
-        gst_buildingNo: extracted.address?.buildingNo || prev.gst_buildingNo,
-        gst_street: extracted.address?.street || prev.gst_street,
-        gst_locality: extracted.address?.locality || prev.gst_locality,
-        gst_district: extracted.address?.district || prev.gst_district,
+      const ex = data.extracted || {};
+      setFormData((p) => ({
+        ...p,
+        gstNumber: ex.gst_number || p.gstNumber,
+        gstLegalName: ex.legal_name || p.gstLegalName,
+        gstConstitution: ex.constitution || p.gstConstitution,
+        gst_floorNo: ex.address?.floorNo || p.gst_floorNo,
+        gst_buildingNo: ex.address?.buildingNo || p.gst_buildingNo,
+        gst_street: ex.address?.street || p.gst_street,
+        gst_locality: ex.address?.locality || p.gst_locality,
+        gst_district: ex.address?.district || p.gst_district,
       }));
-
-      // Save file + gst number immediately (optional)
-      if (extracted.gst_number && fileUrl) {
-        await API.post("/api/vendors/step-by-key", {
-          vendorId,
-          gst_number: extracted.gst_number,
-          gst_cert_pic: fileUrl,
+      if (ex.gst_number && data.fileUrl) {
+        await API.post("/api/franchise-head/step-by-key", {
+          vendorId: docId,
+          gst_number: ex.gst_number,
+          gst_cert_pic: data.fileUrl,
         });
       }
     } catch (err) {
@@ -362,47 +279,24 @@ const handleSelectChange = (selectedOption, field) => {
   };
 
   const saveGstAndNext = async () => {
-    try {
-      if (!vendorId) {
-        alert("Missing vendorId. Complete Step 1 first.");
-        return;
-      }
-      // if (!gstFile) { alert("Please upload the GST certificate file."); return; }
-
-      const fd = new FormData();
-      fd.append("vendorId", vendorId);
-      fd.append("document", gstFile);
-      fd.append("gst_number", (formData.gstNumber || "").toUpperCase());
-      fd.append("gst_legal_name", formData.gstLegalName || "");
-      fd.append("gst_constitution", formData.gstConstitution || "");
-      fd.append("gst_address[floorNo]", formData.gst_floorNo || "");
-      fd.append("gst_address[buildingNo]", formData.gst_buildingNo || "");
-      fd.append("gst_address[street]", formData.gst_street || "");
-      fd.append("gst_address[locality]", formData.gst_locality || "");
-      fd.append("gst_address[district]", formData.gst_district || "");
-
-      setLoadingGST(true);
-      const r = await API.put("/api/vendors/gst", fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-        timeout: 45000,
-      });
-
-      if (!r?.data?.ok) throw new Error(r?.data?.message || "Save failed");
-
-      // advance to Bank step
-      setStep(4);
-      // optional: small toast instead of alert
-      // toast.success("GST saved");
-    } catch (e) {
-      console.error(e);
-      alert("Save failed");
-    } finally {
-      setLoadingGST(false);
-    }
+    const fd = new FormData();
+    fd.append("vendorId", docId);
+    fd.append("document", null); // optional file, handled by /ocr above
+    fd.append("gst_number", (formData.gstNumber || "").toUpperCase());
+    fd.append("gst_legal_name", formData.gstLegalName || "");
+    fd.append("gst_constitution", formData.gstConstitution || "");
+    fd.append("gst_address[floorNo]", formData.gst_floorNo || "");
+    fd.append("gst_address[buildingNo]", formData.gst_buildingNo || "");
+    fd.append("gst_address[street]", formData.gst_street || "");
+    fd.append("gst_address[locality]", formData.gst_locality || "");
+    fd.append("gst_address[district]", formData.gst_district || "");
+    await API.put("/api/franchise-head/gst", fd, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    setStep(4);
   };
 
-  // -------------------- Bank Details (Step 4) --------------------
-  const [bankFile, setBankFile] = useState(null);
+  // ---------- Step 4: Bank ----------
   const [bankData, setBankData] = useState({
     account_holder_name: "",
     account_no: "",
@@ -412,136 +306,29 @@ const handleSelectChange = (selectedOption, field) => {
     bank_address: "",
   });
 
-  // const onBankFileChange = (e) => {
-  //   const file = e.target.files?.[0] || null;
-  //   setBankFile(file);
-  // };
-  // -------------------- Bank OCR Upload --------------------
   const onBankUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     const fd = new FormData();
     fd.append("document", file);
-
-    setLoadingGST(true); // reuse loading spinner state or create new for bank
-    try {
-      const resp = await API.post("/api/vendors/ocr?side=bank", fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-        timeout: 45000,
-      });
-
-      const data = resp?.data || {};
-      if (!data.success) throw new Error("Bank OCR failed");
-
-      const extracted = data.extracted || {};
-      const fileUrl = data.fileUrl || null;
-
-      setBankData((prev) => ({
-        ...prev,
-        account_holder_name:
-          extracted.account_holder_name || prev.account_holder_name,
-        account_no: extracted.account_number || prev.account_no,
-        ifcs_code: (extracted.ifsc_code || prev.ifcs_code || "").toUpperCase(),
-        bank_name: extracted.bank_name || prev.bank_name,
-        branch_name: extracted.branch_name || prev.branch_name,
-        bank_address: extracted.bank_address || prev.bank_address,
+    const { data } = await API.post("/api/franchise-head/ocr?side=bank", fd, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    if (data?.success) {
+      const ex = data.extracted || {};
+      setBankData((p) => ({
+        ...p,
+        account_holder_name: ex.account_holder_name || p.account_holder_name,
+        account_no: ex.account_number || p.account_no,
+        ifcs_code: (ex.ifsc_code || p.ifcs_code || "").toUpperCase(),
+        bank_name: ex.bank_name || p.bank_name,
+        branch_name: ex.branch_name || p.branch_name,
+        bank_address: ex.bank_address || p.bank_address,
       }));
-
-      // optional: immediately save bank file + minimal details
-      if (extracted.account_number && fileUrl) {
-        await API.post("/api/vendors/step-by-key", {
-          vendorId,
-          bank_doc_pic: fileUrl,
-          account_no: extracted.account_number,
-          ifcs_code: extracted.ifsc_code,
-        });
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Bank OCR failed");
-    } finally {
-      setLoadingGST(false);
     }
   };
-
-  const saveBankDetails = async () => {
-    const vid = vendorId || localStorage.getItem("vendorId");
-    if (!vid) {
-      alert("Vendor ID is required. Complete PAN/Aadhaar step first.");
-      return;
-    }
-
-    const fd = new FormData();
-    fd.append("document", bankFile); // your uploaded file
-    fd.append("account_holder_name", bankData.account_holder_name || "");
-    fd.append("account_no", bankData.account_no || "");
-    fd.append("ifcs_code", (bankData.ifcs_code || "").toUpperCase());
-    fd.append("bank_name", bankData.bank_name || "");
-    fd.append("branch_name", bankData.branch_name || "");
-    fd.append("bank_address", bankData.bank_address || "");
-
-    try {
-      const response = await API.put(`/api/vendors/${vid}/bank`, fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      if (!response?.data?.ok)
-        throw new Error(response?.data?.message || "Save failed");
-
-      alert("Bank details saved successfully.");
-      setStep(5); // Move to outlet details step
-    } catch (error) {
-      console.error("Error saving bank details:", error);
-      alert("Failed to save bank details.");
-    }
-  };
-
-  // -------------------- Outlet Details (Step 5) --------------------
-  const [outlet, setOutlet] = useState({
-    outlet_name: "",
-    manager_name: "",
-    manager_mobile: "",
-    outlet_phone: "",
-    street: "",
-    city: "",
-    district: "",
-    state: "",
-    country: "India",
-    postalCode: "",
-    lat: "",
-    lng: "",
-  });
-  const [outletImage, setOutletImage] = useState(null);
-
-  // file change handler
-  const handleOutletImageChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      setOutletImage(e.target.files[0]);
-    }
-  };
-
-  const fetchLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setOutlet((prev) => ({ ...prev, lat: latitude, lng: longitude }));
-          alert(
-            `Location fetched: Latitude ${latitude}, Longitude ${longitude}`
-          );
-        },
-        (error) => {
-          console.error("Error fetching location:", error);
-          alert("Failed to fetch location. Please enable location services.");
-        }
-      );
-    } else {
-      alert("Geolocation is not supported by your browser.");
-    }
-  };
-
   const saveOutletAndNext = async () => {
-    const vid = vendorId || localStorage.getItem("vendorId");
+    const vid = docId || localStorage.getItem("vendorId");
     if (!vid) {
       alert("Missing vendorId. Complete earlier steps first.");
       return;
@@ -566,52 +353,96 @@ const handleSelectChange = (selectedOption, field) => {
 
     if (outletImage) fd.append("outlet_nameboard_image", outletImage);
 
-    const r = await API.put("/api/vendors/outlet", fd, {
+    const r = await API.put("/api/franchise-head/outlet", fd, {
       headers: { "Content-Type": "multipart/form-data" },
     });
 
     if (!r?.data?.ok) throw new Error(r?.data?.message || "Save failed");
-    navigate("/vendor-success");
+    navigate("/franchise-head-success");
 
     alert("Outlet details saved");
     // setStep(6);
   };
-
-  const registerVendor = async () => {
+  const saveBankDetails = async () => {
     const fd = new FormData();
-    fd.append("vendorId", vendorId);
-    fd.append("pan_number", formData.panNumber);
-    fd.append("aadhar_number", formData.aadharNumber);
-    fd.append("gst_number", formData.gstNumber);
-    fd.append("account_no", bankData.account_no);
-    fd.append("outlet_name", outlet.outlet_name);
-    fd.append("outlet_coords[lat]", outlet.lat);
-    fd.append("outlet_coords[lng]", outlet.lng);
+    fd.append("account_holder_name", bankData.account_holder_name || "");
+    fd.append("account_no", bankData.account_no || "");
+    fd.append("ifcs_code", (bankData.ifcs_code || "").toUpperCase());
+    fd.append("bank_name", bankData.bank_name || "");
+    fd.append("branch_name", bankData.branch_name || "");
+    fd.append("bank_address", bankData.bank_address || "");
+    await API.put(`/api/franchise-head/${docId}/bank`, fd, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    setStep(5);
+  };
 
-    try {
-      const response = await API.post("/api/vendors/register", fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      if (!response?.data?.ok)
-        throw new Error(response?.data?.message || "Registration failed");
-
-      alert("Registration successful!");
-      window.location.href = "/vendor-success";
-    } catch (error) {
-      console.error("Error registering vendor:", error);
-      alert("Failed to register vendor.");
+  // ---------- Step 5: Outlet ----------
+  const [outlet, setOutlet] = useState({
+    outlet_name: "",
+    manager_name: "",
+    manager_mobile: "",
+    outlet_phone: "",
+    street: "",
+    city: "",
+    district: "",
+    state: "",
+    country: "India",
+    postalCode: "",
+    lat: "",
+    lng: "",
+  });
+  const [outletImage, setOutletImage] = useState(null);
+  const fetchLocation = () => {
+    if (!navigator.geolocation) return alert("Geolocation not supported");
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) =>
+        setOutlet((p) => ({
+          ...p,
+          lat: coords.latitude,
+          lng: coords.longitude,
+        })),
+      () => alert("Failed to fetch location")
+    );
+  };
+  const handleOutletImageChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setOutletImage(e.target.files[0]);
     }
   };
 
-  // Added useEffect to restore vendorId on component mount
+  const saveOutletAndFinish = async () => {
+    const fd = new FormData();
+    fd.append("vendorId", docId);
+    fd.append("outlet_name", outlet.outlet_name);
+    fd.append("outlet_manager_name", outlet.manager_name);
+    fd.append("outlet_contact_no", outlet.manager_mobile);
+    fd.append("outlet_phone_no", outlet.outlet_phone);
+    fd.append("outlet_location[street]", outlet.street);
+    fd.append("outlet_location[city]", outlet.city);
+    fd.append("outlet_location[district]", outlet.district);
+    fd.append("outlet_location[state]", outlet.state);
+    fd.append("outlet_location[country]", outlet.country || "India");
+    fd.append("outlet_location[postalCode]", outlet.postalCode);
+    if (outlet.lat) fd.append("outlet_coords[lat]", outlet.lat);
+    if (outlet.lng) fd.append("outlet_coords[lng]", outlet.lng);
+    if (outletImage) fd.append("outlet_nameboard_image", outletImage);
+
+    const r = await API.put("/api/franchise-head/outlet", fd, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    if (!r?.data?.ok) return alert("Save failed");
+    navigate("/franchise-head-success");
+  };
+
   useEffect(() => {
-    const id = localStorage.getItem("vendorId");
-    if (id) setVendorId(id);
+    const id = localStorage.getItem("franchiseHeadId");
+    if (id) setDocId(id);
   }, []);
 
   return (
     <div>
-      <h4 className="mb-3">Vendor Registration</h4>
+      <h4 className="mb-3">Franchise Head Registration</h4>
       <div className="mb-3">
         <strong>Step {step} of 5</strong>
       </div>
@@ -632,7 +463,6 @@ const handleSelectChange = (selectedOption, field) => {
               </div>
             )}
           </Form.Group>
-
           <Row>
             <Col md={6} className="mb-3">
               <Form.Label>First Name</Form.Label>
@@ -653,7 +483,6 @@ const handleSelectChange = (selectedOption, field) => {
               />
             </Col>
           </Row>
-
           <Row>
             <Col md={6} className="mb-3">
               <Form.Label>DOB (DD/MM/YYYY)</Form.Label>
@@ -677,11 +506,8 @@ const handleSelectChange = (selectedOption, field) => {
               />
             </Col>
           </Row>
-
           <div className="d-flex justify-content-end gap-2">
-            <Button variant="primary" onClick={saveStep1AndNext}>
-              Save & Continue
-            </Button>
+            <Button onClick={saveStep1AndNext}>Save & Continue</Button>
           </div>
         </div>
       )}
@@ -817,6 +643,7 @@ const handleSelectChange = (selectedOption, field) => {
       {step === 3 && (
         <div>
           <h5 className="mb-3">Step 3: GST Details</h5>
+
           <div className="mb-3">
             <label>Upload GST Certificate (PDF/JPG/PNG)</label>
             <input
@@ -826,6 +653,7 @@ const handleSelectChange = (selectedOption, field) => {
             />
             {loadingGST && <div className="mt-2">Saving GST…</div>}
           </div>
+
           <div className="mb-3">
             <label>GST Number</label>
             <input
@@ -838,6 +666,7 @@ const handleSelectChange = (selectedOption, field) => {
               }
             />
           </div>
+
           <div className="mb-3">
             <label>Legal Name</label>
             <input
@@ -847,6 +676,7 @@ const handleSelectChange = (selectedOption, field) => {
               }
             />
           </div>
+
           <div className="col-span-1 mt-3 w-full">
             <div className="input-item mb-[8px]">
               <label className="block text-[14px] font-medium text-secondary mb-[8px]">
@@ -871,7 +701,6 @@ const handleSelectChange = (selectedOption, field) => {
               />
             </div>
           </div>
-
           <div className="mt-3">
             <label>Floor No.</label>
             <input
@@ -909,6 +738,7 @@ const handleSelectChange = (selectedOption, field) => {
               }
             />
           </div>
+
           <div className="d-flex justify-content-end gap-2">
             <button type="button" onClick={saveGstAndNext}>
               Save & Continue
