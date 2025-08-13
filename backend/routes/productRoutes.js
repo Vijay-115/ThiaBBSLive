@@ -5,23 +5,35 @@ const { uploadAny } = require('../middleware/upload');
 const { auth, authUser } = require('../middleware/authMiddleware');
 
 // Create product with image upload
+router.get('/public', productController.listProducts);   // NEW
+router.get('/facets', productController.getFacets);      // NEW
 
 router.post("/import", authUser, uploadAny, productController.importProducts);
 router.post("/", authUser, uploadAny, productController.createProduct);
-// READ: Get all products
-router.get('/',authUser, productController.getAllProducts);
-router.get('/nearbyseller',authUser, productController.getNearbySellerProducts);
 
-// READ: Get a single product by ID
+// Read
+router.get("/", authUser, productController.getAllProducts);
+router.get(
+  "/nearbyseller",
+  authUser,
+  productController.getNearbySellerProducts
+);
 router.get("/export", productController.exportProducts);
 router.get("/filter", productController.getProductByFilter);
 router.get("/tags", productController.getAllProductTags);
-router.get('/category/:categoryId', productController.getProductsByCategoryId);
-router.get('/subcategory/:subcategoryId', productController.getProductsBySubCategoryId);
-router.get('/seller/:sellerId', productController.getProductsBySellerId);
-router.get('/:id', productController.getProductById);
+router.get("/category/:categoryId", productController.getProductsByCategoryId);
+router.get(
+  "/subcategory/:subcategoryId",
+  productController.getProductsBySubCategoryId
+);
+router.get("/seller/:sellerId", productController.getProductsBySellerId);
+router.get("/:id", productController.getProductById);
 
+// Update (with images)
+router.put("/:id", auth, uploadAny, productController.updateProduct);
 
+// Delete
+router.delete("/:id", auth, productController.deleteProduct);
 
 // Update product with image upload
 router.put(

@@ -7,7 +7,7 @@ import { Link } from "react-router-dom";
 
 const SectionCategory = () => {
   const categories = [
-     {
+    {
       id: 1,
       name: "All Products",
       items: 49,
@@ -17,10 +17,21 @@ const SectionCategory = () => {
       bgColor: "bg-gradient-to-br from-blue-100 to-blue-300",
       path: "/all-products", // Added paths here for Link to work
     },
-   
     {
       id: 2,
-      name: "Grocery",
+      name: "Jewellery",
+      items: 8,
+      icon: "https://png.pngtree.com/png-clipart/20230412/original/pngtree-jewelry-gold-necklace-png-image_9048376.png",
+      description:
+        "A wide variety of fresh and organic fruits to meet your daily nutritional needs",
+      bgColor: "bg-gradient-to-br from-pink-100 to-pink-300",
+      path: "https://thiaworld.bbscart.com/",
+      external: true, // optional flag
+    },
+
+    {
+      id: 3,
+      name: "Grocery Store",
       items: 291,
       icon: "https://png.pngtree.com/png-clipart/20231118/original/pngtree-assortment-of-grocery-items-arranged-on-photo-png-image_13611479.png",
       description:
@@ -29,7 +40,7 @@ const SectionCategory = () => {
       path: "/grocery",
     },
     {
-      id: 3,
+      id: 4,
       name: "Fruits",
       items: 412,
       icon: "https://static.vecteezy.com/system/resources/thumbnails/045/911/440/small_2x/assortment-of-tropical-fruits-with-fresh-water-droplets-on-transparent-background-stock-png.png",
@@ -37,16 +48,6 @@ const SectionCategory = () => {
         "A wide variety of fresh and organic fruits to meet your daily nutritional needs",
       bgColor: "bg-gradient-to-br from-green-100 to-green-300",
       path: "/fruits", // Added paths here for Link to work
-    },
-    {
-      id: 4,
-      name: "Jewellery",
-      items: 8,
-      icon: "https://png.pngtree.com/png-clipart/20230412/original/pngtree-jewelry-gold-necklace-png-image_9048376.png",
-      description:
-        "A wide variety of fresh and organic fruits to meet your daily nutritional needs",
-      bgColor: "bg-gradient-to-br from-pink-100 to-pink-300",
-      path: "/jewellery",
     },
   ];
 
