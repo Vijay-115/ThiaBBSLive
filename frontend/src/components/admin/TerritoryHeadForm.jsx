@@ -1,10 +1,9 @@
 // frontend/pages/TerritoryHeadForm.jsx
 import React, { useState, useEffect } from "react";
-import API from "../../utils/api";
 import { Form, Button, Spinner, Row, Col } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import Select from "react-select";
-
+import axios from "axios";
 const constitutionOptions = [
   { value: "proprietorship", label: "Proprietorship" },
   { value: "partnership", label: "Partnership" },
@@ -88,10 +87,14 @@ const handleSelectChange = (selectedOption, field) => {
 
     setLoadingPan(true);
     try {
-      const resp = await API.post("/api/territory-head/ocr", fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-        timeout: 30000,
-      });
+      const resp = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/territory-head/ocr`,
+        fd,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+          timeout: 30000,
+        }
+      );
 
       const data = resp?.data || {};
       if (!data.success) throw new Error("PAN OCR failed");
@@ -126,11 +129,14 @@ const handleSelectChange = (selectedOption, field) => {
 
       const pan = nextValues.panNumber;
       if (pan && fileUrl) {
-        const r = await API.post("/api/territory-head/step-by-key", {
-          vendorId: territoryHeadId, // send if present
-          pan_number: pan,
-          pan_pic: fileUrl,
-        });
+        const r = await axios.post(
+          `${import.meta.env.VITE_API_URL}/api/territory-head/step-by-key`,
+          {
+            vendorId: territoryHeadId, // send if present
+            pan_number: pan,
+            pan_pic: fileUrl,
+          }
+        );
         const id = r?.data?.data?._id;
         if (id && !territoryHeadId) {
           setTerritoryHeadId(id);
@@ -154,7 +160,10 @@ const handleSelectChange = (selectedOption, field) => {
         vendor_lname: formData.lastName || "",
         dob: formData.dob || "",
       };
-      const resp = await API.post("/api/territory-head/step-by-key", payload);
+      const resp = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/territory-head/step-by-key`,
+        payload
+      );
       if (!resp?.data?.ok) throw new Error("Save failed");
       const id = resp?.data?.data?._id;
       if (id) {
@@ -178,8 +187,10 @@ const handleSelectChange = (selectedOption, field) => {
 
     setLoadingAFront(true);
     try {
-      const resp = await API.post(
-        "/api/territory-head/ocr?side=aadhaar_front",
+      const resp = await axios.post(
+        `${
+          import.meta.env.VITE_API_URL
+        }/api/territory-head/ocr?side=aadhaar_front`,
         fd,
         {
           headers: { "Content-Type": "multipart/form-data" },
@@ -201,12 +212,15 @@ const handleSelectChange = (selectedOption, field) => {
       }));
 
       if (aNumRaw && fileUrl) {
-        const r = await API.post("/api/territory-head/step-by-key", {
-          vendorId: territoryHeadId,
-          aadhar_number: aNumRaw,
-          aadhar_pic_front: fileUrl,
-          side: "front",
-        });
+        const r = await axios.post(
+          `${import.meta.env.VITE_API_URL}/api/territory-head/step-by-key`,
+          {
+            vendorId: territoryHeadId,
+            aadhar_number: aNumRaw,
+            aadhar_pic_front: fileUrl,
+            side: "front",
+          }
+        );
         const id = r?.data?.data?._id;
         if (id && !territoryHeadId) {
           setTerritoryHeadId(id);
@@ -230,8 +244,10 @@ const handleSelectChange = (selectedOption, field) => {
 
     setLoadingABack(true);
     try {
-      const resp = await API.post(
-        "/api/territory-head/ocr?side=aadhaar_back",
+      const resp = await axios.post(
+        `${
+          import.meta.env.VITE_API_URL
+        }/api/territory-head/ocr?side=aadhaar_back`,
         fd,
         {
           headers: { "Content-Type": "multipart/form-data" },
@@ -257,19 +273,22 @@ const handleSelectChange = (selectedOption, field) => {
       }));
 
       if (aNumRaw) {
-        const r = await API.post("/api/territory-head/step-by-key", {
-          vendorId: territoryHeadId,
-          aadhar_number: aNumRaw,
-          aadhar_pic_back: fileUrl || undefined,
-          side: "back",
-          register_business_address: {
-            street: addr.street || "",
-            city: addr.city || "",
-            state: addr.state || "",
-            country: "India",
-            postalCode: addr.postalCode || "",
-          },
-        });
+        const r = await axios.post(
+          `${import.meta.env.VITE_API_URL}/api/territory-head/step-by-key`,
+          {
+            vendorId: territoryHeadId,
+            aadhar_number: aNumRaw,
+            aadhar_pic_back: fileUrl || undefined,
+            side: "back",
+            register_business_address: {
+              street: addr.street || "",
+              city: addr.city || "",
+              state: addr.state || "",
+              country: "India",
+              postalCode: addr.postalCode || "",
+            },
+          }
+        );
         const id = r?.data?.data?._id;
         if (id && !territoryHeadId) {
           setTerritoryHeadId(id);
@@ -292,17 +311,20 @@ const handleSelectChange = (selectedOption, field) => {
         return;
       }
 
-      const r = await API.post("/api/territory-head/step-by-key", {
-        vendorId: territoryHeadId,
-        aadhar_number: aNumRaw,
-        register_business_address: {
-          street: formData.register_street || "",
-          city: formData.register_city || "",
-          state: formData.register_state || "",
-          country: formData.register_country || "India",
-          postalCode: formData.register_postalCode || "",
-        },
-      });
+      const r = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/territory-head/step-by-key`,
+        {
+          vendorId: territoryHeadId,
+          aadhar_number: aNumRaw,
+          register_business_address: {
+            street: formData.register_street || "",
+            city: formData.register_city || "",
+            state: formData.register_state || "",
+            country: formData.register_country || "India",
+            postalCode: formData.register_postalCode || "",
+          },
+        }
+      );
       const id = r?.data?.data?._id;
       if (id && !territoryHeadId) {
         setTerritoryHeadId(id);
@@ -328,10 +350,14 @@ const handleSelectChange = (selectedOption, field) => {
 
     setLoadingGST(true);
     try {
-      const resp = await API.post("/api/territory-head/ocr?side=gst", fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-        timeout: 45000,
-      });
+      const resp = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/territory-head/ocr?side=gst`,
+        fd,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+          timeout: 45000,
+        }
+      );
 
       const data = resp?.data || {};
       if (!data.success) throw new Error("GST OCR failed");
@@ -354,11 +380,14 @@ const handleSelectChange = (selectedOption, field) => {
 
       // Save file + gst number immediately (optional)
       if (extracted.gst_number && fileUrl) {
-        await API.post("/api/territory-head/step-by-key", {
-          vendorId: territoryHeadId,
-          gst_number: extracted.gst_number,
-          gst_cert_pic: fileUrl,
-        });
+        await axios.post(
+          `${import.meta.env.VITE_API_URL}/api/territory-head/step-by-key`,
+          {
+            vendorId: territoryHeadId,
+            gst_number: extracted.gst_number,
+            gst_cert_pic: fileUrl,
+          }
+        );
       }
     } catch (err) {
       console.error(err);
@@ -389,10 +418,14 @@ const handleSelectChange = (selectedOption, field) => {
       fd.append("gst_address[district]", formData.gst_district || "");
 
       setLoadingGST(true);
-      const r = await API.put("/api/territory-head/gst", fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-        timeout: 45000,
-      });
+      const r = await axios.put(
+        `${import.meta.env.VITE_API_URL}/api/territory-head/gst`,
+        fd,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+          timeout: 45000,
+        }
+      );
 
       if (!r?.data?.ok) throw new Error(r?.data?.message || "Save failed");
 
@@ -433,10 +466,14 @@ const handleSelectChange = (selectedOption, field) => {
 
     setLoadingGST(true); // reuse loading spinner state or create new for bank
     try {
-      const resp = await API.post("/api/territory-head/ocr?side=bank", fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-        timeout: 45000,
-      });
+      const resp = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/territory-head/ocr?side=bank`,
+        fd,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+          timeout: 45000,
+        }
+      );
 
       const data = resp?.data || {};
       if (!data.success) throw new Error("Bank OCR failed");
@@ -457,12 +494,15 @@ const handleSelectChange = (selectedOption, field) => {
 
       // optional: immediately save bank file + minimal details
       if (extracted.account_number && fileUrl) {
-        await API.post("/api/territory-head/step-by-key", {
-          vendorId: territoryHeadId,
-          bank_doc_pic: fileUrl,
-          account_no: extracted.account_number,
-          ifcs_code: extracted.ifsc_code,
-        });
+        await axios.post(
+          `${import.meta.env.VITE_API_URL}/api/territory-head/step-by-key`,
+          {
+            vendorId: territoryHeadId,
+            bank_doc_pic: fileUrl,
+            account_no: extracted.account_number,
+            ifcs_code: extracted.ifsc_code,
+          }
+        );
       }
     } catch (err) {
       console.error(err);
@@ -489,9 +529,13 @@ const handleSelectChange = (selectedOption, field) => {
     fd.append("bank_address", bankData.bank_address || "");
 
     try {
-      const response = await API.put(`/api/territory-head/${vid}/bank`, fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const response = await axios.put(
+        `${import.meta.env.VITE_API_URL}/api/territory-head/${vid}/bank`,
+        fd,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
       if (!response?.data?.ok)
         throw new Error(response?.data?.message || "Save failed");
 
@@ -573,9 +617,13 @@ const handleSelectChange = (selectedOption, field) => {
 
     if (outletImage) fd.append("outlet_nameboard_image", outletImage);
 
-    const r = await API.put("/api/territory-head/outlet", fd, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const r = await axios.put(
+      `${import.meta.env.VITE_API_URL}/api/territory-head/outlet`,
+      fd,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
 
     if (!r?.data?.ok) throw new Error(r?.data?.message || "Save failed");
     navigate("/territory-head-success");
@@ -596,7 +644,7 @@ const handleSelectChange = (selectedOption, field) => {
     fd.append("outlet_coords[lng]", outlet.lng);
 
     try {
-      const response = await API.post("/api/territory-head/register", fd, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/territory-head/register`, fd, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       if (!response?.data?.ok)

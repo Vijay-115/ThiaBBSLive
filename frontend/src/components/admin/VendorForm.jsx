@@ -3,6 +3,7 @@ import API from "../../utils/api";
 import { Form, Button, Spinner, Row, Col } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import Select from "react-select";
+import axios from "axios";
 
 // put near the top of the file (outside the component)
 const constitutionOptions = [
@@ -89,10 +90,14 @@ const handleSelectChange = (selectedOption, field) => {
 
     setLoadingPan(true);
     try {
-      const resp = await API.post("/api/vendors/ocr", fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-        timeout: 30000,
-      });
+      const resp = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/vendors/ocr`,
+        fd,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+          timeout: 30000,
+        }
+      );
 
       const data = resp?.data || {};
       if (!data.success) throw new Error("PAN OCR failed");
@@ -127,7 +132,7 @@ const handleSelectChange = (selectedOption, field) => {
 
       const pan = nextValues.panNumber;
       if (pan && fileUrl) {
-        const r = await API.post("/api/vendors/step-by-key", {
+        const r = await axios.post(`${import.meta.env.VITE_API_URL}/api/vendors/step-by-key`, {
           vendorId, // send if present
           pan_number: pan,
           pan_pic: fileUrl,
@@ -155,7 +160,7 @@ const handleSelectChange = (selectedOption, field) => {
         vendor_lname: formData.lastName || "",
         dob: formData.dob || "",
       };
-      const resp = await API.post("/api/vendors/step-by-key", payload);
+      const resp = await axios.post(`${import.meta.env.VITE_API_URL}/api/vendors/step-by-key`, payload);
       if (!resp?.data?.ok) throw new Error("Save failed");
       const id = resp?.data?.data?._id;
       if (id) {
@@ -179,7 +184,7 @@ const handleSelectChange = (selectedOption, field) => {
 
     setLoadingAFront(true);
     try {
-      const resp = await API.post("/api/vendors/ocr?side=aadhaar_front", fd, {
+      const resp = await axios.post(`${import.meta.env.VITE_API_URL}/api/vendors/ocr?side=aadhaar_front`, fd, {
         headers: { "Content-Type": "multipart/form-data" },
         timeout: 30000,
       });
@@ -198,7 +203,7 @@ const handleSelectChange = (selectedOption, field) => {
       }));
 
       if (aNumRaw && fileUrl) {
-        const r = await API.post("/api/vendors/step-by-key", {
+        const r = await axios.post(`${import.meta.env.VITE_API_URL}/api/vendors/step-by-key`, {
           vendorId,
           aadhar_number: aNumRaw,
           aadhar_pic_front: fileUrl,
@@ -227,7 +232,7 @@ const handleSelectChange = (selectedOption, field) => {
 
     setLoadingABack(true);
     try {
-      const resp = await API.post("/api/vendors/ocr?side=aadhaar_back", fd, {
+      const resp = await axios.post(`${import.meta.env.VITE_API_URL}/api/vendors/ocr?side=aadhaar_back`, fd, {
         headers: { "Content-Type": "multipart/form-data" },
         timeout: 30000,
       });
@@ -250,7 +255,7 @@ const handleSelectChange = (selectedOption, field) => {
       }));
 
       if (aNumRaw) {
-        const r = await API.post("/api/vendors/step-by-key", {
+        const r = await axios.post(`${import.meta.env.VITE_API_URL}/api/vendors/step-by-key`, {
           vendorId,
           aadhar_number: aNumRaw,
           aadhar_pic_back: fileUrl || undefined,
@@ -285,7 +290,7 @@ const handleSelectChange = (selectedOption, field) => {
         return;
       }
 
-      const r = await API.post("/api/vendors/step-by-key", {
+      const r = await axios.post(`${import.meta.env.VITE_API_URL}/api/vendors/step-by-key`, {
         vendorId,
         aadhar_number: aNumRaw,
         register_business_address: {
@@ -321,7 +326,7 @@ const handleSelectChange = (selectedOption, field) => {
 
     setLoadingGST(true);
     try {
-      const resp = await API.post("/api/vendors/ocr?side=gst", fd, {
+      const resp = await axios.post(`${import.meta.env.VITE_API_URL}/api/vendors/ocr?side=gst`, fd, {
         headers: { "Content-Type": "multipart/form-data" },
         timeout: 45000,
       });
@@ -347,7 +352,7 @@ const handleSelectChange = (selectedOption, field) => {
 
       // Save file + gst number immediately (optional)
       if (extracted.gst_number && fileUrl) {
-        await API.post("/api/vendors/step-by-key", {
+        await axios.post(`${import.meta.env.VITE_API_URL}/api/vendors/step-by-key`, {
           vendorId,
           gst_number: extracted.gst_number,
           gst_cert_pic: fileUrl,
@@ -382,7 +387,7 @@ const handleSelectChange = (selectedOption, field) => {
       fd.append("gst_address[district]", formData.gst_district || "");
 
       setLoadingGST(true);
-      const r = await API.put("/api/vendors/gst", fd, {
+      const r = await axios.put(`${import.meta.env.VITE_API_URL}/api/vendors/gst`, fd, {
         headers: { "Content-Type": "multipart/form-data" },
         timeout: 45000,
       });
@@ -426,7 +431,7 @@ const handleSelectChange = (selectedOption, field) => {
 
     setLoadingGST(true); // reuse loading spinner state or create new for bank
     try {
-      const resp = await API.post("/api/vendors/ocr?side=bank", fd, {
+      const resp = await axios.post(`${import.meta.env.VITE_API_URL}/api/vendors/ocr?side=bank`, fd, {
         headers: { "Content-Type": "multipart/form-data" },
         timeout: 45000,
       });
@@ -450,7 +455,7 @@ const handleSelectChange = (selectedOption, field) => {
 
       // optional: immediately save bank file + minimal details
       if (extracted.account_number && fileUrl) {
-        await API.post("/api/vendors/step-by-key", {
+        await axios.post(`${import.meta.env.VITE_API_URL}/api/vendors/step-by-key`, {
           vendorId,
           bank_doc_pic: fileUrl,
           account_no: extracted.account_number,
@@ -482,9 +487,13 @@ const handleSelectChange = (selectedOption, field) => {
     fd.append("bank_address", bankData.bank_address || "");
 
     try {
-      const response = await API.put(`/api/vendors/${vid}/bank`, fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const response = await API.put(
+        `${import.meta.env.VITE_API_URL}/api/vendors/${vid}/bank`,
+        fd,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
       if (!response?.data?.ok)
         throw new Error(response?.data?.message || "Save failed");
 
@@ -566,7 +575,7 @@ const handleSelectChange = (selectedOption, field) => {
 
     if (outletImage) fd.append("outlet_nameboard_image", outletImage);
 
-    const r = await API.put("/api/vendors/outlet", fd, {
+    const r = await API.put(`${import.meta.env.VITE_API_URL}/api/vendors/outlet`, fd, {
       headers: { "Content-Type": "multipart/form-data" },
     });
 
@@ -589,7 +598,7 @@ const handleSelectChange = (selectedOption, field) => {
     fd.append("outlet_coords[lng]", outlet.lng);
 
     try {
-      const response = await API.post("/api/vendors/register", fd, {
+      const response = await API.post(`${import.meta.env.VITE_API_URL}/api/vendors/register`, fd, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       if (!response?.data?.ok)
