@@ -3,6 +3,7 @@ import API from "../../utils/api"; // same helper you use
 import { Form, Button, Spinner, Row, Col } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import Select from "react-select";
+import axios from "axios";
 
 const constitutionOptions = [
   { value: "proprietorship", label: "Proprietorship" },
@@ -73,7 +74,7 @@ const handleSelectChange = (selectedOption, field) => {
     fd.append("document", file);
     setLoadingPan(true);
     try {
-      const { data } = await API.post("/api/franchise-head/ocr", fd, {
+      const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/api/franchise-head/ocr`, fd, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       if (!data?.success) throw new Error("PAN OCR failed");
@@ -92,7 +93,7 @@ const handleSelectChange = (selectedOption, field) => {
       setFormData((p) => ({ ...p, ...next }));
 
       if (next.panNumber && fileUrl) {
-        const r = await API.post("/api/franchise-head/step-by-key", {
+        const r = await axios.post(`${import.meta.env.VITE_API_URL}/api/franchise-head/step-by-key`, {
           vendorId: docId,
           pan_number: next.panNumber,
           pan_pic: fileUrl,
@@ -113,7 +114,7 @@ const handleSelectChange = (selectedOption, field) => {
 
   const saveStep1AndNext = async () => {
     try {
-      const r = await API.post("/api/franchise-head/step-by-key", {
+      const r = await axios.post(`${import.meta.env.VITE_API_URL}/api/franchise-head/step-by-key`, {
         vendorId: docId,
         pan_number: (formData.panNumber || "").toUpperCase(),
         vendor_fname: formData.firstName || "",
@@ -140,8 +141,8 @@ const handleSelectChange = (selectedOption, field) => {
     fd.append("document", file);
     setLoadingAFront(true);
     try {
-      const { data } = await API.post(
-        "/api/franchise-head/ocr?side=aadhaar_front",
+      const { data } = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/franchise-head/ocr?side=aadhaar_front`,
         fd,
         {
           headers: { "Content-Type": "multipart/form-data" },
@@ -152,7 +153,7 @@ const handleSelectChange = (selectedOption, field) => {
       const a12 = (data?.extracted?.aadhaarNumber || "").replace(/\D/g, "");
       if (a12) {
         setFormData((p) => ({ ...p, aadharNumber: fmtAadhaarUI(a12) }));
-        const r = await API.post("/api/franchise-head/step-by-key", {
+        const r = await axios.post(`${import.meta.env.VITE_API_URL}/api/franchise-head/step-by-key`, {
           vendorId: docId,
           aadhar_number: a12,
           aadhar_pic_front: data.fileUrl || undefined,
@@ -179,8 +180,8 @@ const handleSelectChange = (selectedOption, field) => {
     fd.append("document", file);
     setLoadingABack(true);
     try {
-      const { data } = await API.post(
-        "/api/franchise-head/ocr?side=aadhaar_back",
+      const { data } = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/franchise-head/ocr?side=aadhaar_back`,
         fd,
         {
           headers: { "Content-Type": "multipart/form-data" },
@@ -200,7 +201,7 @@ const handleSelectChange = (selectedOption, field) => {
         register_country: "India",
       }));
 
-      await API.post("/api/franchise-head/step-by-key", {
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/franchise-head/step-by-key`, {
         vendorId: docId,
         aadhar_number: a12,
         aadhar_pic_back: data.fileUrl || undefined,
@@ -224,7 +225,7 @@ const handleSelectChange = (selectedOption, field) => {
   const saveStep2AndNext = async () => {
     const aRaw = (formData.aadharNumber || "").replace(/\D/g, "");
     if (!aRaw) return alert("Missing Aadhaar number");
-    await API.post("/api/franchise-head/step-by-key", {
+    await axios.post(`${import.meta.env.VITE_API_URL}/api/franchise-head/step-by-key`, {
       vendorId: docId,
       aadhar_number: aRaw,
       register_business_address: {
@@ -246,7 +247,7 @@ const handleSelectChange = (selectedOption, field) => {
     fd.append("document", file);
     setLoadingGST(true);
     try {
-      const { data } = await API.post("/api/franchise-head/ocr?side=gst", fd, {
+      const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/api/franchise-head/ocr?side=gst`, fd, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       if (!data?.success) throw new Error("GST OCR failed");
@@ -264,7 +265,7 @@ const handleSelectChange = (selectedOption, field) => {
         gst_district: ex.address?.district || p.gst_district,
       }));
       if (ex.gst_number && data.fileUrl) {
-        await API.post("/api/franchise-head/step-by-key", {
+        await axios.post(`${import.meta.env.VITE_API_URL}/api/franchise-head/step-by-key`, {
           vendorId: docId,
           gst_number: ex.gst_number,
           gst_cert_pic: data.fileUrl,
@@ -290,7 +291,7 @@ const handleSelectChange = (selectedOption, field) => {
     fd.append("gst_address[street]", formData.gst_street || "");
     fd.append("gst_address[locality]", formData.gst_locality || "");
     fd.append("gst_address[district]", formData.gst_district || "");
-    await API.put("/api/franchise-head/gst", fd, {
+    await axios.put(`${import.meta.env.VITE_API_URL}/api/franchise-head/gst`, fd, {
       headers: { "Content-Type": "multipart/form-data" },
     });
     setStep(4);
@@ -311,7 +312,7 @@ const handleSelectChange = (selectedOption, field) => {
     if (!file) return;
     const fd = new FormData();
     fd.append("document", file);
-    const { data } = await API.post("/api/franchise-head/ocr?side=bank", fd, {
+    const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/api/franchise-head/ocr?side=bank`, fd, {
       headers: { "Content-Type": "multipart/form-data" },
     });
     if (data?.success) {
@@ -353,7 +354,7 @@ const handleSelectChange = (selectedOption, field) => {
 
     if (outletImage) fd.append("outlet_nameboard_image", outletImage);
 
-    const r = await API.put("/api/franchise-head/outlet", fd, {
+    const r = await axios.put(`${import.meta.env.VITE_API_URL}/api/franchise-head/outlet`, fd, {
       headers: { "Content-Type": "multipart/form-data" },
     });
 
@@ -428,7 +429,7 @@ const handleSelectChange = (selectedOption, field) => {
     if (outlet.lng) fd.append("outlet_coords[lng]", outlet.lng);
     if (outletImage) fd.append("outlet_nameboard_image", outletImage);
 
-    const r = await API.put("/api/franchise-head/outlet", fd, {
+    const r = await axios.put(`${import.meta.env.VITE_API_URL}/api/franchise-head/outlet`, fd, {
       headers: { "Content-Type": "multipart/form-data" },
     });
     if (!r?.data?.ok) return alert("Save failed");

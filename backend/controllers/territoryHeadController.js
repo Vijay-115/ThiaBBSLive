@@ -1,7 +1,7 @@
 const path = require("path");
 const fs = require("fs");
 const os = require("os");
-const Tesseract = require("tesseract.js");
+const tesseract = require("node-tesseract-ocr");
 const pdfPoppler = require("pdf-poppler");
 const TerritoryHead = require("../models/TerritoryHead");
 
@@ -453,19 +453,22 @@ exports.uploadOCR = async (req, res) => {
       }
     }
 
+    // Run OCR
     let text;
     if (side === "aadhaar_back") {
-      const { data } = await Tesseract.recognize(ocrInputPath, "eng", {
-        tessedit_pageseg_mode: "6",
+      const cfg = {
+        lang: "eng",
+        oem: 1,
+        psm: 6,
         tessedit_char_whitelist:
           "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ,:-/.",
-      });
-      text = data.text;
+      };
+      text = await tesseract.recognize(ocrInputPath, cfg);
     } else {
-      const { data } = await Tesseract.recognize(ocrInputPath, "eng");
-      text = data.text;
+      const cfg = { lang: "eng", oem: 1, psm: 3 };
+      text = await tesseract.recognize(ocrInputPath, cfg);
     }
-
+    // …keep your existing parsing logic below…
     if (!side && /[A-Z]{5}\d{4}[A-Z]\b/.test(text)) {
       const extracted = extractPanDetails(text);
       return res.json({

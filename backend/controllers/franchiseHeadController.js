@@ -2,7 +2,7 @@
 const path = require("path");
 const fs = require("fs");
 const os = require("os");
-const Tesseract = require("tesseract.js");
+const tesseract = require("node-tesseract-ocr");
 const pdfPoppler = require("pdf-poppler");
 const FranchiseHead = require("../models/FranchiseHead");
 
@@ -416,7 +416,7 @@ async function pdfFirstPageToImage(pdfPath) {
 async function recognizeImageOCR(filePath, params = {}) {
   const {
     data: { text },
-  } = await Tesseract.recognize(filePath, "eng", {
+  } = await tesseract.recognize(filePath, "eng", {
     tessedit_pageseg_mode: "3",
     ...params,
   });
@@ -517,18 +517,19 @@ exports.uploadOCR = async (req, res) => {
     // Run OCR
     let text;
     if (side === "aadhaar_back") {
-      const { data } = await Tesseract.recognize(ocrInputPath, "eng", {
-        tessedit_pageseg_mode: "6",
+      const cfg = {
+        lang: "eng",
+        oem: 1,
+        psm: 6,
         tessedit_char_whitelist:
           "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ,:-/.",
-      });
-      text = data.text;
+      };
+      text = await tesseract.recognize(ocrInputPath, cfg);
     } else {
-      const { data } = await Tesseract.recognize(ocrInputPath, "eng");
-      text = data.text;
+      const cfg = { lang: "eng", oem: 1, psm: 3 };
+      text = await tesseract.recognize(ocrInputPath, cfg);
     }
-
-    // PAN (no side)
+    // …keep your existing parsing logic below…
     if (!side && /[A-Z]{5}\d{4}[A-Z]\b/.test(text)) {
       const extracted = extractPanDetails(text);
       return res.json({
@@ -563,8 +564,6 @@ exports.uploadOCR = async (req, res) => {
     if (side === "aadhaar_back") {
       const a12 = extractAadhaarNumber(text);
       const address = extractAddressBack(text);
-      console.log("Aadhaar BACK raw:\n", text);
-      console.log("Aadhaar BACK parsed:", address);
       return res.json({
         success: true,
         docType: "aadhaar_back",
@@ -575,8 +574,6 @@ exports.uploadOCR = async (req, res) => {
     }
 
     if (side === "gst") {
-      // keeping this response in case you want to see OCR output,
-      // but your UI can fill GST manually and only stores file.
       const gst_number = extractGstin(text);
       const gst_legal_name = extractGstLegalName(text);
       const gst_constitution = extractGstConstitution(text);
