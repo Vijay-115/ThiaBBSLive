@@ -2,7 +2,7 @@
 const path = require("path");
 const fs = require("fs");
 const os = require("os");
-const Tesseract = require("tesseract.js");
+const tesseract = require("node-tesseract-ocr");
 const pdfPoppler = require("pdf-poppler");
 const Agent = require("../models/Agent");
 
@@ -389,16 +389,6 @@ async function pdfFirstPageToImage(pdfPath) {
   throw new Error("PDF conversion succeeded but output image not found");
 }
 
-/* ------------------------------ OCR core ------------------------------ */
-async function recognizeImageOCR(filePath, params = {}) {
-  const {
-    data: { text },
-  } = await Tesseract.recognize(filePath, "eng", {
-    tessedit_pageseg_mode: "3",
-    ...params,
-  });
-  return text;
-}
 
 /* ---- GST helpers (mirrored from Vendor) ---- */
 function extractGstin(text) {
@@ -491,18 +481,22 @@ exports.uploadOCR = async (req, res) => {
     }
 
     // Run OCR
-    let text;
-    if (side === "aadhaar_back") {
-      const { data } = await Tesseract.recognize(ocrInputPath, "eng", {
-        tessedit_pageseg_mode: "6",
-        tessedit_char_whitelist:
-          "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ,:-/.",
-      });
-      text = data.text;
-    } else {
-      const { data } = await Tesseract.recognize(ocrInputPath, "eng");
-      text = data.text;
-    }
+  let text;
+  if (side === "aadhaar_back") {
+    text = await tesseract.recognize(ocrInputPath, {
+      lang: "eng",
+      oem: 1,
+      psm: 6,
+      tessedit_char_whitelist:
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ,:-/.",
+    }); // <-- returns string
+  } else {
+    text = await tesseract.recognize(ocrInputPath, {
+      lang: "eng",
+      oem: 1,
+      psm: 3,
+    }); // <-- returns string
+  }
 
     // PAN (no side)
     if (!side && /[A-Z]{5}\d{4}[A-Z]\b/.test(text)) {
@@ -516,57 +510,48 @@ exports.uploadOCR = async (req, res) => {
       });
     }
 
-    if (side === "aadhaar_front") {
-      const a12 = extractAadhaarNumber(text);
-      const { name, firstName, lastName, dob, gender } =
-        extractAadhaarFront(text);
-      return res.json({
-        success: true,
-        docType: "aadhaar_front",
-        fileUrl,
-        rawText: text,
-        extracted: {
-          name,
-          firstName,
-          lastName,
-          dob,
-          gender,
-          aadhaarNumber: a12,
-        },
-      });
-    }
+if (side === "aadhaar_front") {
+  const a12 = extractAadhaarNumber(text);
+  const { name, firstName, lastName, dob, gender } = extractAadhaarFront(text);
+  return res.json({
+    success: true,
+    docType: "aadhaar_front",
+    fileUrl,
+    rawText: text,
+    extracted: { name, firstName, lastName, dob, gender, aadhaarNumber: a12 },
+  });
+}
 
-    if (side === "aadhaar_back") {
-      const a12 = extractAadhaarNumber(text);
-      const address = extractAddressBack(text);
-      return res.json({
-        success: true,
-        docType: "aadhaar_back",
-        fileUrl,
-        rawText: text,
-        extracted: { aadhaarNumber: a12, address },
-      });
-    }
+if (side === "aadhaar_back") {
+  const a12 = extractAadhaarNumber(text);
+  const address = extractAddressBack(text);
+  return res.json({
+    success: true,
+    docType: "aadhaar_back",
+    fileUrl,
+    rawText: text,
+    extracted: { aadhaarNumber: a12, address },
+  });
+}
 
-    if (side === "gst") {
-      // Return parsed values so the UI can autofill
-      const gst_number = extractGstin(text);
-      const gst_legal_name = extractGstLegalName(text);
-      const gst_constitution = extractGstConstitution(text);
-      const gst_address = extractGstAddress(text);
-      return res.json({
-        success: true,
-        docType: "gst",
-        fileUrl,
-        rawText: text,
-        extracted: {
-          gst_number,
-          legal_name: gst_legal_name,
-          constitution: gst_constitution,
-          address: gst_address,
-        },
-      });
-    }
+if (side === "gst") {
+  const gst_number = extractGstin(text);
+  const gst_legal_name = extractGstLegalName(text);
+  const gst_constitution = extractGstConstitution(text);
+  const gst_address = extractGstAddress(text);
+  return res.json({
+    success: true,
+    docType: "gst",
+    fileUrl,
+    rawText: text,
+    extracted: {
+      gst_number,
+      legal_name: gst_legal_name,
+      constitution: gst_constitution,
+      address: gst_address,
+    },
+  });
+}
 
     return res.json({
       success: true,

@@ -2,7 +2,7 @@
 const path = require("path");
 const fs = require("fs");
 const os = require("os");
-const Tesseract = require("tesseract.js");
+const tesseract = require("node-tesseract-ocr");
 const pdfPoppler = require("pdf-poppler");
 const Vendor = require("../models/Vendor");
 
@@ -518,35 +518,23 @@ function extractGstAddress(text) {
   return addr;
 }
 
-/* ------------------------------ Controllers --------------------------- */
-// POST /api/vendors/ocr  (field: document)  ?side=aadhaar_front|aadhaar_back|gst
-// exports.uploadOCR = async (req, res) => {
-//   try {
-//     const file = req.file;
-//     if (!file) {
-//       return res.status(400).json({ message: 'No file uploaded' });
-//     }
-//     // Process the uploaded file (e.g., OCR logic)
-//     res.status(200).json({ message: 'File uploaded successfully', file });
-//   } catch (error) {
-//     res.status(500).json({ message: 'Error processing file', error });
-//   }
-// };
+
 
 exports.uploadOCR = async (req, res) => {
   let tempImageFromPdf = null;
   try {
-    if (!req.file)
+    if (!req.file) {
       return res
         .status(400)
         .json({ success: false, message: "No file uploaded" });
+    }
 
     const side = (req.query.side || "").toLowerCase();
     const filePath = req.file.path;
     const ext = path.extname(filePath).toLowerCase();
-
     const fileUrl = `/uploads/${path.basename(filePath)}`;
 
+    // if PDF, render first page to JPEG (you already have pdfFirstPageToImage)
     let ocrInputPath = filePath;
     if (ext === ".pdf") {
       try {
@@ -556,28 +544,28 @@ exports.uploadOCR = async (req, res) => {
       } catch (err) {
         return res.status(400).json({
           success: false,
-          message:
-            err.message ||
-            "PDF OCR failed. Verify Poppler is installed and POPPLER_PATH is correct.",
+          message: err.message || "PDF OCR failed. Verify Poppler install.",
         });
       }
     }
 
-    // Run OCR
+    // ---- FIXED: node-tesseract-ocr returns string ----
     let text;
     if (side === "aadhaar_back") {
-      const { data } = await Tesseract.recognize(ocrInputPath, "eng", {
-        tessedit_pageseg_mode: "6",
+      const cfg = {
+        lang: "eng",
+        oem: 1,
+        psm: 6,
         tessedit_char_whitelist:
           "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ,:-/.",
-      });
-      text = data.text;
+      };
+      text = await tesseract.recognize(ocrInputPath, cfg);
     } else {
-      const { data } = await Tesseract.recognize(ocrInputPath, "eng");
-      text = data.text;
+      const cfg = { lang: "eng", oem: 1, psm: 3 };
+      text = await tesseract.recognize(ocrInputPath, cfg);
     }
 
-    // PAN (no side)
+    // …keep your existing parsing logic below…
     if (!side && /[A-Z]{5}\d{4}[A-Z]\b/.test(text)) {
       const extracted = extractPanDetails(text);
       return res.json({
@@ -612,8 +600,6 @@ exports.uploadOCR = async (req, res) => {
     if (side === "aadhaar_back") {
       const a12 = extractAadhaarNumber(text);
       const address = extractAddressBack(text);
-      console.log("Aadhaar BACK raw:\n", text);
-      console.log("Aadhaar BACK parsed:", address);
       return res.json({
         success: true,
         docType: "aadhaar_back",
@@ -624,8 +610,6 @@ exports.uploadOCR = async (req, res) => {
     }
 
     if (side === "gst") {
-      // keeping this response in case you want to see OCR output,
-      // but your UI now fills GST manually and only stores file.
       const gst_number = extractGstin(text);
       const gst_legal_name = extractGstLegalName(text);
       const gst_constitution = extractGstConstitution(text);
@@ -658,13 +642,19 @@ exports.uploadOCR = async (req, res) => {
       .json({ success: false, message: "OCR failed", details: err.message });
   } finally {
     if (tempImageFromPdf && fs.existsSync(tempImageFromPdf)) {
-      safeUnlink(tempImageFromPdf);
       try {
-        fs.rmdirSync(path.dirname(tempImageFromPdf), { recursive: true });
+        fs.unlinkSync(tempImageFromPdf);
+      } catch (_) {}
+      try {
+        fs.rmSync(path.dirname(tempImageFromPdf), {
+          recursive: true,
+          force: true,
+        });
       } catch (_) {}
     }
   }
 };
+
 
 // JSON body saves for PAN/Aadhaar/GST fields (no file here)
 // Always update a single vendor:
