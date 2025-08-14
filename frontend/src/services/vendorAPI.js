@@ -15,4 +15,4 @@ export const ocrDocument = (file, side) => {
 };
 
 export const saveVendorStep = (vendorId, payload) =>
-  API.patch(`/api/vendors/${vendorId}/step`, payload);
+  axios.patch(`${import.meta.env.VITE_API_URL}/api/vendors/${vendorId}/step`, payload);
