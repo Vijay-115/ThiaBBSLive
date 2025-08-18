@@ -24,6 +24,10 @@ const cartRoutes = require("./routes/cartRoutes");
 const wishlistRoutes = require("./routes/wishlistRoutes");
 const userRoutes = require("./routes/userRoutes");
 const vendorRoutes = require("./routes/vendorRoutes");
+const franchiseeRoutes = require("./routes/franchiseHeadRoutes");
+const territoryHeadRoutes = require("./routes/territoryHeadRoutes");
+const agentHeadRoutes = require("./routes/agentRoutes");
+const customerBecomeVendorRoutes = require("./routes/customerVendorRoutes");
 
 const app = express();
 
@@ -98,12 +102,12 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // ✅ Routes
-app.use("/api/franchise-head", require("./routes/franchiseHeadRoutes"));
-app.use("/api/territory-head", require("./routes/territoryHeadRoutes"));
-app.use("/api/customer-vendor", require("./routes/customerVendorRoutes"));
+app.use("/api/franchisees", franchiseeRoutes);
+app.use("/api/territory-heads", territoryHeadRoutes);
+app.use("/api/customer-become-vendors", customerBecomeVendorRoutes);
 
 app.use("/api/vendors", vendorRoutes);
-app.use("/api/agent", require("./routes/agentRoutes"));
+app.use("/api/agent-heads", agentHeadRoutes);
 
 app.use("/api/auth", authRoutes); // 🔐 Shared Login/Register from bbs-auth
 app.use("/api/admin", adminRoutes);

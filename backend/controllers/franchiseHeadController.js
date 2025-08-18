@@ -1,805 +1,143 @@
-// controllers/franchiseHeadController.js
+// controllers/franchiseeController.js
 const path = require("path");
-const fs = require("fs");
-const os = require("os");
-const tesseract = require("node-tesseract-ocr");
-const pdfPoppler = require("pdf-poppler");
-const FranchiseHead = require("../models/FranchiseHead");
+const mongoose = require("mongoose");
+const Franchise = require("../models/FranchiseHead"); // reuse schema; tag role='franchisee_owner'
 
-// Optional: set this if pdf-poppler can't find Poppler automatically
-// process.env.POPPLER_PATH = "C:\\Program Files\\poppler-24.08.0\\Library\\bin";
-
-/* ------------------------------ small helpers ------------------------------ */
-const safeUnlink = (p) => {
-  try {
-    fs.unlinkSync(p);
-  } catch (_) {}
-};
-const digitsOnly = (s = "") => s.replace(/\D/g, "");
-const cleanLine = (line = "") =>
-  line
-    .replace(/[^A-Z0-9\s:/\-\.]/gi, "")
-    .replace(/\s+/g, " ")
-    .trim();
-
-const isValidName = (line = "") => {
-  const up = line.toUpperCase();
-  const invalid = [
-    "INCOME TAX",
-    "GOVT",
-    "PERMANENT ACCOUNT",
-    "DEPARTMENT",
-    "SIGNATURE",
-    "FATHER",
-    "BIRTH",
-    "NAME",
-    "GOVERNMENT",
-    "INDIA",
-    "UNIQUE",
-    "IDENTIFICATION",
-  ];
-  return (
-    line.length >= 3 &&
-    /[A-Za-z]/.test(line) &&
-    !invalid.some((w) => up.includes(w))
-  );
-};
-const removeInitial = (name = "") => {
-  const parts = name.trim().split(/\s+/);
-  if (parts.length > 1 && parts[0].length === 1)
-    return parts.slice(1).join(" ");
-  return name.trim();
-};
-
-/* ------------------------------ PAN parse ----------------------------- */
-function extractPanDetails(text) {
-  let name = "",
-    fatherName = "",
-    dob = "",
-    panNumber = "";
-  const panMatch = text.match(/[A-Z]{5}[0-9]{4}[A-Z]{1}/);
-  if (panMatch) panNumber = panMatch[0];
-  const dobMatch = text.match(/\b\d{2}\/\d{2}\/\d{4}\b/);
-  if (dobMatch) dob = dobMatch[0];
-
-  const lines = text.split("\n").map(cleanLine).filter(Boolean);
-  const upLines = lines.map((l) => l.toUpperCase());
-  const panIndex = upLines.findIndex((l) => panNumber && l.includes(panNumber));
-  if (panIndex >= 0) {
-    const possibleName = lines[panIndex + 1];
-    const possibleFather = lines[panIndex + 2];
-    if (isValidName(possibleName)) name = removeInitial(possibleName);
-    if (isValidName(possibleFather)) fatherName = removeInitial(possibleFather);
-  }
-  if ((!name || !fatherName) && dob) {
-    const dobIndex = upLines.findIndex((l) => l.includes(dob));
-    const beforeDob = lines.slice(0, dobIndex).filter(isValidName);
-    if (beforeDob.length >= 2) {
-      if (!name) name = removeInitial(beforeDob[beforeDob.length - 2]);
-      if (!fatherName)
-        fatherName = removeInitial(beforeDob[beforeDob.length - 1]);
-    }
-  }
-  return { name, fatherName, dob, panNumber };
-}
-
-function parseDobToDate(input) {
-  if (!input) return null;
-  if (input instanceof Date) return input;
-  const s = String(input).trim();
-
-  // DD/MM/YYYY or DD-MM-YYYY or DD.MM.YYYY
-  const m = s.match(/^([0-3]?\d)[\/\-\.]([01]?\d)[\/\-\.]((?:19|20)\d{2})$/);
-  if (m) {
-    const dd = m[1].padStart(2, "0");
-    const mm = m[2].padStart(2, "0");
-    const yyyy = m[3];
-    return new Date(`${yyyy}-${mm}-${dd}`);
-  }
-  const t = Date.parse(s);
-  if (!Number.isNaN(t)) return new Date(t);
-  return null;
-}
-
-/* ---------------------------- Aadhaar (front) --------------------------- */
-function extractAadhaarNumber(text) {
-  const withoutVID = text.replace(/VID\s*[:\-]?\s*\d[\d\s]{10,}/i, "");
-  const spaced = withoutVID.match(/\b(\d{4}\s\d{4}\s\d{4})\b/);
-  if (spaced) return spaced[1].replace(/\s/g, "");
-  const compact = withoutVID.replace(/\s/g, "").match(/\b(\d{12})\b/);
-  return compact ? compact[1] : "";
-}
-function extractDOB(text) {
-  const m = text.match(
-    /\b(?:DOB|Date of Birth|Year of Birth|YOB)\s*[:\-]?\s*([0-3]?\d[\/\-\.][01]?\d[\/\-\.](?:19|20)\d{2})\b/i
-  );
-  return m ? m[1].trim() : "";
-}
-function extractGender(text) {
-  const g = text.match(/\b(MALE|FEMALE|TRANSGENDER)\b/i);
-  return g ? g[1].toLowerCase() : "";
-}
-function extractNameFront(text) {
-  const lines = text
-    .split(/\r?\n/)
-    .map((l) => l.trim())
-    .filter(Boolean);
-  let idx = lines.findIndex((l) =>
-    /DOB|Date of Birth|Year of Birth|YOB/i.test(l)
-  );
-  if (idx > 0) {
-    const cand = lines[idx - 1].replace(/^Name[:\-]?\s*/i, "").trim();
-    if (/[A-Za-z]/.test(cand)) return cand;
-  }
-  const latin = lines.filter(
-    (l) => /^[\x00-\x7F]+$/.test(l) && /[A-Za-z]/.test(l)
-  );
-  latin.sort((a, b) => b.length - a.length);
-  return (latin[0] || "").trim();
-}
-function splitFirstLast(fullName) {
-  if (!fullName) return { firstName: "", lastName: "" };
-  const m = fullName.match(/(.*)\bJaya\s+Singh\b/i);
-  if (m)
-    return {
-      firstName: m[1].trim().replace(/[,\-]+$/, ""),
-      lastName: "Jaya Singh",
-    };
-  const parts = fullName.trim().split(/\s+/);
-  if (parts.length <= 1) return { firstName: fullName, lastName: "" };
-  return {
-    firstName: parts.slice(0, -1).join(" "),
-    lastName: parts.slice(-1)[0],
-  };
-}
-function extractAadhaarFront(text) {
-  const nameFull = extractNameFront(text);
-  const { firstName, lastName } = splitFirstLast(nameFull);
-  const dob = extractDOB(text);
-  const gender = extractGender(text);
-  return { name: nameFull, firstName, lastName, dob, gender };
-}
-
-/* ------------------------- Aadhaar (back) address ----------------------- */
-const IN_STATES = [
-  ["Andhra Pradesh"],
-  ["Arunachal Pradesh"],
-  ["Assam"],
-  ["Bihar"],
-  ["Chhattisgarh"],
-  ["Goa"],
-  ["Gujarat"],
-  ["Haryana"],
-  ["Himachal Pradesh"],
-  ["Jharkhand"],
-  ["Karnataka"],
-  ["Kerala"],
-  ["Madhya Pradesh"],
-  ["Maharashtra"],
-  ["Manipur"],
-  ["Meghalaya"],
-  ["Mizoram"],
-  ["Nagaland"],
-  ["Odisha", "Orissa"],
-  ["Punjab"],
-  ["Rajasthan"],
-  ["Sikkim"],
-  ["Tamil Nadu", "Tamilnadu"],
-  ["Telangana"],
-  ["Tripura"],
-  ["Uttar Pradesh", "UP"],
-  ["Uttarakhand", "Uttaranchal"],
-  ["West Bengal"],
-  ["Andaman and Nicobar Islands", "Andaman & Nicobar"],
-  ["Chandigarh"],
-  [
-    "Dadra and Nagar Haveli and Daman and Diu",
-    "Dadra and Nagar Haveli",
-    "Daman and Diu",
-  ],
-  ["Delhi", "NCT of Delhi", "New Delhi"],
-  ["Jammu and Kashmir", "Jammu & Kashmir", "J&K"],
-  ["Ladakh"],
-  ["Lakshadweep"],
-  ["Puducherry", "Pondicherry", "Pondichery", "Puduchery"],
-];
-const STATE_PATTERNS = IN_STATES.map((list) => ({
-  canonical: list[0],
-  re: new RegExp(
-    "\\b(" +
-      list.map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") +
-      ")\\b",
-    "i"
-  ),
-}));
-function detectState(joined) {
-  for (const { canonical, re } of STATE_PATTERNS) {
-    const m = joined.match(re);
-    if (m) return { state: canonical, matched: m[0] };
-  }
-  return { state: "", matched: "" };
-}
-function extractAddressBack(rawText) {
-  // 1) Pre-clean to ASCII and trim
-  let lines = (rawText || "")
-    .split(/\r?\n/)
-    .map((l) => l.replace(/[^\x20-\x7E]/g, "").trim())
-    .filter(Boolean);
-
-  // 2) Helpers
-  const isUidaiNoise = (s) =>
-    /uidai|unique\s+identification|authority|gov\.in|help@uidai|qr\s*code/i.test(
-      s
-    );
-  const hasAadhaar12 = (s) =>
-    /\b\d(?:\s?\d){11}\b/.test(s.replace(/\s+/g, " "));
-  const isAddressHeader = (s) =>
-    s
-      .replace(/[^A-Za-z]/g, "")
-      .toLowerCase()
-      .includes("address");
-  const looksLikePin = (s) => /\b\d{6}\b/.test(s);
-
-  // 3) Find address block
-  const addrIdx = lines.findIndex(isAddressHeader);
-  let block = [];
-  if (addrIdx !== -1) {
-    for (let i = addrIdx + 1; i < Math.min(lines.length, addrIdx + 12); i++) {
-      const ln = lines[i];
-      if (!ln) continue;
-      if (isUidaiNoise(ln) || hasAadhaar12(ln)) break;
-      block.push(ln);
-    }
-  } else {
-    // Fallback: local window around last 6-digit PIN
-    const pinLineIdx = lines.findIndex(looksLikePin);
-    const start = Math.max(0, pinLineIdx - 5);
-    const end = Math.min(
-      lines.length,
-      pinLineIdx === -1 ? lines.length : pinLineIdx + 3
-    );
-    block = lines
-      .slice(start, end)
-      .filter((ln) => !isUidaiNoise(ln) && !hasAadhaar12(ln));
-  }
-
-  // 4) Join and normalize punctuation/spacing
-  let joined = block
-    .join(", ")
-    .replace(/\([^)]*\)/g, "")
-    .replace(/\s{2,}/g, " ")
-    .replace(/\s*,\s*/g, ", ")
-    .replace(/,+/g, ",")
-    .replace(/,\s*,/g, ", ")
-    .replace(/\s*:\s*/g, ": ")
-    .replace(/\b1\s*st\b/gi, "1st")
-    .replace(/\b2\s*nd\b/gi, "2nd")
-    .replace(/\b3\s*rd\b/gi, "3rd")
-    .replace(/\bPondicherry\b/gi, "Puducherry");
-
-  // 5) Extract PIN
-  const pinMatch = joined.match(/(\d{6})(?!.*\d{6})/);
-  const postalCode = pinMatch ? pinMatch[1] : "";
-
-  // 6) Remove PIN from the working string
-  if (postalCode) {
-    joined = joined
-      .replace(new RegExp(postalCode + "\\b"), "")
-      .replace(/[-–]\s*$/, "")
-      .replace(/,\s*$/, "");
-  }
-
-  // 7) Detect State/UT
-  const IN_STATES2 = IN_STATES;
-  const STATE_PATTERNS2 = IN_STATES2.map((list) => ({
-    canonical: list[0],
-    re: new RegExp(
-      "\\b(" +
-        list.map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") +
-        ")\\b",
-      "i"
-    ),
-  }));
-
-  let state = "";
-  let stateToken = "";
-  for (const { canonical, re } of STATE_PATTERNS2) {
-    const m = joined.match(re);
-    if (m) {
-      state = canonical;
-      stateToken = m[0];
-      break;
-    }
-  }
-
-  // 8) Split tokens and filter candidates
-  const parts = joined
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean)
-    .filter(
-      (s) => !hasAadhaar12(s) && !/^\d[\d\s-]*$/.test(s) && !isUidaiNoise(s)
-    );
-
-  // 9) Determine city
-  let city = "";
-  if (state && stateToken) {
-    const idx = parts.findIndex((p) =>
-      new RegExp(
-        "\\b" + stateToken.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b",
-        "i"
-      ).test(p)
-    );
-    if (idx > 0) city = parts[idx - 1];
-  }
-  if (!city) {
-    for (let i = parts.length - 1; i >= 0; i--) {
-      const p = parts[i];
-      if (
-        /[A-Za-z]/.test(p) &&
-        !hasAadhaar12(p) &&
-        !/^\d{4}(\s?\d{4}){2}$/.test(p)
-      ) {
-        city = p;
-        break;
-      }
-    }
-  }
-
-  // 10) Street = everything before city/state
-  let cutoff = parts.length;
-  if (state && stateToken) {
-    const iState = parts.findIndex((p) =>
-      new RegExp(
-        "\\b" + stateToken.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b",
-        "i"
-      ).test(p)
-    );
-    if (iState !== -1) cutoff = Math.max(0, iState - (city ? 1 : 0));
-  }
-  const streetParts = parts.slice(0, cutoff).filter((p) => p !== city);
-  let street = streetParts
-    .join(", ")
-    .replace(/\s{2,}/g, " ")
-    .replace(/,\s*,/g, ", ")
-    .trim();
-
-  if (city && !/[A-Za-z]/.test(city)) city = "";
-
-  return {
-    street: street || "",
-    city: city || "",
-    state: state || "",
-    country: "India",
-    postalCode: postalCode || "",
-  };
-}
-
-/* -------------------------- PDF → image (1st pg) ---------------------- */
-async function pdfFirstPageToImage(pdfPath) {
-  const outDir = path.join(
-    os.tmpdir(),
-    `pdf2img_${Date.now()}_${Math.random().toString(36).slice(2)}`
-  );
-  fs.mkdirSync(outDir, { recursive: true });
-
-  const opts = {
-    format: "jpeg",
-    out_dir: outDir,
-    out_prefix: "page",
-    page: 1,
-    dpi: 200,
-  };
-  if (process.env.POPPLER_PATH) {
-    opts.poppler_path = process.env.POPPLER_PATH;
-    console.log("Using Poppler at:", opts.poppler_path);
-  }
-
-  try {
-    await pdfPoppler.convert(pdfPath, opts);
-  } catch (err) {
-    console.error("PDF convert failed:", err.message);
-    throw new Error(
-      "PDF OCR failed. Check Poppler install and POPPLER_PATH. Details: " +
-        err.message
-    );
-  }
-
-  const p1 = path.join(outDir, "page-1.jpg");
-  const p1alt = path.join(outDir, "page-1.jpeg");
-  if (fs.existsSync(p1)) return p1;
-  if (fs.existsSync(p1alt)) return p1alt;
-  throw new Error("PDF conversion succeeded but output image not found");
-}
-
-/* ------------------------------ OCR core ------------------------------ */
-async function recognizeImageOCR(filePath, params = {}) {
-  const {
-    data: { text },
-  } = await tesseract.recognize(filePath, "eng", {
-    tessedit_pageseg_mode: "3",
-    ...params,
-  });
-  return text;
-}
-
-/* ---- GST helpers (kept in case you ever re-enable OCR for GST) ---- */
-function extractGstin(text) {
-  const m = text.match(/\b\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]\b/);
-  return m ? m[0] : "";
-}
-function extractGstLegalName(text) {
-  const m = text.match(/Legal Name\s*:?[\s\r\n]+([^\r\n]+)/i);
-  return m ? m[1].trim() : "";
-}
-function extractGstConstitution(text) {
-  const m = text.match(/Constitution of Business\s*:?[\s\r\n]+([^\r\n]+)/i);
-  return m ? m[1].trim() : "";
-}
-function extractGstAddress(text) {
-  const lines = text.split(/\r?\n/).map((l) => l.trim());
-  const start = lines.findIndex((l) =>
-    /Address of Principal Place of\s*Business/i.test(l)
-  );
-  const addr = {
-    floorNo: "",
-    buildingNo: "",
-    street: "",
-    locality: "",
-    city: "",
-    district: "",
-    state: "",
-    postalCode: "",
-  };
-  if (start !== -1) {
-    const grab = [];
-    for (let i = start + 1; i < Math.min(lines.length, start + 20); i++) {
-      const ln = lines[i];
-      if (!ln) continue;
-      if (/^\s*\d+\.\s/.test(ln)) break;
-      grab.push(ln);
-    }
-    const take = (label, key) => {
-      const r = new RegExp(
-        "^" + label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\s*:\\s*(.+)$",
-        "i"
-      );
-      const row = grab.find((x) => r.test(x));
-      if (row) {
-        const v = row.replace(r, "$1").trim();
-        if (v) addr[key] = v;
-      }
-    };
-    take("Floor No\\.", "floorNo");
-    take("Building No\\./Flat No\\.", "buildingNo");
-    take("Road/Street", "street");
-    take("Locality/Sub Locality", "locality");
-    take("City/Town/Village", "city");
-    take("District", "district");
-    take("State", "state");
-    take("PIN Code", "postalCode");
-  }
-  return addr;
-}
-
-/* ------------------------------ Controllers --------------------------- */
-// POST /api/franchise-head/ocr  (field: document)  ?side=aadhaar_front|aadhaar_back|gst
-exports.uploadOCR = async (req, res) => {
-  let tempImageFromPdf = null;
+/**
+ * POST /upload  (no OCR)  -> { ok, fileUrl: /uploads/xxx.ext }
+ */
+exports.uploadDocument = async (req, res) => {
   try {
     if (!req.file)
-      return res
-        .status(400)
-        .json({ success: false, message: "No file uploaded" });
-
-    const side = (req.query.side || "").toLowerCase();
-    const filePath = req.file.path;
-    const ext = path.extname(filePath).toLowerCase();
-
-    const fileUrl = `/uploads/${path.basename(filePath)}`;
-
-    let ocrInputPath = filePath;
-    if (ext === ".pdf") {
-      try {
-        const imgPath = await pdfFirstPageToImage(filePath);
-        tempImageFromPdf = imgPath;
-        ocrInputPath = imgPath;
-      } catch (err) {
-        return res.status(400).json({
-          success: false,
-          message:
-            err.message ||
-            "PDF OCR failed. Verify Poppler is installed and POPPLER_PATH is correct.",
-        });
-      }
-    }
-
-    // Run OCR
-    let text;
-    if (side === "aadhaar_back") {
-      const cfg = {
-        lang: "eng",
-        oem: 1,
-        psm: 6,
-        tessedit_char_whitelist:
-          "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ,:-/.",
-      };
-      text = await tesseract.recognize(ocrInputPath, cfg);
-    } else {
-      const cfg = { lang: "eng", oem: 1, psm: 3 };
-      text = await tesseract.recognize(ocrInputPath, cfg);
-    }
-    // …keep your existing parsing logic below…
-    if (!side && /[A-Z]{5}\d{4}[A-Z]\b/.test(text)) {
-      const extracted = extractPanDetails(text);
-      return res.json({
-        success: true,
-        docType: "pan",
-        fileUrl,
-        rawText: text,
-        extracted,
-      });
-    }
-
-    if (side === "aadhaar_front") {
-      const a12 = extractAadhaarNumber(text);
-      const { name, firstName, lastName, dob, gender } =
-        extractAadhaarFront(text);
-      return res.json({
-        success: true,
-        docType: "aadhaar_front",
-        fileUrl,
-        rawText: text,
-        extracted: {
-          name,
-          firstName,
-          lastName,
-          dob,
-          gender,
-          aadhaarNumber: a12,
-        },
-      });
-    }
-
-    if (side === "aadhaar_back") {
-      const a12 = extractAadhaarNumber(text);
-      const address = extractAddressBack(text);
-      return res.json({
-        success: true,
-        docType: "aadhaar_back",
-        fileUrl,
-        rawText: text,
-        extracted: { aadhaarNumber: a12, address },
-      });
-    }
-
-    if (side === "gst") {
-      const gst_number = extractGstin(text);
-      const gst_legal_name = extractGstLegalName(text);
-      const gst_constitution = extractGstConstitution(text);
-      const gst_address = extractGstAddress(text);
-      return res.json({
-        success: true,
-        docType: "gst",
-        fileUrl,
-        rawText: text,
-        extracted: {
-          gst_number,
-          legal_name: gst_legal_name,
-          constitution: gst_constitution,
-          address: gst_address,
-        },
-      });
-    }
-
-    return res.json({
-      success: true,
-      docType: "unknown",
-      fileUrl,
-      rawText: text,
-      extracted: {},
-    });
-  } catch (err) {
-    console.error("OCR Error:", err);
-    res
+      return res.status(400).json({ ok: false, message: "No file uploaded" });
+    const fileUrl = `/uploads/${req.file.filename}`;
+    return res.json({ ok: true, fileUrl });
+  } catch (e) {
+    console.error("franchisee.uploadDocument error:", e);
+    return res
       .status(500)
-      .json({ success: false, message: "OCR failed", details: err.message });
-  } finally {
-    if (tempImageFromPdf && fs.existsSync(tempImageFromPdf)) {
-      safeUnlink(tempImageFromPdf);
-      try {
-        fs.rmdirSync(path.dirname(tempImageFromPdf), { recursive: true });
-      } catch (_) {}
-    }
+      .json({ ok: false, message: "Upload failed", details: e.message });
   }
 };
 
-// JSON body saves for PAN/Aadhaar/GST fields (no file here)
-// Always update a single doc:
-// - If vendorId present: filter = {_id: vendorId}  (name kept for compatibility)
-// - Else: filter by any of the known identifiers (PAN/Aadhaar/GST)
-// Use upsert + runValidators:false so drafts don't fail on required fields
+/**
+ * POST/PATCH /step-by-key  (partial upsert)
+ * Accepts the same body as your vendor flow. Creates/updates doc by _id without triggering required validators.
+ * If no id provided, generates one and sets role='franchisee_owner' on insert.
+ */
 exports.saveStepByKey = async (req, res) => {
   try {
-    console.log("saveStepByKey body:", JSON.stringify(req.body));
     const b = req.body || {};
+    const id =
+      b.franchiseeId && mongoose.Types.ObjectId.isValid(b.franchiseeId)
+        ? b.franchiseeId
+        : b.vendorId && mongoose.Types.ObjectId.isValid(b.vendorId)
+          ? b.vendorId
+          : new mongoose.Types.ObjectId();
 
-    const vendorId = b.vendorId && String(b.vendorId).trim();
-    const pan = b.pan_number ? String(b.pan_number).toUpperCase().trim() : "";
-    const aad = b.aadhar_number
-      ? String(b.aadhar_number).replace(/\D/g, "")
-      : "";
-    const gst = b.gst_number ? String(b.gst_number).toUpperCase().trim() : "";
-
-    // 1) Build filter
-    let filter = null;
-    if (vendorId) {
-      filter = { _id: vendorId };
-    } else {
-      const or = [];
-      if (pan) or.push({ pan_number: pan });
-      if (aad) or.push({ aadhar_number: aad });
-      if (gst) or.push({ gst_number: gst });
-      if (or.length === 0) {
-        return res.status(400).json({
-          ok: false,
-          message:
-            "Provide vendorId or one of pan_number/aadhar_number/gst_number",
-        });
-      }
-      filter = { $or: or };
-    }
-
-    // 2) Build $set
     const set = { updated_at: new Date() };
-    if (pan) set.pan_number = pan;
-    if (aad) set.aadhar_number = aad;
-    if (gst) set.gst_number = gst;
 
-    for (const k of [
-      "pan_pic",
-      "aadhar_pic_front",
-      "aadhar_pic_back",
-      "gst_cert_pic",
-      "gst_legal_name",
-      "gst_constitution",
-      "vendor_fname",
-      "vendor_lname",
-      "gender",
-    ]) {
-      if (Object.prototype.hasOwnProperty.call(b, k)) {
-        const v = b[k];
-        if (v !== undefined && v !== null && String(v).trim() !== "") {
-          set[k] = String(v).trim();
-        }
-      }
-    }
+    // Identity
+    if (b.vendor_fname) set.vendor_fname = String(b.vendor_fname).trim();
+    if (b.vendor_lname) set.vendor_lname = String(b.vendor_lname).trim();
+    if (b.dob) set.dob = String(b.dob).trim();
 
-    if (Object.prototype.hasOwnProperty.call(b, "dob") && b.dob) {
-      const parsed = parseDobToDate(b.dob);
-      if (!parsed) {
-        return res.status(400).json({
-          ok: false,
-          message: "Invalid DOB format. Use DD/MM/YYYY or YYYY-MM-DD.",
-        });
-      }
-      set.dob = parsed;
-    }
+    // PAN
+    if (b.pan_number)
+      set.pan_number = String(b.pan_number).trim().toUpperCase();
+    if (b.pan_pic) set.pan_pic = String(b.pan_pic).trim();
 
+    // Aadhaar
+    if (b.aadhar_number) set.aadhar_number = String(b.aadhar_number).trim();
+    if (b.aadhar_pic_front)
+      set.aadhar_pic_front = String(b.aadhar_pic_front).trim();
+    if (b.aadhar_pic_back)
+      set.aadhar_pic_back = String(b.aadhar_pic_back).trim();
+
+    // Registered/Business address
     if (
       b.register_business_address &&
       typeof b.register_business_address === "object"
     ) {
-      const a = b.register_business_address;
-      for (const k of ["street", "city", "state", "country", "postalCode"]) {
-        const v = a[k];
+      const addr = b.register_business_address;
+      ["street", "city", "state", "country", "postalCode"].forEach((k) => {
+        const v = addr[k];
         if (v !== undefined && v !== null && String(v).trim() !== "") {
           set[`register_business_address.${k}`] = String(v).trim();
         }
-      }
+      });
     }
 
-    if (b.gst_address && typeof b.gst_address === "object") {
-      const g = b.gst_address;
-      for (const k of [
-        "floorNo",
-        "buildingNo",
-        "street",
-        "locality",
-        "city",
-        "district",
-        "state",
-        "postalCode",
-      ]) {
-        const v = g[k];
-        if (v !== undefined && v !== null && String(v).trim() !== "") {
-          set[`gst_address.${k}`] = String(v).trim();
-        }
-      }
-    }
-
-    // 3) Upsert draft safely (no required-field validation during steps)
-    const updated = await FranchiseHead.findOneAndUpdate(
-      filter,
-      { $set: set, $setOnInsert: { created_at: new Date() } },
+    const doc = await Franchise.findOneAndUpdate(
+      { _id: id },
+      {
+        $set: set,
+        $setOnInsert: { role: "franchisee_owner", created_at: new Date() },
+      },
       {
         new: true,
         upsert: true,
+        setDefaultsOnInsert: true,
         runValidators: false,
-        setDefaultsOnInsert: false,
       }
     );
 
-    return res.json({ ok: true, data: updated });
+    return res.json({ ok: true, data: doc, franchiseeId: doc._id });
   } catch (e) {
-    console.error("saveStepByKey error:", e);
-    return res.status(500).json({
-      ok: false,
-      message: "Save step-by-key failed",
-      details: e.message,
-    });
+    console.error("franchisee.saveStepByKey error:", e);
+    return res
+      .status(500)
+      .json({ ok: false, message: "Save failed", details: e.message });
   }
 };
 
-// Legacy: PATCH /api/franchise-head/:vendorId/step (kept for completeness)
+/**
+ * Optional legacy: PATCH /:franchiseeId/step
+ */
 exports.saveStep = async (req, res) => {
   try {
-    const { vendorId } = req.params;
-    if (!vendorId)
-      return res.status(400).json({ ok: false, message: "vendorId required" });
-
-    const updateBody = { ...(req.body || {}) };
-    if (Object.prototype.hasOwnProperty.call(updateBody, "dob")) {
-      const dobDate = parseDobToDate(updateBody.dob);
-      if (!dobDate)
-        return res.status(400).json({
-          ok: false,
-          message: "Invalid DOB format. Use DD/MM/YYYY or YYYY-MM-DD.",
-        });
-      updateBody.dob = dobDate;
-    }
-
-    const doc = await FranchiseHead.findByIdAndUpdate(
-      vendorId,
-      { $set: updateBody, $currentDate: { updated_at: true } },
+    const { franchiseeId } = req.params;
+    if (!franchiseeId)
+      return res.status(400).json({ ok: false, message: "ID required" });
+    const set = { ...(req.body || {}), updated_at: new Date() };
+    const doc = await Franchise.findByIdAndUpdate(
+      franchiseeId,
+      { $set: set },
       { new: true, runValidators: false }
     );
-    if (!doc)
-      return res
-        .status(404)
-        .json({ ok: false, message: "Franchise head not found" });
+    if (!doc) return res.status(404).json({ ok: false, message: "Not found" });
     res.json({ ok: true, data: doc });
   } catch (e) {
-    console.error(e);
+    console.error("franchisee.saveStep error:", e);
     res
       .status(500)
-      .json({ ok: false, message: "Save step failed", details: e.message });
+      .json({ ok: false, message: "Save failed", details: e.message });
   }
 };
 
-// PUT /api/franchise-head/gst  (multipart form-data: document + fields)
-// No OCR. Always update same record by vendorId.
+/**
+ * PUT /gst  (multipart/form-data)
+ */
 exports.updateGst = async (req, res) => {
   try {
-    const vendorId = (req.body.vendorId || "").trim();
-    if (!vendorId)
-      return res.status(400).json({ ok: false, message: "vendorId required" });
+    const b = req.body || {};
+    const id = (b.franchiseeId || b.vendorId || "").trim();
+    if (!id)
+      return res
+        .status(400)
+        .json({ ok: false, message: "franchiseeId required" });
 
     const set = { updated_at: new Date() };
 
-    if (req.file) {
-      set.gst_cert_pic = `/uploads/${req.file.filename}`;
-    }
-
-    const b = req.body || {};
+    if (req.file) set.gst_cert_pic = `/uploads/${req.file.filename}`;
     if (b.gst_number)
-      set.gst_number = String(b.gst_number).toUpperCase().trim();
+      set.gst_number = String(b.gst_number).trim().toUpperCase();
     if (b.gst_legal_name) set.gst_legal_name = String(b.gst_legal_name).trim();
     if (b.gst_constitution)
       set.gst_constitution = String(b.gst_constitution).trim();
 
-    // support bracket style fields from FormData: gst_address[city], etc.
-    for (const k of [
+    const g = b.gst_address || {};
+    const keys = [
       "floorNo",
       "buildingNo",
       "street",
@@ -808,48 +146,42 @@ exports.updateGst = async (req, res) => {
       "district",
       "state",
       "postalCode",
-    ]) {
-      const v = (b.gst_address && b.gst_address[k]) ?? b[`gst_address[${k}]`];
+    ];
+    for (const k of keys) {
+      const v = g[k] ?? b[`gst_address[${k}]`];
       if (v !== undefined && v !== null && String(v).trim() !== "") {
         set[`gst_address.${k}`] = String(v).trim();
       }
     }
 
-    const updated = await FranchiseHead.findByIdAndUpdate(
-      vendorId,
+    const updated = await Franchise.findByIdAndUpdate(
+      id,
       { $set: set },
       { new: true, runValidators: false }
     );
     if (!updated)
-      return res
-        .status(404)
-        .json({ ok: false, message: "Franchise head not found" });
-
+      return res.status(404).json({ ok: false, message: "Not found" });
     return res.json({ ok: true, data: updated });
   } catch (e) {
-    console.error("updateGst error:", e);
+    console.error("franchisee.updateGst error:", e);
     return res
       .status(500)
       .json({ ok: false, message: "GST update failed", details: e.message });
   }
 };
 
-// New function to update bank details
-// PUT /api/franchise-head/:vendorId/bank  (or /api/franchise-head/bank with vendorId in body)
+/**
+ * PUT /bank   and   PUT /:franchiseeId/bank  (multipart/form-data)
+ */
 exports.updateBankDetails = async (req, res) => {
   try {
-    const vendorId = req.params.vendorId;
-    if (!vendorId) {
-      return res
-        .status(400)
-        .json({ ok: false, message: "Vendor ID is required" });
-    }
+    const id =
+      req.params.franchiseeId || req.body.franchiseeId || req.body.vendorId;
+    if (!id)
+      return res.status(400).json({ ok: false, message: "ID is required" });
 
     const set = { updated_at: new Date() };
-
-    if (req.file) {
-      set.cancel_cheque_passbook = `/uploads/${req.file.filename}`;
-    }
+    if (req.file) set.cancel_cheque_passbook = `/uploads/${req.file.filename}`;
 
     const b = req.body || {};
     if (b.account_holder_name)
@@ -860,43 +192,39 @@ exports.updateBankDetails = async (req, res) => {
     if (b.branch_name) set.branch_name = String(b.branch_name).trim();
     if (b.bank_address) set.bank_address = String(b.bank_address).trim();
 
-    const updated = await FranchiseHead.findByIdAndUpdate(
-      vendorId,
+    const updated = await Franchise.findByIdAndUpdate(
+      id,
       { $set: set },
       { new: true, runValidators: false }
     );
-
-    if (!updated) {
-      return res
-        .status(404)
-        .json({ ok: false, message: "Franchise head not found" });
-    }
-
+    if (!updated)
+      return res.status(404).json({ ok: false, message: "Not found" });
     return res.json({ ok: true, data: updated });
   } catch (e) {
-    console.error("updateBank error:", e);
+    console.error("franchisee.updateBank error:", e);
     return res
       .status(500)
       .json({ ok: false, message: "Bank update failed", details: e.message });
   }
 };
 
-// Reuse updateBankDetails when vendorId is in URL
 exports.updateBankByParam = async (req, res) => {
   req.body = req.body || {};
-  req.body.vendorId = req.params.vendorId;
+  req.body.franchiseeId = req.params.franchiseeId;
   return exports.updateBankDetails(req, res);
 };
 
-// PUT /api/franchise-head/outlet  (multipart form-data)
-// Fields: vendorId, outlet_* , outlet_location[...], outlet_coords[lat|lng], outlet_nameboard_image
+/**
+ * PUT /outlet  (multipart/form-data)
+ */
 exports.updateOutlet = async (req, res) => {
   try {
     const b = req.body || {};
-    const vendorId = (b.vendorId || "").trim();
-    if (!vendorId) {
-      return res.status(400).json({ ok: false, message: "vendorId required" });
-    }
+    const id = (b.franchiseeId || b.vendorId || "").trim();
+    if (!id)
+      return res
+        .status(400)
+        .json({ ok: false, message: "franchiseeId required" });
 
     const set = { updated_at: new Date() };
 
@@ -910,19 +238,14 @@ exports.updateOutlet = async (req, res) => {
 
     if (b.outlet_location && typeof b.outlet_location === "object") {
       const a = b.outlet_location;
-      const keys = [
-        "street",
-        "city",
-        "district",
-        "state",
-        "country",
-        "postalCode",
-      ];
-      keys.forEach((k) => {
-        if (a[k] !== undefined && a[k] !== null && String(a[k]).trim() !== "") {
-          set[`outlet_location.${k}`] = String(a[k]).trim();
+      ["street", "city", "district", "state", "country", "postalCode"].forEach(
+        (k) => {
+          const v = a[k];
+          if (v !== undefined && v !== null && String(v).trim() !== "") {
+            set[`outlet_location.${k}`] = String(v).trim();
+          }
         }
-      });
+      );
     }
 
     if (b.outlet_coords && typeof b.outlet_coords === "object") {
@@ -933,74 +256,79 @@ exports.updateOutlet = async (req, res) => {
         set["outlet_coords.lng"] = Number(lng);
     }
 
-    if (req.file) {
-      // store filename only
-      set.outlet_nameboard_image = req.file.filename;
-    }
+    if (req.file) set.outlet_nameboard_image = req.file.filename;
 
-    const updated = await FranchiseHead.findByIdAndUpdate(
-      vendorId,
+    const updated = await Franchise.findByIdAndUpdate(
+      id,
       { $set: set },
-      { new: true }
+      { new: true, runValidators: false }
     );
     if (!updated)
-      return res
-        .status(404)
-        .json({ ok: false, message: "Franchise head not found" });
-
-    res.json({ ok: true, data: updated });
+      return res.status(404).json({ ok: false, message: "Not found" });
+    return res.json({ ok: true, data: updated });
   } catch (e) {
-    console.error("updateOutlet error:", e);
-    res
+    console.error("franchisee.updateOutlet error:", e);
+    return res
       .status(500)
       .json({ ok: false, message: "Outlet update failed", details: e.message });
   }
 };
 
-// Middleware to validate geolocation data
+// Optional helper
 exports.validateGeolocation = (req, res, next) => {
   const { lat, lng } = req.body.outlet_coords || {};
-
   if (lat === undefined || lng === undefined) {
     return res
       .status(400)
       .json({ ok: false, message: "Latitude and longitude are required." });
   }
-
   if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
     return res
       .status(400)
       .json({ ok: false, message: "Invalid latitude or longitude." });
   }
-
   next();
 };
 
-// Register (kept for parity with vendor)
-// POST /api/franchise-head/register
-exports.registerFranchiseHead = async (req, res) => {
+/**
+ * POST /register  – finalize
+ */
+exports.registerFranchisee = async (req, res) => {
   try {
-    const franchiseData = req.body;
-    const doc = new FranchiseHead(franchiseData);
-    await doc.save();
+    const id = req.body.franchiseeId || req.body.vendorId;
+    if (!id)
+      return res
+        .status(400)
+        .json({ ok: false, message: "franchiseeId required" });
+    const updated = await Franchise.findByIdAndUpdate(
+      id,
+      {
+        $set: { status: "submitted", updated_at: new Date() },
+        $setOnInsert: { role: "franchisee_owner" },
+      },
+      { new: true, upsert: true, runValidators: false }
+    );
     res
       .status(201)
       .json({
-        message: "Franchise head registered successfully",
-        franchise: doc,
+        ok: true,
+        message: "Franchisee registered",
+        franchisee: updated,
       });
   } catch (error) {
+    console.error("franchisee.register error:", error);
     res
       .status(500)
-      .json({ message: "Error registering franchise head", error });
+      .json({
+        ok: false,
+        message: "Error registering franchisee",
+        error: error.message,
+      });
   }
 };
 
-// Alias so existing callers named "registerVendor" still work if reused
-exports.registerVendor = exports.registerFranchiseHead;
-
 module.exports = {
-  uploadOCR: exports.uploadOCR,
+  uploadDocument: exports.uploadDocument,
   saveStepByKey: exports.saveStepByKey,
   saveStep: exports.saveStep,
   updateGst: exports.updateGst,
@@ -1008,5 +336,5 @@ module.exports = {
   updateBankByParam: exports.updateBankByParam,
   updateOutlet: exports.updateOutlet,
   validateGeolocation: exports.validateGeolocation,
-  registerVendor: exports.registerVendor,
+  registerFranchisee: exports.registerFranchisee,
 };

@@ -1,81 +1,95 @@
+// routes/customerBecomeVendorRoutes.js
 const express = require("express");
 const router = express.Router();
-const ctrl = require("../controllers/customerVendorController");
+const path = require("path");
+const multer = require("multer");
 
-// reuse your existing upload middleware if present
+const customerController = require("../controllers/customerVendorController");
+
+// Try project upload middleware, else fallback to basic multer
 let uploadModule;
 try {
   uploadModule = require("../middleware/upload");
 } catch (e) {
   try {
     uploadModule = require("../upload");
-  } catch (e2) {
+  } catch (_e2) {
     uploadModule = null;
   }
 }
-const upload = uploadModule?.upload || uploadModule;
-
-router.get("/", (req, res) =>
-  res.json({ ok: true, msg: "customer-vendor root" })
-);
-
-// OCR (single file field: document)
-if (!upload || typeof upload.single !== "function") {
-  router.post("/ocr", (req, res) =>
-    res.status(500).json({ ok: false, message: "Upload middleware not found." })
-  );
-} else {
-  router.post("/ocr", upload.single("document"), ctrl.uploadOCR);
+let upload = uploadModule?.upload || uploadModule;
+if (!upload) {
+  const storage = multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, "uploads/"),
+    filename: (_req, file, cb) => {
+      const unique = Date.now() + "-" + Math.round(Math.random() * 1e9);
+      cb(null, unique + path.extname(file.originalname));
+    },
+  });
+  upload = multer({ storage });
 }
 
-// step-by-key
-router.post("/step-by-key", ctrl.saveStepByKey);
-router.patch("/step-by-key", ctrl.saveStepByKey);
+// Root probe
+router.get("/", (_req, res) =>
+  res.json({ ok: true, msg: "customer-become-vendors root" })
+);
 
-// legacy step
-router.patch("/:vendorId/step", ctrl.saveStep);
+// Simple upload (no OCR). Field: "document"
+router.post(
+  "/upload",
+  upload.single("document"),
+  customerController.uploadDocument
+);
+
+// Step save (partial upsert)
+router.post("/step-by-key", customerController.saveStepByKey);
+router.patch("/step-by-key", customerController.saveStepByKey);
+
+// Optional legacy
+router.patch("/:customerBecomeVendorId/step", customerController.saveStep);
 
 // GST
-router.put("/gst", upload.single("document"), ctrl.updateGst);
+router.put("/gst", upload.single("document"), customerController.updateGst);
 
 // Bank
 router.put(
-  "/:vendorId/bank",
+  "/bank",
   upload.single("document"),
-  ctrl.updateBankByParam
+  customerController.updateBankDetails
+);
+router.put(
+  "/:customerBecomeVendorId/bank",
+  upload.single("document"),
+  customerController.updateBankByParam
 );
 
-// Outlet nameboard upload (image only)
-const multer = require("multer");
-const path = require("path");
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "uploads/"),
-  filename: (req, file, cb) =>
-    cb(
-      null,
-      Date.now() +
-        "-" +
-        Math.round(Math.random() * 1e9) +
-        path.extname(file.originalname)
-    ),
-});
-const uploadOutlet = multer({
-  storage,
-  limits: { fileSize: 5 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    const allowed = /jpeg|jpg|png/;
-    const ext = path.extname(file.originalname).toLowerCase();
-    const ok = allowed.test(ext) && allowed.test(file.mimetype);
-    cb(ok ? null : new Error("Only JPG, JPEG, PNG allowed"), ok);
+// Outlet (restrict to images up to 5MB)
+const outletStorage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, "uploads/"),
+  filename: (_req, file, cb) => {
+    const unique = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, unique + path.extname(file.originalname));
   },
 });
+const uploadOutlet = multer({
+  storage: outletStorage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    const allowed = /jpeg|jpg|png/;
+    const ext = path.extname(file.originalname).toLowerCase();
+    const mime = file.mimetype.toLowerCase();
+    if (allowed.test(ext) && allowed.test(mime)) return cb(null, true);
+    return cb(new Error("Only JPG, JPEG, PNG allowed"));
+  },
+});
+
 router.put(
   "/outlet",
   uploadOutlet.single("outlet_nameboard_image"),
-  ctrl.updateOutlet
+  customerController.updateOutlet
 );
 
-// Register
-router.post("/register", ctrl.registerCustomerVendor);
+// Finalize
+router.post("/register", customerController.registerCustomerBecomeVendor);
 
 module.exports = router;

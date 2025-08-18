@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import API from "../../utils/api"; // same helper you use
+import axios  from "axios";
 import { Form, Button, Spinner, Row, Col } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import Select from "react-select";
-import axios from "axios";
 
+// Options
 const constitutionOptions = [
   { value: "proprietorship", label: "Proprietorship" },
   { value: "partnership", label: "Partnership" },
@@ -14,24 +14,20 @@ const constitutionOptions = [
   { value: "trust", label: "Trust" },
   { value: "society", label: "Society" },
 ];
+
 export default function FranchiseHeadForm() {
   const navigate = useNavigate();
+
   const [step, setStep] = useState(1);
-  const [docId, setDocId] = useState(
-    () => localStorage.getItem("franchiseHeadId") || ""
+  const [franchiseeId, setFranchiseeId] = useState(
+    () => localStorage.getItem("franchiseeId") || ""
   );
 
-  const [mismatch, setMismatch] = useState({
-    show: false,
-    title: "",
-    items: [],
-  });
-
+  // Loading flags for uploads/saves
   const [loadingPan, setLoadingPan] = useState(false);
   const [loadingAFront, setLoadingAFront] = useState(false);
   const [loadingABack, setLoadingABack] = useState(false);
   const [loadingGST, setLoadingGST] = useState(false);
-  const [bankFile, setBankFile] = useState(null);
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -45,68 +41,67 @@ export default function FranchiseHeadForm() {
     register_state: "",
     register_country: "India",
     register_postalCode: "",
+    // GST manual fields
     gstNumber: "",
     gstLegalName: "",
-    gstConstitution: "",
+    constitution_of_business: "",
     gst_floorNo: "",
     gst_buildingNo: "",
     gst_street: "",
     gst_locality: "",
     gst_district: "",
   });
-const handleSelectChange = (selectedOption, field) => {
-  setFormData((prevData) => ({
-    ...prevData,
-    [field.name]: selectedOption ? selectedOption.label : "",
-  }));
-};
+
+  const handleSelectChange = (selectedOption, field) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field.name]: selectedOption ? selectedOption.label : "",
+    }));
+  };
+
   const fmtAadhaarUI = (digits) =>
     (digits || "")
       .replace(/\D/g, "")
       .replace(/(\d{4})(?=\d)/g, "$1 ")
       .trim();
 
-  // ---------- Step 1: PAN ----------
+  // upload helper (no OCR)
+  const uploadDoc = async (file) => {
+    const fd = new FormData();
+    fd.append("document", file);
+    const { data } = await axios.post(
+      `${import.meta.env.VITE_API_URL}/api/franchisees/upload`,
+      fd,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
+    if (!data?.ok || !data?.fileUrl) throw new Error("Upload failed");
+    return data.fileUrl;
+  };
+
+  // -------------------- PAN (Step 1) --------------------
   const onPanUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const fd = new FormData();
-    fd.append("document", file);
     setLoadingPan(true);
     try {
-      const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/api/franchise-head/ocr`, fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      if (!data?.success) throw new Error("PAN OCR failed");
-
-      const { extracted = {}, fileUrl } = data;
-      const next = {
-        firstName: extracted.name || formData.firstName,
-        lastName: extracted.fatherName || formData.lastName,
-        dob: extracted.dob || formData.dob,
-        panNumber: (
-          extracted.panNumber ||
-          formData.panNumber ||
-          ""
-        ).toUpperCase(),
-      };
-      setFormData((p) => ({ ...p, ...next }));
-
-      if (next.panNumber && fileUrl) {
-        const r = await axios.post(`${import.meta.env.VITE_API_URL}/api/franchise-head/step-by-key`, {
-          vendorId: docId,
-          pan_number: next.panNumber,
+      const fileUrl = await uploadDoc(file);
+      const r = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/franchisees/step-by-key`,
+        {
+          franchiseeId,
           pan_pic: fileUrl,
-        });
-        const id = r?.data?.data?._id;
-        if (id && !docId) {
-          setDocId(id);
-          localStorage.setItem("franchiseHeadId", id);
         }
+      );
+      const id = r?.data?.data?._id;
+      if (id && !franchiseeId) {
+        setFranchiseeId(id);
+        localStorage.setItem("franchiseeId", id);
       }
     } catch (err) {
       console.error(err);
-      alert("PAN OCR failed");
+      alert("PAN upload failed");
     } finally {
       setLoadingPan(false);
     }
@@ -114,17 +109,22 @@ const handleSelectChange = (selectedOption, field) => {
 
   const saveStep1AndNext = async () => {
     try {
-      const r = await axios.post(`${import.meta.env.VITE_API_URL}/api/franchise-head/step-by-key`, {
-        vendorId: docId,
+      const payload = {
+        franchiseeId,
         pan_number: (formData.panNumber || "").toUpperCase(),
         vendor_fname: formData.firstName || "",
         vendor_lname: formData.lastName || "",
         dob: formData.dob || "",
-      });
-      const id = r?.data?.data?._id;
+      };
+      const resp = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/franchisees/step-by-key`,
+        payload
+      );
+      if (!resp?.data?.ok) throw new Error("Save failed");
+      const id = resp?.data?.data?._id;
       if (id) {
-        setDocId(id);
-        localStorage.setItem("franchiseHeadId", id);
+        setFranchiseeId(id);
+        localStorage.setItem("franchiseeId", id);
       }
       setStep(2);
     } catch (e) {
@@ -133,41 +133,28 @@ const handleSelectChange = (selectedOption, field) => {
     }
   };
 
-  // ---------- Step 2: Aadhaar ----------
+  // -------------------- Aadhaar (Step 2) --------------------
   const onAadhaarFront = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const fd = new FormData();
-    fd.append("document", file);
     setLoadingAFront(true);
     try {
-      const { data } = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/franchise-head/ocr?side=aadhaar_front`,
-        fd,
+      const fileUrl = await uploadDoc(file);
+      const r = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/franchisees/step-by-key`,
         {
-          headers: { "Content-Type": "multipart/form-data" },
+          franchiseeId,
+          aadhar_pic_front: fileUrl,
         }
       );
-      if (!data?.success) throw new Error("Aadhaar front OCR failed");
-
-      const a12 = (data?.extracted?.aadhaarNumber || "").replace(/\D/g, "");
-      if (a12) {
-        setFormData((p) => ({ ...p, aadharNumber: fmtAadhaarUI(a12) }));
-        const r = await axios.post(`${import.meta.env.VITE_API_URL}/api/franchise-head/step-by-key`, {
-          vendorId: docId,
-          aadhar_number: a12,
-          aadhar_pic_front: data.fileUrl || undefined,
-          side: "front",
-        });
-        const id = r?.data?.data?._id;
-        if (id && !docId) {
-          setDocId(id);
-          localStorage.setItem("franchiseHeadId", id);
-        }
+      const id = r?.data?.data?._id;
+      if (id && !franchiseeId) {
+        setFranchiseeId(id);
+        localStorage.setItem("franchiseeId", id);
       }
     } catch (err) {
       console.error(err);
-      alert("Aadhaar front OCR failed");
+      alert("Aadhaar front upload failed");
     } finally {
       setLoadingAFront(false);
     }
@@ -176,128 +163,105 @@ const handleSelectChange = (selectedOption, field) => {
   const onAadhaarBack = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const fd = new FormData();
-    fd.append("document", file);
     setLoadingABack(true);
     try {
-      const { data } = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/franchise-head/ocr?side=aadhaar_back`,
-        fd,
+      const fileUrl = await uploadDoc(file);
+      const r = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/franchisees/step-by-key`,
         {
-          headers: { "Content-Type": "multipart/form-data" },
+          franchiseeId,
+          aadhar_pic_back: fileUrl,
         }
       );
-      if (!data?.success) throw new Error("Aadhaar back OCR failed");
-
-      const a12 = (data?.extracted?.aadhaarNumber || "").replace(/\D/g, "");
-      const addr = data?.extracted?.address || {};
-      setFormData((p) => ({
-        ...p,
-        aadharNumber: a12 ? fmtAadhaarUI(a12) : p.aadharNumber,
-        register_street: addr.street || "",
-        register_city: addr.city || "",
-        register_state: addr.state || "",
-        register_postalCode: addr.postalCode || "",
-        register_country: "India",
-      }));
-
-      await axios.post(`${import.meta.env.VITE_API_URL}/api/franchise-head/step-by-key`, {
-        vendorId: docId,
-        aadhar_number: a12,
-        aadhar_pic_back: data.fileUrl || undefined,
-        side: "back",
-        register_business_address: {
-          street: addr.street || "",
-          city: addr.city || "",
-          state: addr.state || "",
-          country: "India",
-          postalCode: addr.postalCode || "",
-        },
-      });
-    } catch (e2) {
-      console.error(e2);
-      alert("Aadhaar back OCR failed");
+      const id = r?.data?.data?._id;
+      if (id && !franchiseeId) {
+        setFranchiseeId(id);
+        localStorage.setItem("franchiseeId", id);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Aadhaar back upload failed");
     } finally {
       setLoadingABack(false);
     }
   };
 
   const saveStep2AndNext = async () => {
-    const aRaw = (formData.aadharNumber || "").replace(/\D/g, "");
-    if (!aRaw) return alert("Missing Aadhaar number");
-    await axios.post(`${import.meta.env.VITE_API_URL}/api/franchise-head/step-by-key`, {
-      vendorId: docId,
-      aadhar_number: aRaw,
-      register_business_address: {
-        street: formData.register_street || "",
-        city: formData.register_city || "",
-        state: formData.register_state || "",
-        country: formData.register_country || "India",
-        postalCode: formData.register_postalCode || "",
-      },
-    });
-    setStep(3);
+    try {
+      const aNumRaw = (formData.aadharNumber || "").replace(/\D/g, "");
+      if (!aNumRaw) {
+        alert("Missing Aadhaar number");
+        return;
+      }
+      const r = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/franchisees/step-by-key`,
+        {
+          franchiseeId,
+          aadhar_number: aNumRaw,
+          register_business_address: {
+            street: formData.register_street || "",
+            city: formData.register_city || "",
+            state: formData.register_state || "",
+            country: formData.register_country || "India",
+            postalCode: formData.register_postalCode || "",
+          },
+        }
+      );
+      const id = r?.data?.data?._id;
+      if (id && !franchiseeId) {
+        setFranchiseeId(id);
+        localStorage.setItem("franchiseeId", id);
+      }
+      alert("Aadhaar slide saved");
+      setStep(3);
+    } catch (e) {
+      console.error(e);
+      alert("Save failed");
+    }
   };
 
-  // ---------- Step 3: GST ----------
-  const onGstUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const fd = new FormData();
-    fd.append("document", file);
-    setLoadingGST(true);
-    try {
-      const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/api/franchise-head/ocr?side=gst`, fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      if (!data?.success) throw new Error("GST OCR failed");
+  // -------------------- GST (Step 3 — manual; file optional) --------------------
+  const [gstFile, setGstFile] = useState(null);
+  const onGstFileSelect = (e) => setGstFile(e.target.files?.[0] || null);
 
-      const ex = data.extracted || {};
-      setFormData((p) => ({
-        ...p,
-        gstNumber: ex.gst_number || p.gstNumber,
-        gstLegalName: ex.legal_name || p.gstLegalName,
-        gstConstitution: ex.constitution || p.gstConstitution,
-        gst_floorNo: ex.address?.floorNo || p.gst_floorNo,
-        gst_buildingNo: ex.address?.buildingNo || p.gst_buildingNo,
-        gst_street: ex.address?.street || p.gst_street,
-        gst_locality: ex.address?.locality || p.gst_locality,
-        gst_district: ex.address?.district || p.gst_district,
-      }));
-      if (ex.gst_number && data.fileUrl) {
-        await axios.post(`${import.meta.env.VITE_API_URL}/api/franchise-head/step-by-key`, {
-          vendorId: docId,
-          gst_number: ex.gst_number,
-          gst_cert_pic: data.fileUrl,
-        });
+  const saveGstAndNext = async () => {
+    try {
+      if (!franchiseeId) {
+        alert("Missing franchiseeId. Complete Step 1 first.");
+        return;
       }
-    } catch (err) {
-      console.error(err);
-      alert("GST OCR failed");
+      const fd = new FormData();
+      fd.append("franchiseeId", franchiseeId);
+      if (gstFile) fd.append("document", gstFile);
+      fd.append("gst_number", (formData.gstNumber || "").toUpperCase());
+      fd.append("gst_legal_name", formData.gstLegalName || "");
+      fd.append("gst_constitution", formData.constitution_of_business || "");
+      fd.append("gst_address[floorNo]", formData.gst_floorNo || "");
+      fd.append("gst_address[buildingNo]", formData.gst_buildingNo || "");
+      fd.append("gst_address[street]", formData.gst_street || "");
+      fd.append("gst_address[locality]", formData.gst_locality || "");
+      fd.append("gst_address[district]", formData.gst_district || "");
+
+      setLoadingGST(true);
+      const r = await axios.put(
+        `${import.meta.env.VITE_API_URL}/api/franchisees/gst`,
+        fd,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+      if (!r?.data?.ok) throw new Error(r?.data?.message || "Save failed");
+      setStep(4);
+    } catch (e) {
+      console.error(e);
+      alert("Save failed");
     } finally {
       setLoadingGST(false);
     }
   };
 
-  const saveGstAndNext = async () => {
-    const fd = new FormData();
-    fd.append("vendorId", docId);
-    fd.append("document", null); // optional file, handled by /ocr above
-    fd.append("gst_number", (formData.gstNumber || "").toUpperCase());
-    fd.append("gst_legal_name", formData.gstLegalName || "");
-    fd.append("gst_constitution", formData.gstConstitution || "");
-    fd.append("gst_address[floorNo]", formData.gst_floorNo || "");
-    fd.append("gst_address[buildingNo]", formData.gst_buildingNo || "");
-    fd.append("gst_address[street]", formData.gst_street || "");
-    fd.append("gst_address[locality]", formData.gst_locality || "");
-    fd.append("gst_address[district]", formData.gst_district || "");
-    await axios.put(`${import.meta.env.VITE_API_URL}/api/franchise-head/gst`, fd, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-    setStep(4);
-  };
-
-  // ---------- Step 4: Bank ----------
+  // -------------------- Bank Details (Step 4) --------------------
+  const [bankFile, setBankFile] = useState(null);
   const [bankData, setBankData] = useState({
     account_holder_name: "",
     account_no: "",
@@ -307,78 +271,42 @@ const handleSelectChange = (selectedOption, field) => {
     bank_address: "",
   });
 
-  const onBankUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const fd = new FormData();
-    fd.append("document", file);
-    const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/api/franchise-head/ocr?side=bank`, fd, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-    if (data?.success) {
-      const ex = data.extracted || {};
-      setBankData((p) => ({
-        ...p,
-        account_holder_name: ex.account_holder_name || p.account_holder_name,
-        account_no: ex.account_number || p.account_no,
-        ifcs_code: (ex.ifsc_code || p.ifcs_code || "").toUpperCase(),
-        bank_name: ex.bank_name || p.bank_name,
-        branch_name: ex.branch_name || p.branch_name,
-        bank_address: ex.bank_address || p.bank_address,
-      }));
-    }
-  };
-  const saveOutletAndNext = async () => {
-    const vid = docId || localStorage.getItem("vendorId");
-    if (!vid) {
-      alert("Missing vendorId. Complete earlier steps first.");
+  const onBankFileChange = (e) => setBankFile(e.target.files?.[0] || null);
+
+  const saveBankDetails = async () => {
+    const fid = franchiseeId || localStorage.getItem("franchiseeId");
+    if (!fid) {
+      alert("Franchisee ID is required. Complete earlier steps first.");
       return;
     }
-
     const fd = new FormData();
-    fd.append("vendorId", vid);
-    fd.append("outlet_name", outlet.outlet_name);
-    fd.append("outlet_manager_name", outlet.manager_name);
-    fd.append("outlet_contact_no", outlet.manager_mobile);
-    fd.append("outlet_phone_no", outlet.outlet_phone);
-
-    fd.append("outlet_location[street]", outlet.street);
-    fd.append("outlet_location[city]", outlet.city);
-    fd.append("outlet_location[district]", outlet.district);
-    fd.append("outlet_location[state]", outlet.state);
-    fd.append("outlet_location[country]", outlet.country || "India");
-    fd.append("outlet_location[postalCode]", outlet.postalCode);
-
-    if (outlet.lat) fd.append("outlet_coords[lat]", outlet.lat);
-    if (outlet.lng) fd.append("outlet_coords[lng]", outlet.lng);
-
-    if (outletImage) fd.append("outlet_nameboard_image", outletImage);
-
-    const r = await axios.put(`${import.meta.env.VITE_API_URL}/api/franchise-head/outlet`, fd, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-
-    if (!r?.data?.ok) throw new Error(r?.data?.message || "Save failed");
-    navigate("/franchise-head-success");
-
-    alert("Outlet details saved");
-    // setStep(6);
-  };
-  const saveBankDetails = async () => {
-    const fd = new FormData();
+    if (bankFile) fd.append("document", bankFile);
     fd.append("account_holder_name", bankData.account_holder_name || "");
     fd.append("account_no", bankData.account_no || "");
     fd.append("ifcs_code", (bankData.ifcs_code || "").toUpperCase());
     fd.append("bank_name", bankData.bank_name || "");
     fd.append("branch_name", bankData.branch_name || "");
     fd.append("bank_address", bankData.bank_address || "");
-    await API.put(`/api/franchise-head/${docId}/bank`, fd, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-    setStep(5);
+
+    try {
+      const response = await axios.put(
+        `${import.meta.env.VITE_API_URL}/api/franchisees/${fid}/bank`,
+        fd,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+      if (!response?.data?.ok)
+        throw new Error(response?.data?.message || "Save failed");
+      alert("Bank details saved successfully.");
+      setStep(5);
+    } catch (error) {
+      console.error("Error saving bank details:", error);
+      alert("Failed to save bank details.");
+    }
   };
 
-  // ---------- Step 5: Outlet ----------
+  // -------------------- Outlet Details (Step 5) --------------------
   const [outlet, setOutlet] = useState({
     outlet_name: "",
     manager_name: "",
@@ -394,27 +322,40 @@ const handleSelectChange = (selectedOption, field) => {
     lng: "",
   });
   const [outletImage, setOutletImage] = useState(null);
-  const fetchLocation = () => {
-    if (!navigator.geolocation) return alert("Geolocation not supported");
-    navigator.geolocation.getCurrentPosition(
-      ({ coords }) =>
-        setOutlet((p) => ({
-          ...p,
-          lat: coords.latitude,
-          lng: coords.longitude,
-        })),
-      () => alert("Failed to fetch location")
-    );
-  };
+
   const handleOutletImageChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      setOutletImage(e.target.files[0]);
+    if (e.target.files && e.target.files[0]) setOutletImage(e.target.files[0]);
+  };
+
+  const fetchLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setOutlet((prev) => ({ ...prev, lat: latitude, lng: longitude }));
+          alert(
+            `Location fetched: Latitude ${latitude}, Longitude ${longitude}`
+          );
+        },
+        (error) => {
+          console.error("Error fetching location:", error);
+          alert("Failed to fetch location. Please enable location services.");
+        }
+      );
+    } else {
+      alert("Geolocation is not supported by your browser.");
     }
   };
 
   const saveOutletAndFinish = async () => {
+    const fid = franchiseeId || localStorage.getItem("franchiseeId");
+    if (!fid) {
+      alert("Missing franchiseeId. Complete earlier steps first.");
+      return;
+    }
+
     const fd = new FormData();
-    fd.append("vendorId", docId);
+    fd.append("franchiseeId", fid);
     fd.append("outlet_name", outlet.outlet_name);
     fd.append("outlet_manager_name", outlet.manager_name);
     fd.append("outlet_contact_no", outlet.manager_mobile);
@@ -429,21 +370,27 @@ const handleSelectChange = (selectedOption, field) => {
     if (outlet.lng) fd.append("outlet_coords[lng]", outlet.lng);
     if (outletImage) fd.append("outlet_nameboard_image", outletImage);
 
-    const r = await axios.put(`${import.meta.env.VITE_API_URL}/api/franchise-head/outlet`, fd, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-    if (!r?.data?.ok) return alert("Save failed");
-    navigate("/franchise-head-success");
+    const r = await axios.put(
+      `${import.meta.env.VITE_API_URL}/api/franchisees/outlet`,
+      fd,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
+
+    if (!r?.data?.ok) throw new Error(r?.data?.message || "Save failed");
+    alert("Outlet details saved");
+    navigate("/franchisee-success");
   };
 
   useEffect(() => {
-    const id = localStorage.getItem("franchiseHeadId");
-    if (id) setDocId(id);
+    const id = localStorage.getItem("franchiseeId");
+    if (id) setFranchiseeId(id);
   }, []);
 
   return (
     <div>
-      <h4 className="mb-3">Franchise Head Registration</h4>
+      <h4 className="mb-3">Franchisee Owner Registration</h4>
       <div className="mb-3">
         <strong>Step {step} of 5</strong>
       </div>
@@ -460,10 +407,11 @@ const handleSelectChange = (selectedOption, field) => {
             />
             {loadingPan && (
               <div className="mt-2">
-                <Spinner size="sm" /> Reading PAN…
+                <Spinner size="sm" /> Uploading PAN…
               </div>
             )}
           </Form.Group>
+
           <Row>
             <Col md={6} className="mb-3">
               <Form.Label>First Name</Form.Label>
@@ -484,6 +432,7 @@ const handleSelectChange = (selectedOption, field) => {
               />
             </Col>
           </Row>
+
           <Row>
             <Col md={6} className="mb-3">
               <Form.Label>DOB (DD/MM/YYYY)</Form.Label>
@@ -507,8 +456,11 @@ const handleSelectChange = (selectedOption, field) => {
               />
             </Col>
           </Row>
+
           <div className="d-flex justify-content-end gap-2">
-            <Button onClick={saveStep1AndNext}>Save & Continue</Button>
+            <Button variant="primary" onClick={saveStep1AndNext}>
+              Save & Continue
+            </Button>
           </div>
         </div>
       )}
@@ -526,7 +478,7 @@ const handleSelectChange = (selectedOption, field) => {
             />
             {loadingAFront && (
               <div className="mt-2">
-                <Spinner size="sm" /> Reading front…
+                <Spinner size="sm" /> Uploading…
               </div>
             )}
           </Form.Group>
@@ -540,7 +492,7 @@ const handleSelectChange = (selectedOption, field) => {
             />
             {loadingABack && (
               <div className="mt-2">
-                <Spinner size="sm" /> Reading back…
+                <Spinner size="sm" /> Uploading…
               </div>
             )}
           </Form.Group>
@@ -644,17 +596,15 @@ const handleSelectChange = (selectedOption, field) => {
       {step === 3 && (
         <div>
           <h5 className="mb-3">Step 3: GST Details</h5>
-
           <div className="mb-3">
             <label>Upload GST Certificate (PDF/JPG/PNG)</label>
             <input
               type="file"
               accept=".pdf,.jpg,.jpeg,.png"
-              onChange={onGstUpload}
+              onChange={onGstFileSelect}
             />
             {loadingGST && <div className="mt-2">Saving GST…</div>}
           </div>
-
           <div className="mb-3">
             <label>GST Number</label>
             <input
@@ -667,7 +617,6 @@ const handleSelectChange = (selectedOption, field) => {
               }
             />
           </div>
-
           <div className="mb-3">
             <label>Legal Name</label>
             <input
@@ -702,6 +651,7 @@ const handleSelectChange = (selectedOption, field) => {
               />
             </div>
           </div>
+
           <div className="mt-3">
             <label>Floor No.</label>
             <input
@@ -759,7 +709,7 @@ const handleSelectChange = (selectedOption, field) => {
             <Form.Control
               type="file"
               accept=".pdf,.jpg,.jpeg,.png"
-              onChange={onBankUpload}
+              onChange={onBankFileChange}
             />
           </Form.Group>
 
@@ -834,10 +784,7 @@ const handleSelectChange = (selectedOption, field) => {
           </Row>
 
           <div className="d-flex justify-content-end gap-2">
-            <button
-              type="button"
-              onClick={() => saveBankDetails(bankFile, bankData)}
-            >
+            <button type="button" onClick={saveBankDetails}>
               Save Bank Details
             </button>
           </div>
@@ -891,65 +838,70 @@ const handleSelectChange = (selectedOption, field) => {
           </Row>
 
           <Row className="mb-3">
-            <Col md={6}>
-              <Form.Label>Street</Form.Label>
+            <Col md={12}>
+              <Form.Label>Address</Form.Label>
               <Form.Control
+                className="mb-2"
+                placeholder="Street"
                 value={outlet.street}
                 onChange={(e) =>
                   setOutlet((p) => ({ ...p, street: e.target.value }))
                 }
               />
-            </Col>
-            <Col md={6}>
-              <Form.Label>City</Form.Label>
-              <Form.Control
-                value={outlet.city}
-                onChange={(e) =>
-                  setOutlet((p) => ({ ...p, city: e.target.value }))
-                }
-              />
-            </Col>
-          </Row>
-
-          <Row className="mb-3">
-            <Col md={6}>
-              <Form.Label>District</Form.Label>
-              <Form.Control
-                value={outlet.district}
-                onChange={(e) =>
-                  setOutlet((p) => ({ ...p, district: e.target.value }))
-                }
-              />
-            </Col>
-            <Col md={6}>
-              <Form.Label>State</Form.Label>
-              <Form.Control
-                value={outlet.state}
-                onChange={(e) =>
-                  setOutlet((p) => ({ ...p, state: e.target.value }))
-                }
-              />
-            </Col>
-          </Row>
-
-          <Row className="mb-3">
-            <Col md={6}>
-              <Form.Label>Country</Form.Label>
-              <Form.Control
-                value={outlet.country}
-                onChange={(e) =>
-                  setOutlet((p) => ({ ...p, country: e.target.value }))
-                }
-              />
-            </Col>
-            <Col md={6}>
-              <Form.Label>Postal Code</Form.Label>
-              <Form.Control
-                value={outlet.postalCode}
-                onChange={(e) =>
-                  setOutlet((p) => ({ ...p, postalCode: e.target.value }))
-                }
-              />
+              <Row>
+                <Col md={4}>
+                  <Form.Control
+                    className="mb-2"
+                    placeholder="City"
+                    value={outlet.city}
+                    onChange={(e) =>
+                      setOutlet((p) => ({ ...p, city: e.target.value }))
+                    }
+                  />
+                </Col>
+                <Col md={4}>
+                  <Form.Control
+                    className="mb-2"
+                    placeholder="District"
+                    value={outlet.district}
+                    onChange={(e) =>
+                      setOutlet((p) => ({ ...p, district: e.target.value }))
+                    }
+                  />
+                </Col>
+                <Col md={4}>
+                  <Form.Control
+                    className="mb-2"
+                    placeholder="State"
+                    value={outlet.state}
+                    onChange={(e) =>
+                      setOutlet((p) => ({ ...p, state: e.target.value }))
+                    }
+                  />
+                </Col>
+              </Row>
+              <Row>
+                <Col md={6}>
+                  <Form.Control
+                    className="mb-2"
+                    placeholder="Country"
+                    value={outlet.country}
+                    onChange={(e) =>
+                      setOutlet((p) => ({ ...p, country: e.target.value }))
+                    }
+                  />
+                </Col>
+                <Col md={6}>
+                  <Form.Control
+                    className="mb-2"
+                    placeholder="PIN"
+                    value={outlet.postalCode}
+                    onChange={(e) =>
+                      setOutlet((p) => ({ ...p, postalCode: e.target.value }))
+                    }
+                  />
+                </Col>
+              </Row>
             </Col>
           </Row>
 
@@ -974,96 +926,25 @@ const handleSelectChange = (selectedOption, field) => {
             </Col>
           </Row>
 
-          <Form.Group className="mb-3">
-            <Form.Label>Fetch Location</Form.Label>
-            <Button variant="secondary" onClick={fetchLocation}>
-              Use Current Location
+          <div className="mb-2">
+            <Button variant="secondary" size="sm" onClick={fetchLocation}>
+              Use current location
             </Button>
-          </Form.Group>
+          </div>
 
           <Form.Group className="mb-3">
-            <Form.Label>Upload Outlet Nameboard Image (JPG, PNG)</Form.Label>
+            <Form.Label>Outlet Nameboard Image (JPG/PNG)</Form.Label>
             <Form.Control
               type="file"
-              accept=".jpg,.png"
+              accept=".jpg,.jpeg,.png"
               onChange={handleOutletImageChange}
             />
           </Form.Group>
 
           <div className="d-flex justify-content-end gap-2">
-            <button type="button" onClick={saveOutletAndNext}>
-              Save & Continue
+            <button type="button" onClick={saveOutletAndFinish}>
+              Save Outlet
             </button>
-          </div>
-        </div>
-      )}
-
-      {mismatch.show && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.45)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 9999,
-          }}
-        >
-          <div
-            style={{
-              width: "min(680px, 92vw)",
-              background: "#fff",
-              borderRadius: 12,
-              boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
-              padding: "20px 22px",
-            }}
-          >
-            <h3 style={{ margin: "0 0 8px 0" }}>{mismatch.title}</h3>
-            <div
-              style={{
-                maxHeight: 260,
-                overflow: "auto",
-                border: "1px solid #eee",
-                borderRadius: 8,
-                padding: "10px 12px",
-              }}
-            >
-              {mismatch.items.map((it, idx) => (
-                <div key={idx} style={{ marginBottom: 10 }}>
-                  <div style={{ fontWeight: 600 }}>{it.label}</div>
-                  <div style={{ fontSize: 13, color: "#666" }}>
-                    Previous: {it.before || "(empty)"}
-                  </div>
-                  <div style={{ fontSize: 13 }}>
-                    Now: {it.after || "(empty)"}
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div
-              style={{
-                display: "flex",
-                gap: 10,
-                justifyContent: "flex-end",
-                marginTop: 12,
-              }}
-            >
-              <button
-                onClick={() =>
-                  setMismatch({ show: false, title: "", items: [] })
-                }
-                style={{
-                  padding: "8px 14px",
-                  borderRadius: 8,
-                  border: "1px solid #ddd",
-                  background: "#f7f7f7",
-                  cursor: "pointer",
-                }}
-              >
-                OK, I’ll review
-              </button>
-            </div>
           </div>
         </div>
       )}

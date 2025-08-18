@@ -1,91 +1,93 @@
+// routes/franchiseeRoutes.js
 const express = require("express");
 const router = express.Router();
+const path = require("path");
+const multer = require("multer");
 
-const fhController = require("../controllers/franchiseHeadController");
+const franchiseeController = require("../controllers/franchiseHeadController");
 
-// reuse your existing upload loader logic
+// Try project upload middleware, else fallback to basic multer
 let uploadModule;
 try {
   uploadModule = require("../middleware/upload");
 } catch (e) {
   try {
     uploadModule = require("../upload");
-  } catch (e2) {
+  } catch (_e2) {
     uploadModule = null;
   }
 }
-const upload = uploadModule?.upload || uploadModule;
-
-function assert(fn, name) {
-  if (typeof fn !== "function") {
-    throw new Error(`Missing function: ${name} is ${typeof fn}.`);
-  }
+let upload = uploadModule?.upload || uploadModule;
+if (!upload) {
+  const storage = multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, "uploads/"),
+    filename: (_req, file, cb) => {
+      const unique = Date.now() + "-" + Math.round(Math.random() * 1e9);
+      cb(null, unique + path.extname(file.originalname));
+    },
+  });
+  upload = multer({ storage });
 }
-assert(fhController.uploadOCR, "franchiseHeadController.uploadOCR");
-assert(fhController.saveStepByKey, "franchiseHeadController.saveStepByKey");
 
-router.get("/", (req, res) =>
-  res.json({ ok: true, msg: "franchise-head root" })
+// Root probe
+router.get("/", (_req, res) => res.json({ ok: true, msg: "franchisees root" }));
+
+// Simple upload (no OCR). Field: "document"
+router.post(
+  "/upload",
+  upload.single("document"),
+  franchiseeController.uploadDocument
 );
 
-// OCR
-if (!upload || typeof upload.single !== "function") {
-  router.post("/ocr", (req, res) => {
-    res
-      .status(500)
-      .json({ ok: false, message: "Upload middleware not found." });
-  });
-} else {
-  router.post("/ocr", upload.single("document"), fhController.uploadOCR);
-}
+// Step save (partial upsert)
+router.post("/step-by-key", franchiseeController.saveStepByKey);
+router.patch("/step-by-key", franchiseeController.saveStepByKey);
 
-// save-by-key
-router.post("/step-by-key", fhController.saveStepByKey);
-router.patch("/step-by-key", fhController.saveStepByKey);
+// Optional legacy
+router.patch("/:franchiseeId/step", franchiseeController.saveStep);
 
-// legacy step (kept)
-router.patch("/:vendorId/step", fhController.saveStep);
-
-// GST (manual + file)
-router.put("/gst", upload.single("document"), fhController.updateGst);
+// GST
+router.put("/gst", upload.single("document"), franchiseeController.updateGst);
 
 // Bank
-router.put("/bank", upload.single("document"), fhController.updateBankDetails);
 router.put(
-  "/:vendorId/bank",
+  "/bank",
   upload.single("document"),
-  fhController.updateBankByParam
+  franchiseeController.updateBankDetails
+);
+router.put(
+  "/:franchiseeId/bank",
+  upload.single("document"),
+  franchiseeController.updateBankByParam
 );
 
-// Outlet nameboard image
-const multer = require("multer");
-const path = require("path");
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "uploads/"),
-  filename: (req, file, cb) =>
-    cb(
-      null,
-      Date.now() +
-        "-" +
-        Math.round(Math.random() * 1e9) +
-        path.extname(file.originalname)
-    ),
+// Outlet (restrict to images up to 5MB)
+const outletStorage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, "uploads/"),
+  filename: (_req, file, cb) => {
+    const unique = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, unique + path.extname(file.originalname));
+  },
 });
 const uploadOutlet = multer({
-  storage,
+  storage: outletStorage,
   limits: { fileSize: 5 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
+  fileFilter: (_req, file, cb) => {
     const allowed = /jpeg|jpg|png/;
     const ext = path.extname(file.originalname).toLowerCase();
-    const ok = allowed.test(ext) && allowed.test(file.mimetype);
-    cb(ok ? null : new Error("Only JPG, JPEG, PNG allowed"), ok);
+    const mime = file.mimetype.toLowerCase();
+    if (allowed.test(ext) && allowed.test(mime)) return cb(null, true);
+    return cb(new Error("Only JPG, JPEG, PNG allowed"));
   },
 });
 
 router.put(
   "/outlet",
   uploadOutlet.single("outlet_nameboard_image"),
-  fhController.updateOutlet
+  franchiseeController.updateOutlet
 );
+
+// Finalize
+router.post("/register", franchiseeController.registerFranchisee);
 
 module.exports = router;

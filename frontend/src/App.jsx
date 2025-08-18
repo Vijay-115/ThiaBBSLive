@@ -181,10 +181,10 @@ function App() {
         <Route path="/orders" element={<CustomerOrders />} />
         <Route path="/thia" element={<ThiaPage />} />
         <Route path="/vendor-success" element={<VendorSuccess />} />
-        <Route path="/agent-success" element={<AgentSuccess />} />
-        <Route path="/franchise-head-success" element={<FranchiseSuccess />} />
+        <Route path="/agent-head-success" element={<AgentSuccess />} />
+        <Route path="/franchisee-success" element={<FranchiseSuccess />} />
         <Route
-          path="/customer-vendor-success"
+          path="/customer-become-vendor-success"
           element={<CustomerBecomeVendorSuccess />}
         />
 

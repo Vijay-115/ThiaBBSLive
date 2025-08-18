@@ -1,9 +1,10 @@
-// frontend/pages/TerritoryHeadForm.jsx
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { Form, Button, Spinner, Row, Col } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import Select from "react-select";
-import axios from "axios";
+
+// Options
 const constitutionOptions = [
   { value: "proprietorship", label: "Proprietorship" },
   { value: "partnership", label: "Partnership" },
@@ -13,6 +14,7 @@ const constitutionOptions = [
   { value: "trust", label: "Trust" },
   { value: "society", label: "Society" },
 ];
+
 export default function TerritoryHeadForm() {
   const navigate = useNavigate();
 
@@ -21,12 +23,7 @@ export default function TerritoryHeadForm() {
     () => localStorage.getItem("territoryHeadId") || ""
   );
 
-  const [mismatch, setMismatch] = useState({
-    show: false,
-    title: "",
-    items: [],
-  });
-
+  // Loading flags for uploads/saves
   const [loadingPan, setLoadingPan] = useState(false);
   const [loadingAFront, setLoadingAFront] = useState(false);
   const [loadingABack, setLoadingABack] = useState(false);
@@ -47,105 +44,59 @@ export default function TerritoryHeadForm() {
     // GST manual fields
     gstNumber: "",
     gstLegalName: "",
-    gstConstitution: "",
+    constitution_of_business: "",
     gst_floorNo: "",
     gst_buildingNo: "",
     gst_street: "",
     gst_locality: "",
     gst_district: "",
   });
-const handleSelectChange = (selectedOption, field) => {
-  setFormData((prevData) => ({
-    ...prevData,
-    [field.name]: selectedOption ? selectedOption.label : "",
-  }));
-};
+
+  const handleSelectChange = (selectedOption, field) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field.name]: selectedOption ? selectedOption.label : "",
+    }));
+  };
+
   const fmtAadhaarUI = (digits) =>
     (digits || "")
       .replace(/\D/g, "")
       .replace(/(\d{4})(?=\d)/g, "$1 ")
       .trim();
 
-  function findDiffs(current, next, labelMap) {
-    const items = [];
-    for (const key of Object.keys(labelMap)) {
-      const before = (current[key] ?? "").toString().trim();
-      const after = (next[key] ?? "").toString().trim();
-      if (!before && !after) continue;
-      if (before !== after) items.push({ label: labelMap[key], before, after });
-    }
-    return items;
-  }
+  // upload helper (no OCR) – uses same pattern as franchisee
+  const uploadDoc = async (file) => {
+    const fd = new FormData();
+    fd.append("document", file);
+    const { data } = await axios.post(
+      `${import.meta.env.VITE_API_URL}/api/territory-heads/upload`,
+      fd,
+      { headers: { "Content-Type": "multipart/form-data" } }
+    );
+    if (!data?.ok || !data?.fileUrl) throw new Error("Upload failed");
+    return data.fileUrl;
+  };
 
   // -------------------- PAN (Step 1) --------------------
   const onPanUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    const fd = new FormData();
-    fd.append("document", file);
-
     setLoadingPan(true);
     try {
-      const resp = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/territory-head/ocr`,
-        fd,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-          timeout: 30000,
-        }
+      const fileUrl = await uploadDoc(file);
+      const r = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/territory-heads/step-by-key`,
+        { territoryHeadId, pan_pic: fileUrl }
       );
-
-      const data = resp?.data || {};
-      if (!data.success) throw new Error("PAN OCR failed");
-
-      const extracted = data.extracted || {};
-      const fileUrl = data.fileUrl || null;
-
-      const nextValues = {
-        firstName: extracted.name || formData.firstName,
-        lastName: extracted.fatherName || formData.lastName,
-        dob: extracted.dob || formData.dob,
-        panNumber: (
-          extracted.panNumber ||
-          formData.panNumber ||
-          ""
-        ).toUpperCase(),
-      };
-
-      const diffs = findDiffs(formData, nextValues, {
-        firstName: "First name",
-        lastName: "Surname (Last name)",
-        dob: "DOB",
-        panNumber: "PAN number",
-      });
-      setFormData((prev) => ({ ...prev, ...nextValues }));
-      if (diffs.length)
-        setMismatch({
-          show: true,
-          title: "Please review PAN details",
-          items: diffs,
-        });
-
-      const pan = nextValues.panNumber;
-      if (pan && fileUrl) {
-        const r = await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/territory-head/step-by-key`,
-          {
-            vendorId: territoryHeadId, // send if present
-            pan_number: pan,
-            pan_pic: fileUrl,
-          }
-        );
-        const id = r?.data?.data?._id;
-        if (id && !territoryHeadId) {
-          setTerritoryHeadId(id);
-          localStorage.setItem("territoryHeadId", id);
-        }
+      const id = r?.data?.data?._id;
+      if (id && !territoryHeadId) {
+        setTerritoryHeadId(id);
+        localStorage.setItem("territoryHeadId", id);
       }
     } catch (err) {
       console.error(err);
-      alert("PAN OCR failed");
+      alert("PAN upload failed");
     } finally {
       setLoadingPan(false);
     }
@@ -154,14 +105,14 @@ const handleSelectChange = (selectedOption, field) => {
   const saveStep1AndNext = async () => {
     try {
       const payload = {
-        vendorId: territoryHeadId,
+        territoryHeadId,
         pan_number: (formData.panNumber || "").toUpperCase(),
         vendor_fname: formData.firstName || "",
         vendor_lname: formData.lastName || "",
         dob: formData.dob || "",
       };
       const resp = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/territory-head/step-by-key`,
+        `${import.meta.env.VITE_API_URL}/api/territory-heads/step-by-key`,
         payload
       );
       if (!resp?.data?.ok) throw new Error("Save failed");
@@ -181,55 +132,21 @@ const handleSelectChange = (selectedOption, field) => {
   const onAadhaarFront = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    const fd = new FormData();
-    fd.append("document", file);
-
     setLoadingAFront(true);
     try {
-      const resp = await axios.post(
-        `${
-          import.meta.env.VITE_API_URL
-        }/api/territory-head/ocr?side=aadhaar_front`,
-        fd,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-          timeout: 30000,
-        }
+      const fileUrl = await uploadDoc(file);
+      const r = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/territory-heads/step-by-key`,
+        { territoryHeadId, aadhar_pic_front: fileUrl }
       );
-
-      const data = resp?.data || {};
-      if (!data.success) throw new Error("Aadhaar front OCR failed");
-
-      const extracted = data.extracted || {};
-      const fileUrl = data.fileUrl || null;
-
-      const aNumRaw = (extracted.aadhaarNumber || "").replace(/\D/g, "");
-      const aNumUI = aNumRaw.replace(/(\d{4})(?=\d)/g, "$1 ").trim();
-      setFormData((prev) => ({
-        ...prev,
-        aadharNumber: aNumUI || prev.aadharNumber,
-      }));
-
-      if (aNumRaw && fileUrl) {
-        const r = await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/territory-head/step-by-key`,
-          {
-            vendorId: territoryHeadId,
-            aadhar_number: aNumRaw,
-            aadhar_pic_front: fileUrl,
-            side: "front",
-          }
-        );
-        const id = r?.data?.data?._id;
-        if (id && !territoryHeadId) {
-          setTerritoryHeadId(id);
-          localStorage.setItem("territoryHeadId", id);
-        }
+      const id = r?.data?.data?._id;
+      if (id && !territoryHeadId) {
+        setTerritoryHeadId(id);
+        localStorage.setItem("territoryHeadId", id);
       }
     } catch (err) {
       console.error(err);
-      alert("Aadhaar front OCR failed");
+      alert("Aadhaar front upload failed");
     } finally {
       setLoadingAFront(false);
     }
@@ -238,66 +155,21 @@ const handleSelectChange = (selectedOption, field) => {
   const onAadhaarBack = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    const fd = new FormData();
-    fd.append("document", file);
-
     setLoadingABack(true);
     try {
-      const resp = await axios.post(
-        `${
-          import.meta.env.VITE_API_URL
-        }/api/territory-head/ocr?side=aadhaar_back`,
-        fd,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-          timeout: 30000,
-        }
+      const fileUrl = await uploadDoc(file);
+      const r = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/territory-heads/step-by-key`,
+        { territoryHeadId, aadhar_pic_back: fileUrl }
       );
-
-      const { success, extracted, fileUrl } = resp.data || {};
-      if (!success) throw new Error("Aadhaar back OCR failed");
-
-      const aNumRaw = (extracted?.aadhaarNumber || "").replace(/\D/g, "");
-      const aNumUI = aNumRaw.replace(/(\d{4})(?=\d)/g, "$1 ").trim();
-      const addr = extracted?.address || {};
-
-      setFormData((p) => ({
-        ...p,
-        aadharNumber: aNumUI || p.aadharNumber,
-        register_street: addr.street || "",
-        register_city: addr.city || "",
-        register_state: addr.state || "",
-        register_postalCode: addr.postalCode || "",
-        register_country: "India",
-      }));
-
-      if (aNumRaw) {
-        const r = await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/territory-head/step-by-key`,
-          {
-            vendorId: territoryHeadId,
-            aadhar_number: aNumRaw,
-            aadhar_pic_back: fileUrl || undefined,
-            side: "back",
-            register_business_address: {
-              street: addr.street || "",
-              city: addr.city || "",
-              state: addr.state || "",
-              country: "India",
-              postalCode: addr.postalCode || "",
-            },
-          }
-        );
-        const id = r?.data?.data?._id;
-        if (id && !territoryHeadId) {
-          setTerritoryHeadId(id);
-          localStorage.setItem("territoryHeadId", id);
-        }
+      const id = r?.data?.data?._id;
+      if (id && !territoryHeadId) {
+        setTerritoryHeadId(id);
+        localStorage.setItem("territoryHeadId", id);
       }
-    } catch (e) {
-      console.error(e);
-      alert("Aadhaar back OCR failed");
+    } catch (err) {
+      console.error(err);
+      alert("Aadhaar back upload failed");
     } finally {
       setLoadingABack(false);
     }
@@ -310,11 +182,10 @@ const handleSelectChange = (selectedOption, field) => {
         alert("Missing Aadhaar number");
         return;
       }
-
       const r = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/territory-head/step-by-key`,
+        `${import.meta.env.VITE_API_URL}/api/territory-heads/step-by-key`,
         {
-          vendorId: territoryHeadId,
+          territoryHeadId,
           aadhar_number: aNumRaw,
           register_business_address: {
             street: formData.register_street || "",
@@ -330,7 +201,6 @@ const handleSelectChange = (selectedOption, field) => {
         setTerritoryHeadId(id);
         localStorage.setItem("territoryHeadId", id);
       }
-
       alert("Aadhaar slide saved");
       setStep(3);
     } catch (e) {
@@ -339,63 +209,9 @@ const handleSelectChange = (selectedOption, field) => {
     }
   };
 
-  // -------------------- GST (Step 3, no OCR) --------------------
+  // -------------------- GST (Step 3 — manual; file optional) --------------------
   const [gstFile, setGstFile] = useState(null);
-  const onGstUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const fd = new FormData();
-    fd.append("document", file);
-
-    setLoadingGST(true);
-    try {
-      const resp = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/territory-head/ocr?side=gst`,
-        fd,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-          timeout: 45000,
-        }
-      );
-
-      const data = resp?.data || {};
-      if (!data.success) throw new Error("GST OCR failed");
-
-      const extracted = data.extracted || {};
-      const fileUrl = data.fileUrl || null;
-
-      // Auto-fill formData with OCR results
-      setFormData((prev) => ({
-        ...prev,
-        gstNumber: extracted.gst_number || prev.gstNumber,
-        gstLegalName: extracted.legal_name || prev.gstLegalName,
-        gstConstitution: extracted.constitution || prev.gstConstitution,
-        gst_floorNo: extracted.address?.floorNo || prev.gst_floorNo,
-        gst_buildingNo: extracted.address?.buildingNo || prev.gst_buildingNo,
-        gst_street: extracted.address?.street || prev.gst_street,
-        gst_locality: extracted.address?.locality || prev.gst_locality,
-        gst_district: extracted.address?.district || prev.gst_district,
-      }));
-
-      // Save file + gst number immediately (optional)
-      if (extracted.gst_number && fileUrl) {
-        await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/territory-head/step-by-key`,
-          {
-            vendorId: territoryHeadId,
-            gst_number: extracted.gst_number,
-            gst_cert_pic: fileUrl,
-          }
-        );
-      }
-    } catch (err) {
-      console.error(err);
-      alert("GST OCR failed");
-    } finally {
-      setLoadingGST(false);
-    }
-  };
+  const onGstFileSelect = (e) => setGstFile(e.target.files?.[0] || null);
 
   const saveGstAndNext = async () => {
     try {
@@ -403,14 +219,12 @@ const handleSelectChange = (selectedOption, field) => {
         alert("Missing territoryHeadId. Complete Step 1 first.");
         return;
       }
-      // if (!gstFile) { alert("Please upload the GST certificate file."); return; }
-
       const fd = new FormData();
-      fd.append("vendorId", territoryHeadId);
-      fd.append("document", gstFile);
+      fd.append("territoryHeadId", territoryHeadId);
+      if (gstFile) fd.append("document", gstFile);
       fd.append("gst_number", (formData.gstNumber || "").toUpperCase());
       fd.append("gst_legal_name", formData.gstLegalName || "");
-      fd.append("gst_constitution", formData.gstConstitution || "");
+      fd.append("gst_constitution", formData.constitution_of_business || "");
       fd.append("gst_address[floorNo]", formData.gst_floorNo || "");
       fd.append("gst_address[buildingNo]", formData.gst_buildingNo || "");
       fd.append("gst_address[street]", formData.gst_street || "");
@@ -419,19 +233,12 @@ const handleSelectChange = (selectedOption, field) => {
 
       setLoadingGST(true);
       const r = await axios.put(
-        `${import.meta.env.VITE_API_URL}/api/territory-head/gst`,
+        `${import.meta.env.VITE_API_URL}/api/territory-heads/gst`,
         fd,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-          timeout: 45000,
-        }
+        { headers: { "Content-Type": "multipart/form-data" } }
       );
-
       if (!r?.data?.ok) throw new Error(r?.data?.message || "Save failed");
-
-      // advance to Bank step
       setStep(4);
-      // optional: toast
     } catch (e) {
       console.error(e);
       alert("Save failed");
@@ -451,76 +258,16 @@ const handleSelectChange = (selectedOption, field) => {
     bank_address: "",
   });
 
-  // const onBankFileChange = (e) => {
-  //   const file = e.target.files?.[0] || null;
-  //   setBankFile(file);
-  // };
-
-  // -------------------- Bank OCR Upload --------------------
-  const onBankUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const fd = new FormData();
-    fd.append("document", file);
-
-    setLoadingGST(true); // reuse loading spinner state or create new for bank
-    try {
-      const resp = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/territory-head/ocr?side=bank`,
-        fd,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-          timeout: 45000,
-        }
-      );
-
-      const data = resp?.data || {};
-      if (!data.success) throw new Error("Bank OCR failed");
-
-      const extracted = data.extracted || {};
-      const fileUrl = data.fileUrl || null;
-
-      setBankData((prev) => ({
-        ...prev,
-        account_holder_name:
-          extracted.account_holder_name || prev.account_holder_name,
-        account_no: extracted.account_number || prev.account_no,
-        ifcs_code: (extracted.ifsc_code || prev.ifcs_code || "").toUpperCase(),
-        bank_name: extracted.bank_name || prev.bank_name,
-        branch_name: extracted.branch_name || prev.branch_name,
-        bank_address: extracted.bank_address || prev.bank_address,
-      }));
-
-      // optional: immediately save bank file + minimal details
-      if (extracted.account_number && fileUrl) {
-        await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/territory-head/step-by-key`,
-          {
-            vendorId: territoryHeadId,
-            bank_doc_pic: fileUrl,
-            account_no: extracted.account_number,
-            ifcs_code: extracted.ifsc_code,
-          }
-        );
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Bank OCR failed");
-    } finally {
-      setLoadingGST(false);
-    }
-  };
+  const onBankFileChange = (e) => setBankFile(e.target.files?.[0] || null);
 
   const saveBankDetails = async () => {
-    const vid = territoryHeadId || localStorage.getItem("territoryHeadId");
-    if (!vid) {
-      alert("Territory Head ID is required. Complete PAN/Aadhaar step first.");
+    const tid = territoryHeadId || localStorage.getItem("territoryHeadId");
+    if (!tid) {
+      alert("Territory Head ID is required. Complete earlier steps first.");
       return;
     }
-
     const fd = new FormData();
-    fd.append("document", bankFile); // your uploaded file
+    if (bankFile) fd.append("document", bankFile);
     fd.append("account_holder_name", bankData.account_holder_name || "");
     fd.append("account_no", bankData.account_no || "");
     fd.append("ifcs_code", (bankData.ifcs_code || "").toUpperCase());
@@ -530,17 +277,14 @@ const handleSelectChange = (selectedOption, field) => {
 
     try {
       const response = await axios.put(
-        `${import.meta.env.VITE_API_URL}/api/territory-head/${vid}/bank`,
+        `${import.meta.env.VITE_API_URL}/api/territory-heads/${tid}/bank`,
         fd,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
+        { headers: { "Content-Type": "multipart/form-data" } }
       );
       if (!response?.data?.ok)
         throw new Error(response?.data?.message || "Save failed");
-
       alert("Bank details saved successfully.");
-      setStep(5); // Move to outlet details step
+      setStep(5);
     } catch (error) {
       console.error("Error saving bank details:", error);
       alert("Failed to save bank details.");
@@ -564,11 +308,8 @@ const handleSelectChange = (selectedOption, field) => {
   });
   const [outletImage, setOutletImage] = useState(null);
 
-  // file change handler
   const handleOutletImageChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      setOutletImage(e.target.files[0]);
-    }
+    if (e.target.files && e.target.files[0]) setOutletImage(e.target.files[0]);
   };
 
   const fetchLocation = () => {
@@ -591,74 +332,40 @@ const handleSelectChange = (selectedOption, field) => {
     }
   };
 
-  const saveOutletAndNext = async () => {
-    const vid = territoryHeadId || localStorage.getItem("territoryHeadId");
-    if (!vid) {
+  const saveOutletAndFinish = async () => {
+    const tid = territoryHeadId || localStorage.getItem("territoryHeadId");
+    if (!tid) {
       alert("Missing territoryHeadId. Complete earlier steps first.");
       return;
     }
 
     const fd = new FormData();
-    fd.append("vendorId", vid);
+    fd.append("territoryHeadId", tid);
     fd.append("outlet_name", outlet.outlet_name);
     fd.append("outlet_manager_name", outlet.manager_name);
     fd.append("outlet_contact_no", outlet.manager_mobile);
     fd.append("outlet_phone_no", outlet.outlet_phone);
-
     fd.append("outlet_location[street]", outlet.street);
     fd.append("outlet_location[city]", outlet.city);
     fd.append("outlet_location[district]", outlet.district);
     fd.append("outlet_location[state]", outlet.state);
     fd.append("outlet_location[country]", outlet.country || "India");
     fd.append("outlet_location[postalCode]", outlet.postalCode);
-
     if (outlet.lat) fd.append("outlet_coords[lat]", outlet.lat);
     if (outlet.lng) fd.append("outlet_coords[lng]", outlet.lng);
-
     if (outletImage) fd.append("outlet_nameboard_image", outletImage);
 
     const r = await axios.put(
-      `${import.meta.env.VITE_API_URL}/api/territory-head/outlet`,
+      `${import.meta.env.VITE_API_URL}/api/territory-heads/outlet`,
       fd,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
+      { headers: { "Content-Type": "multipart/form-data" } }
     );
 
     if (!r?.data?.ok) throw new Error(r?.data?.message || "Save failed");
-    navigate("/territory-head-success");
-
     alert("Outlet details saved");
+    navigate("/territory-head-success");
   };
 
-  // Optional final registration helper (kept for parity)
-  const registerTerritoryHead = async () => {
-    const fd = new FormData();
-    fd.append("vendorId", territoryHeadId);
-    fd.append("pan_number", formData.panNumber);
-    fd.append("aadhar_number", formData.aadharNumber);
-    fd.append("gst_number", formData.gstNumber);
-    fd.append("account_no", bankData.account_no);
-    fd.append("outlet_name", outlet.outlet_name);
-    fd.append("outlet_coords[lat]", outlet.lat);
-    fd.append("outlet_coords[lng]", outlet.lng);
-
-    try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/territory-head/register`, fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      if (!response?.data?.ok)
-        throw new Error(response?.data?.message || "Registration failed");
-
-      alert("Registration successful!");
-      window.location.href = "/territory-head-success";
-    } catch (error) {
-      console.error("Error registering territory head:", error);
-      alert("Failed to register territory head.");
-    }
-  };
-
-  // Restore id on mount
   useEffect(() => {
     const id = localStorage.getItem("territoryHeadId");
     if (id) setTerritoryHeadId(id);
@@ -666,7 +373,7 @@ const handleSelectChange = (selectedOption, field) => {
 
   return (
     <div>
-      <h4 className="mb-3">Territory Head Registration</h4>
+      <h4 className="mb-3">Territory Head Owner Registration</h4>
       <div className="mb-3">
         <strong>Step {step} of 5</strong>
       </div>
@@ -683,7 +390,7 @@ const handleSelectChange = (selectedOption, field) => {
             />
             {loadingPan && (
               <div className="mt-2">
-                <Spinner size="sm" /> Reading PAN…
+                <Spinner size="sm" /> Uploading PAN…
               </div>
             )}
           </Form.Group>
@@ -754,7 +461,7 @@ const handleSelectChange = (selectedOption, field) => {
             />
             {loadingAFront && (
               <div className="mt-2">
-                <Spinner size="sm" /> Reading front…
+                <Spinner size="sm" /> Uploading…
               </div>
             )}
           </Form.Group>
@@ -768,7 +475,7 @@ const handleSelectChange = (selectedOption, field) => {
             />
             {loadingABack && (
               <div className="mt-2">
-                <Spinner size="sm" /> Reading back…
+                <Spinner size="sm" /> Uploading…
               </div>
             )}
           </Form.Group>
@@ -872,17 +579,15 @@ const handleSelectChange = (selectedOption, field) => {
       {step === 3 && (
         <div>
           <h5 className="mb-3">Step 3: GST Details</h5>
-
           <div className="mb-3">
             <label>Upload GST Certificate (PDF/JPG/PNG)</label>
             <input
               type="file"
               accept=".pdf,.jpg,.jpeg,.png"
-              onChange={onGstUpload}
+              onChange={onGstFileSelect}
             />
             {loadingGST && <div className="mt-2">Saving GST…</div>}
           </div>
-
           <div className="mb-3">
             <label>GST Number</label>
             <input
@@ -895,7 +600,6 @@ const handleSelectChange = (selectedOption, field) => {
               }
             />
           </div>
-
           <div className="mb-3">
             <label>Legal Name</label>
             <input
@@ -988,7 +692,7 @@ const handleSelectChange = (selectedOption, field) => {
             <Form.Control
               type="file"
               accept=".pdf,.jpg,.jpeg,.png"
-              onChange={onBankUpload}
+              onChange={onBankFileChange}
             />
           </Form.Group>
 
@@ -1063,10 +767,7 @@ const handleSelectChange = (selectedOption, field) => {
           </Row>
 
           <div className="d-flex justify-content-end gap-2">
-            <button
-              type="button"
-              onClick={() => saveBankDetails(bankFile, bankData)}
-            >
+            <button type="button" onClick={saveBankDetails}>
               Save Bank Details
             </button>
           </div>
@@ -1120,65 +821,70 @@ const handleSelectChange = (selectedOption, field) => {
           </Row>
 
           <Row className="mb-3">
-            <Col md={6}>
-              <Form.Label>Street</Form.Label>
+            <Col md={12}>
+              <Form.Label>Address</Form.Label>
               <Form.Control
+                className="mb-2"
+                placeholder="Street"
                 value={outlet.street}
                 onChange={(e) =>
                   setOutlet((p) => ({ ...p, street: e.target.value }))
                 }
               />
-            </Col>
-            <Col md={6}>
-              <Form.Label>City</Form.Label>
-              <Form.Control
-                value={outlet.city}
-                onChange={(e) =>
-                  setOutlet((p) => ({ ...p, city: e.target.value }))
-                }
-              />
-            </Col>
-          </Row>
-
-          <Row className="mb-3">
-            <Col md={6}>
-              <Form.Label>District</Form.Label>
-              <Form.Control
-                value={outlet.district}
-                onChange={(e) =>
-                  setOutlet((p) => ({ ...p, district: e.target.value }))
-                }
-              />
-            </Col>
-            <Col md={6}>
-              <Form.Label>State</Form.Label>
-              <Form.Control
-                value={outlet.state}
-                onChange={(e) =>
-                  setOutlet((p) => ({ ...p, state: e.target.value }))
-                }
-              />
-            </Col>
-          </Row>
-
-          <Row className="mb-3">
-            <Col md={6}>
-              <Form.Label>Country</Form.Label>
-              <Form.Control
-                value={outlet.country}
-                onChange={(e) =>
-                  setOutlet((p) => ({ ...p, country: e.target.value }))
-                }
-              />
-            </Col>
-            <Col md={6}>
-              <Form.Label>Postal Code</Form.Label>
-              <Form.Control
-                value={outlet.postalCode}
-                onChange={(e) =>
-                  setOutlet((p) => ({ ...p, postalCode: e.target.value }))
-                }
-              />
+              <Row>
+                <Col md={4}>
+                  <Form.Control
+                    className="mb-2"
+                    placeholder="City"
+                    value={outlet.city}
+                    onChange={(e) =>
+                      setOutlet((p) => ({ ...p, city: e.target.value }))
+                    }
+                  />
+                </Col>
+                <Col md={4}>
+                  <Form.Control
+                    className="mb-2"
+                    placeholder="District"
+                    value={outlet.district}
+                    onChange={(e) =>
+                      setOutlet((p) => ({ ...p, district: e.target.value }))
+                    }
+                  />
+                </Col>
+                <Col md={4}>
+                  <Form.Control
+                    className="mb-2"
+                    placeholder="State"
+                    value={outlet.state}
+                    onChange={(e) =>
+                      setOutlet((p) => ({ ...p, state: e.target.value }))
+                    }
+                  />
+                </Col>
+              </Row>
+              <Row>
+                <Col md={6}>
+                  <Form.Control
+                    className="mb-2"
+                    placeholder="Country"
+                    value={outlet.country}
+                    onChange={(e) =>
+                      setOutlet((p) => ({ ...p, country: e.target.value }))
+                    }
+                  />
+                </Col>
+                <Col md={6}>
+                  <Form.Control
+                    className="mb-2"
+                    placeholder="PIN"
+                    value={outlet.postalCode}
+                    onChange={(e) =>
+                      setOutlet((p) => ({ ...p, postalCode: e.target.value }))
+                    }
+                  />
+                </Col>
+              </Row>
             </Col>
           </Row>
 
@@ -1203,96 +909,25 @@ const handleSelectChange = (selectedOption, field) => {
             </Col>
           </Row>
 
-          <Form.Group className="mb-3">
-            <Form.Label>Fetch Location</Form.Label>
-            <Button variant="secondary" onClick={fetchLocation}>
-              Use Current Location
+          <div className="mb-2">
+            <Button variant="secondary" size="sm" onClick={fetchLocation}>
+              Use current location
             </Button>
-          </Form.Group>
+          </div>
 
           <Form.Group className="mb-3">
-            <Form.Label>Upload Outlet Nameboard Image (JPG, PNG)</Form.Label>
+            <Form.Label>Outlet Nameboard Image (JPG/PNG)</Form.Label>
             <Form.Control
               type="file"
-              accept=".jpg,.png"
+              accept=".jpg,.jpeg,.png"
               onChange={handleOutletImageChange}
             />
           </Form.Group>
 
           <div className="d-flex justify-content-end gap-2">
-            <button type="button" onClick={saveOutletAndNext}>
-              Save & Continue
+            <button type="button" onClick={saveOutletAndFinish}>
+              Save Outlet
             </button>
-          </div>
-        </div>
-      )}
-
-      {mismatch.show && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.45)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 9999,
-          }}
-        >
-          <div
-            style={{
-              width: "min(680px, 92vw)",
-              background: "#fff",
-              borderRadius: 12,
-              boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
-              padding: "20px 22px",
-            }}
-          >
-            <h3 style={{ margin: "0 0 8px 0" }}>{mismatch.title}</h3>
-            <div
-              style={{
-                maxHeight: 260,
-                overflow: "auto",
-                border: "1px solid #eee",
-                borderRadius: 8,
-                padding: "10px 12px",
-              }}
-            >
-              {mismatch.items.map((it, idx) => (
-                <div key={idx} style={{ marginBottom: 10 }}>
-                  <div style={{ fontWeight: 600 }}>{it.label}</div>
-                  <div style={{ fontSize: 13, color: "#666" }}>
-                    Previous: {it.before || "(empty)"}
-                  </div>
-                  <div style={{ fontSize: 13 }}>
-                    Now: {it.after || "(empty)"}
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div
-              style={{
-                display: "flex",
-                gap: 10,
-                justifyContent: "flex-end",
-                marginTop: 12,
-              }}
-            >
-              <button
-                onClick={() =>
-                  setMismatch({ show: false, title: "", items: [] })
-                }
-                style={{
-                  padding: "8px 14px",
-                  borderRadius: 8,
-                  border: "1px solid #ddd",
-                  background: "#f7f7f7",
-                  cursor: "pointer",
-                }}
-              >
-                OK, I’ll review
-              </button>
-            </div>
           </div>
         </div>
       )}
