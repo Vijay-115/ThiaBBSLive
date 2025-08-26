@@ -315,7 +315,144 @@ exports.registerTerritoryHead = async (req, res) => {
       });
   }
 };
+// POST /register – finalize submit for review
+exports.registerTerritoryHead = async (req, res) => {
+  try {
+    const id = req.body.territoryHeadId || req.body.franchiseeId || req.body.vendorId;
+    if (!id) return res.status(400).json({ ok: false, message: "territoryHeadId required" });
 
+    const updated = await TerritoryHead.findByIdAndUpdate(
+      id,
+      {
+        $set: { application_status: "submitted", submitted_at: new Date(), updated_at: new Date() },
+        $setOnInsert: { role: "territory_head" },
+      },
+      { new: true, upsert: true, runValidators: false }
+    );
+    res.status(201).json({ ok: true, message: "Territory Head submitted for review", territoryHead: updated });
+  } catch (error) {
+    console.error("territoryHead.register error:", error);
+    res.status(500).json({ ok: false, message: "Error submitting territory head", error: error.message });
+  }
+};
+const buildSearch = (q) => {
+  if (!q) return {};
+  const like = new RegExp(String(q).trim(), "i");
+  return {
+    $or: [
+      { vendor_fname: like },
+      { vendor_lname: like },
+      { pan_number: like },
+      { aadhar_number: like },
+      { gst_number: like },
+      { "register_business_address.city": like },
+      { "register_business_address.state": like },
+    ],
+  };
+};
+
+// GET /admin/requests  -> pending submissions
+exports.listPendingRequests = async (req, res) => {
+  try {
+    const q = req.query.q || "";
+    const filter = {
+      application_status: "submitted",
+      is_decline: { $ne: true },
+    };
+    const list = await TerritoryHead.find({ ...filter, ...buildSearch(q) })
+      .sort({ submitted_at: -1 })
+      .limit(200);
+    res.json({ ok: true, data: list });
+  } catch (e) {
+    console.error("territoryHead.listPendingRequests error:", e);
+    res
+      .status(500)
+      .json({ ok: false, message: "Fetch failed", details: e.message });
+  }
+};
+
+// GET /admin/territories?status=approved&q=&page=1&limit=20
+exports.listTerritories = async (req, res) => {
+  try {
+    const { status = "approved", q = "", page = 1, limit = 20 } = req.query;
+    const p = Math.max(1, parseInt(page, 10));
+    const l = Math.max(1, Math.min(200, parseInt(limit, 10)));
+
+    const filter = status === "all" ? {} : { application_status: status };
+    const where = { ...filter, ...buildSearch(q) };
+
+    const [rows, total] = await Promise.all([
+      TerritoryHead.find(where)
+        .sort({ updated_at: -1 })
+        .skip((p - 1) * l)
+        .limit(l),
+      TerritoryHead.countDocuments(where),
+    ]);
+
+    res.json({ ok: true, data: rows, meta: { total, page: p, limit: l } });
+  } catch (e) {
+    console.error("territoryHead.listTerritories error:", e);
+    res
+      .status(500)
+      .json({ ok: false, message: "Fetch failed", details: e.message });
+  }
+};
+
+// GET /admin/:id -> full record
+exports.getTerritoryFull = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const doc = await TerritoryHead.findById(id);
+    if (!doc) return res.status(404).json({ ok: false, message: "Not found" });
+    res.json({ ok: true, data: doc });
+  } catch (e) {
+    console.error("territoryHead.getTerritoryFull error:", e);
+    res
+      .status(500)
+      .json({ ok: false, message: "Fetch failed", details: e.message });
+  }
+};
+
+// POST /admin/:id/decision { decision: "approve"|"reject", reason? }
+exports.decideTerritory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { decision, reason } = req.body || {};
+    if (!["approve", "reject"].includes(decision)) {
+      return res.status(400).json({ ok: false, message: "Invalid decision" });
+    }
+
+    const set = { updated_at: new Date() };
+    if (decision === "approve") {
+      set.application_status = "approved";
+      set.is_active = true;
+      set.is_decline = false;
+      set.approved_at = new Date();
+      set.decline_reason = null;
+      // Optional: create login account + email here if you follow your vendor flow
+      // await createUserAndEmailCredentials(...)
+    } else {
+      set.application_status = "rejected";
+      set.is_active = false;
+      set.is_decline = true;
+      set.decline_reason = String(reason || "").slice(0, 500);
+    }
+
+    const updated = await TerritoryHead.findByIdAndUpdate(
+      id,
+      { $set: set },
+      { new: true }
+    );
+    if (!updated)
+      return res.status(404).json({ ok: false, message: "Not found" });
+    res.json({ ok: true, data: updated });
+  } catch (e) {
+    console.error("territoryHead.decide error:", e);
+    res
+      .status(500)
+      .json({ ok: false, message: "Decision failed", details: e.message });
+  }
+};
 module.exports = {
   uploadDocument: exports.uploadDocument,
   saveStepByKey: exports.saveStepByKey,
@@ -326,4 +463,9 @@ module.exports = {
   updateOutlet: exports.updateOutlet,
   validateGeolocation: exports.validateGeolocation,
   registerTerritoryHead: exports.registerTerritoryHead,
+  decideTerritory: exports.decideTerritory,
+  getTerritoryFull: exports.getTerritoryFull,
+  listTerritories: exports.listTerritories,
+  listPendingRequests: exports.listPendingRequests,
+  
 };

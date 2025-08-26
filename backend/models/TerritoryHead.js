@@ -153,6 +153,21 @@ const TerritoryHeadSchema = new mongoose.Schema({
     state: { type: String, default: "" },
     postalCode: { type: String, default: "" },
   },
+  // Add inside TerritoryHeadSchema (near status flags)
+  application_status: {
+    type: String,
+    enum: ["draft", "submitted", "under_review", "approved", "rejected"],
+    default: "draft",
+    index: true,
+  },
+  submitted_at: { type: Date, default: null },
+  approved_at: { type: Date, default: null },
+  reviewed_by: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    default: null,
+  },
+  decline_reason: { type: String, default: null }, // keep if already present
 
   outlet_nameboard_image: { type: String, default: null }, // filename only
 });

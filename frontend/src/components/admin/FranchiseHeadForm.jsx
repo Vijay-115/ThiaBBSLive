@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios  from "axios";
+import axios from "axios";
 import { Form, Button, Spinner, Row, Col } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import Select from "react-select";
@@ -347,6 +347,21 @@ export default function FranchiseHeadForm() {
     }
   };
 
+  // ============ NEW: final submit helper ============
+  const submitFranchiseApplication = async () => {
+    const fid = franchiseeId || localStorage.getItem("franchiseeId");
+    if (!fid) {
+      alert("Missing franchiseeId");
+      return;
+    }
+    const r = await axios.post(
+      `${import.meta.env.VITE_API_URL}/api/franchisees/submit`,
+      { franchiseeId: fid }
+    );
+    if (!r?.data?.ok) throw new Error(r?.data?.message || "Submit failed");
+  };
+  // ===================================================
+
   const saveOutletAndFinish = async () => {
     const fid = franchiseeId || localStorage.getItem("franchiseeId");
     if (!fid) {
@@ -380,6 +395,11 @@ export default function FranchiseHeadForm() {
 
     if (!r?.data?.ok) throw new Error(r?.data?.message || "Save failed");
     alert("Outlet details saved");
+
+    // ============ NEW: call final submit before redirect ============
+    await submitFranchiseApplication();
+    // ===============================================================
+
     navigate("/franchisee-success");
   };
 

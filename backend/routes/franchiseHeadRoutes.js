@@ -42,6 +42,18 @@ router.post(
 // Step save (partial upsert)
 router.post("/step-by-key", franchiseeController.saveStepByKey);
 router.patch("/step-by-key", franchiseeController.saveStepByKey);
+// franchiseHeadRoutes.js  (ADD)
+
+// Final submit
+router.post("/submit", franchiseeController.submitFranchiseApplication);
+
+// --- Admin: list first (static) ---
+router.get("/admin/requests", franchiseeController.listPendingFranchiseRequests);
+router.get("/admin/franchisees", franchiseeController.listFranchisees);
+
+// Admin: details and decision (dynamic) - keep AFTER static paths
+router.get("/admin/:franchiseeId", franchiseeController.getFranchiseFull);
+router.post("/admin/:franchiseeId/decision", franchiseeController.decideFranchise);
 
 // Optional legacy
 router.patch("/:franchiseeId/step", franchiseeController.saveStep);

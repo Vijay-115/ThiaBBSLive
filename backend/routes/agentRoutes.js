@@ -42,7 +42,26 @@ router.post(
 // Step save (partial upsert)
 router.post("/step-by-key", agentHeadController.saveStepByKey);
 router.patch("/step-by-key", agentHeadController.saveStepByKey);
-
+router.get(
+  "/agent/requests",
+  /*requireAuth, requireAdmin,*/ agentHeadController.listRequests
+);
+router.get(
+  "/agent/requests/:id",
+  /*requireAuth, requireAdmin,*/ agentHeadController.getRequestById
+);
+router.post(
+  "/agent/approve/:id",
+  /*requireAuth, requireAdmin,*/ agentHeadController.approve
+);
+router.post(
+  "/agent/reject/:id",
+  /*requireAuth, requireAdmin,*/ agentHeadController.reject
+);
+router.get(
+  "/agents",
+  /*requireAuth, requireAdmin,*/ agentHeadController.listApproved
+);
 // Optional legacy
 router.patch("/:agentHeadId/step", agentHeadController.saveStep);
 

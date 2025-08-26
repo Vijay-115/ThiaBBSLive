@@ -62,7 +62,7 @@ export default function AgentHeadForm() {
       .replace(/(\d{4})(?=\d)/g, "$1 ")
       .trim();
 
-  // upload helper (no OCR) – same URL pattern as your other forms
+  // upload helper (no OCR)
   const uploadDoc = async (file) => {
     const fd = new FormData();
     fd.append("document", file);
@@ -329,6 +329,20 @@ export default function AgentHeadForm() {
     }
   };
 
+  // NEW: final submit (match Territory)
+  const submitAgentApplication = async () => {
+    const aid = agentHeadId || localStorage.getItem("agentHeadId");
+    if (!aid) {
+      alert("Missing agentHeadId");
+      return;
+    }
+    const r = await axios.post(
+      `${import.meta.env.VITE_API_URL}/api/agent-heads/register`,
+      { agentHeadId: aid }
+    );
+    if (!r?.data?.ok) throw new Error(r?.data?.message || "Submit failed");
+  };
+
   const saveOutletAndFinish = async () => {
     const aid = agentHeadId || localStorage.getItem("agentHeadId");
     if (!aid) {
@@ -360,6 +374,13 @@ export default function AgentHeadForm() {
 
     if (!r?.data?.ok) throw new Error(r?.data?.message || "Save failed");
     alert("Outlet details saved");
+
+    // match Territory: submit final application so Admin sees it
+    await submitAgentApplication();
+
+    // clear the local draft ID only after successful submit, if you prefer:
+    // localStorage.removeItem("agentHeadId");
+
     navigate("/agent-head-success");
   };
 

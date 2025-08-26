@@ -1,4 +1,3 @@
-// GroceryFinalPage.jsx  (updated for API integration)
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import {
@@ -8,25 +7,18 @@ import {
   FaCertificate,
   FaMinus,
   FaPlus,
-  FaTrash,
 } from "react-icons/fa";
 
-/**
- * Features kept:
- * - search, sort, price range, brand, rating, offers, product form, free delivery, in stock
- * - product card layout, assured badge, discount badge, add-to-cart with qty
- * - cart in localStorage
- * - client-side pagination UI (server returns total for page count)
- */
+const API_BASE = import.meta.env.VITE_API_URL || "";
+const API_LIST = `${API_BASE}/api/products/public`;
+const API_FACETS = `${API_BASE}/api/products/facets`;
+const API_CATEGORIES = `${API_BASE}/api/products/catalog/categories`;
+const API_CATEGORY_BY_SLUG = `${API_BASE}/api/products/catalog/category-by-slug`;
 
-// ---------- API endpoints (change if your routes differ) ----------
-const API_LIST = `${import.meta.env.VITE_API_URL}/api/groceries/public`; // GET with filters/sort/pagination
-const API_FACETS = `${import.meta.env.VITE_API_URL}/api/groceries/facets`; // GET brands/forms/offers + min/max price
+const GROCERIES_SLUG = "groceries";
 
-// Utility: format currency
 const fCurrency = (v) => `₹${Number(v || 0).toLocaleString("en-IN")}`;
 
-// Star rating visuals (rounded to half-star precision)
 function StarRating({ rating, size = 12 }) {
   const r = Math.max(0, Math.min(5, Number(rating || 0)));
   const full = Math.floor(r);
@@ -43,7 +35,6 @@ function StarRating({ rating, size = 12 }) {
       ))}
       {half && (
         <FaStar
-          key="half"
           className="text-yellow-300"
           style={{ width: size, height: size, opacity: 0.6 }}
         />
@@ -59,41 +50,80 @@ function StarRating({ rating, size = 12 }) {
   );
 }
 
-export default function GroceryFinalPage() {
-  // --------- Filters/UI state (unchanged names) ---------
+export default function Grocery() {
+  // category context (loaded dynamically)
+  const [categoryId, setCategoryId] = useState("");
+  const [catErr, setCatErr] = useState("");
+
+  // filters/ui
   const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState("popularity"); // popularity, priceLow, priceHigh, newest
+  const [sortBy, setSortBy] = useState("popularity");
   const [priceMin, setPriceMin] = useState(0);
   const [priceMax, setPriceMax] = useState(1000);
 
-  const [brandFilters, setBrandFilters] = useState([]); // ["Saffola", ...]
-  const [ratingFilters, setRatingFilters] = useState([]); // [4,3] => "N & above"
-  const [offerFilters, setOfferFilters] = useState([]); // ["Special Price", ...]
-  const [formFilters, setFormFilters] = useState([]); // ["Powder", "Vegetable"]
+  const [brandFilters, setBrandFilters] = useState([]);
+  const [ratingFilters, setRatingFilters] = useState([]);
+  const [offerFilters, setOfferFilters] = useState([]);
+  const [formFilters, setFormFilters] = useState([]);
   const [onlyFreeDelivery, setOnlyFreeDelivery] = useState(false);
   const [onlyInStock, setOnlyInStock] = useState(false);
 
-  // Cart (keep as-is)
+  // cart
   const [cart, setCart] = useState([]);
 
-  // Pagination UI
+  // pagination
   const [page, setPage] = useState(1);
-  const PAGE_SIZE = 6; // card grid size per page
+  const PAGE_SIZE = 6;
 
-  // --------- Data from API ---------
-  const [items, setItems] = useState([]); // cards from server
+  // data
+  const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
-  // Facets for filters
-  const [brands, setBrands] = useState([]); // ["Saffola","Alpino",...]
-  const [forms, setForms] = useState([]); // ["Powder","Granules","Vegetable",...]
-  const [offers, setOffers] = useState([]); // ["Special Price","Buy More, Save More",...]
+  // facets
+  const [brands, setBrands] = useState([]);
+  const [forms, setForms] = useState([]);
+  const [offers, setOffers] = useState([]);
   const [dataMin, setDataMin] = useState(0);
   const [dataMax, setDataMax] = useState(1000);
 
-  // --------- Load cart from localStorage ---------
+  // 1) Get Groceries category id dynamically (no hardcode)
+  useEffect(() => {
+    let live = true;
+
+    async function loadGroceriesId() {
+      try {
+        // cache helps when navigating back to this page
+        const cached = sessionStorage.getItem("catId:groceries");
+        if (cached) {
+          if (live) setCategoryId(cached);
+          return;
+        }
+
+       const { data } = await axios.get(API_CATEGORY_BY_SLUG, {
+         params: { slug: GROCERIES_SLUG },
+       });
+       const id = data?.item?._id;
+       if (!id) throw new Error("Could not find 'Groceries' category in DB");
+       sessionStorage.setItem("catId:groceries", id);
+       if (live) setCategoryId(id);
+
+      } catch (e) {
+        if (live)
+          setCatErr(
+            e?.response?.data?.message || e.message || "Failed to load category"
+          );
+      }
+    }
+
+    loadGroceriesId();
+    return () => {
+      live = false;
+    };
+  }, []);
+
+  // load cart
   useEffect(() => {
     try {
       const saved = localStorage.getItem("grocery_cart_v2");
@@ -104,22 +134,20 @@ export default function GroceryFinalPage() {
     localStorage.setItem("grocery_cart_v2", JSON.stringify(cart));
   }, [cart]);
 
-  // --------- Fetch facets once ---------
+  // facets for Groceries only
   useEffect(() => {
+    if (!categoryId) return;
     let live = true;
     (async () => {
       try {
-        const { data } = await axios.get(API_FACETS);
+        const { data } = await axios.get(API_FACETS, {
+          params: { categoryId },
+        });
+        const b = (data?.brands || []).map((x) => x.name).filter(Boolean);
+        const f = (data?.forms || []).map((x) => x.name).filter(Boolean);
+        const o = (data?.offers || []).map((x) => x.name).filter(Boolean);
+        const p = data?.price || {};
         if (!live) return;
-
-        // Expect shape:
-        // { brands:[{name,count}], forms:[{name,count}], offers:[{name,count}],
-        //   price:{min,max} }
-        const b = (data.brands || []).map((x) => x.name).filter(Boolean);
-        const f = (data.forms || []).map((x) => x.name).filter(Boolean);
-        const o = (data.offers || []).map((x) => x.name).filter(Boolean);
-        const p = data.price || {};
-
         setBrands(b);
         setForms(f);
         setOffers(o);
@@ -130,22 +158,23 @@ export default function GroceryFinalPage() {
         setPriceMin(min);
         setPriceMax(max);
       } catch {
-        // Non-blocking if facets fail
+        // ignore
       }
     })();
     return () => {
       live = false;
     };
-  }, []);
+  }, [categoryId]);
 
-  // --------- Fetch items whenever filters/sort/page change ---------
+  // products list (Groceries only)
   useEffect(() => {
+    if (!categoryId) return;
     const controller = new AbortController();
     setLoading(true);
     setErr("");
 
-    // Convert UI to API params
     const params = {
+      categoryId, // dynamic from DB
       search: search || undefined,
       minPrice: Number(priceMin),
       maxPrice: Number(priceMax),
@@ -173,15 +202,41 @@ export default function GroceryFinalPage() {
           params,
           signal: controller.signal,
         });
+        const mapped = (Array.isArray(data?.items) ? data.items : []).map(
+          (p) => {
+            const sale = p?.priceInfo?.sale ?? p?.price ?? 0;
+            const mrp = p?.priceInfo?.mrp ?? p?.price ?? 0;
+            const discountPct =
+              mrp > 0 ? Math.max(0, Math.round(100 - (sale / mrp) * 100)) : 0;
+            return {
+              id: p?._id || p.id,
+              name: p?.name,
+              brand: p?.brand || "",
+              weight: p?.weight || "",
+              image:
+                p?.product_img ||
+                p?.gallery_imgs?.[0] ||
+                "/img/placeholder.png",
+              rating: p?.rating_avg || 0,
+              reviews: p?.rating_count || 0,
+              assured: !!p?.assured,
+              freeDelivery: !!p?.deliveryIn1Day,
+              inStock: Number(p?.stock || 0) > 0,
+              offers: p?.ui?.offers || [],
+              price: sale,
+              oldPrice: mrp,
+              discountPct,
+              createdAt: p?.created_at,
+            };
+          }
+        );
 
-        // Expect shape:
-        // { items:[{id,name,brand,form,weight,image,rating,reviews,assured,price,oldPrice,discountPct,freeDelivery,inStock,offers,createdAt}], total, page, limit }
-        setItems(Array.isArray(data.items) ? data.items : []);
-        setTotal(Number(data.total) || 0);
+        setItems(mapped);
+        setTotal(Number(data?.total) || mapped.length);
       } catch (e) {
         if (e.name !== "CanceledError") {
           setErr(
-            e?.response?.data?.error || e?.message || "Failed to load items"
+            e?.response?.data?.message || e?.message || "Failed to load items"
           );
           setItems([]);
           setTotal(0);
@@ -193,6 +248,7 @@ export default function GroceryFinalPage() {
 
     return () => controller.abort();
   }, [
+    categoryId,
     search,
     priceMin,
     priceMax,
@@ -206,13 +262,11 @@ export default function GroceryFinalPage() {
     page,
   ]);
 
-  // --------- Derived pagination from server total ---------
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   useEffect(() => {
     if (page > totalPages) setPage(1);
   }, [totalPages, page]);
 
-  // Cart helpers (unchanged)
   const addToCart = (product) => {
     setCart((prev) => {
       const found = prev.find((c) => c.id === product.id);
@@ -229,69 +283,21 @@ export default function GroceryFinalPage() {
       return prev.map((p) => (p.id === id ? { ...p, qty } : p));
     });
   };
-  const removeFromCart = (id) =>
-    setCart((prev) => prev.filter((p) => p.id !== id));
-
-  // Filter handlers helpers (unchanged)
-  const toggleArrayFilter = (value, setFn, arr) => {
-    setFn((prev) =>
-      prev.includes(value) ? prev.filter((x) => x !== value) : [...prev, value]
-    );
-  };
-
-  // For the count “x items found”, use loaded items length if server doesn’t return page count by filter
-  const visibleCount = items.length;
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
-      {/* Header */}
-      <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
-            Grocery Store — Groceries
-          </h1>
-          <p className="text-sm text-gray-600 mt-1">
-            {loading ? "Loading..." : `${visibleCount} item(s) found`}
-            {err && <span className="text-red-600 ml-2">({err})</span>}
-          </p>
-        </div>
-
-        <div className="flex gap-3 items-center">
-          <div className="relative">
-            <input
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-              placeholder="Search groceries, brands, offers..."
-              className="w-64 md:w-96 px-3 py-2 rounded border focus:outline-none"
-            />
-          </div>
-          <select
-            value={sortBy}
-            onChange={(e) => {
-              setSortBy(e.target.value);
-              setPage(1);
-            }}
-            className="px-3 py-2 rounded border bg-white"
-            aria-label="Sort products"
-          >
-            <option value="popularity">Sort: Popularity</option>
-            <option value="priceLow">Sort: Price — Low to High</option>
-            <option value="priceHigh">Sort: Price — High to Low</option>
-            <option value="newest">Sort: Newest First</option>
-          </select>
-
-          <div className="hidden md:flex items-center gap-2 text-gray-700">
-            <FaShoppingCart />
-            <span className="font-medium">{cart.length}</span>
-          </div>
-        </div>
+      <header className="mb-4">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
+          Grocery Store — Groceries
+        </h1>
+        {!categoryId && !catErr && (
+          <p className="text-sm text-gray-500 mt-1">Loading category…</p>
+        )}
+        {catErr && <p className="text-sm text-red-600 mt-1">{catErr}</p>}
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-        {/* LEFT: Filters */}
+        {/* Filters */}
         <aside className="md:col-span-1 bg-white p-4 rounded shadow sticky top-6 h-fit">
           <div className="mb-4">
             <h3 className="font-semibold mb-2">Price Range</h3>
@@ -348,7 +354,11 @@ export default function GroceryFinalPage() {
                     type="checkbox"
                     checked={brandFilters.includes(b)}
                     onChange={() => {
-                      toggleArrayFilter(b, setBrandFilters, brandFilters);
+                      setBrandFilters((prev) =>
+                        prev.includes(b)
+                          ? prev.filter((x) => x !== b)
+                          : [...prev, b]
+                      );
                       setPage(1);
                     }}
                     className="w-4 h-4"
@@ -370,7 +380,11 @@ export default function GroceryFinalPage() {
                   type="checkbox"
                   checked={ratingFilters.includes(r)}
                   onChange={() => {
-                    toggleArrayFilter(r, setRatingFilters, ratingFilters);
+                    setRatingFilters((prev) =>
+                      prev.includes(r)
+                        ? prev.filter((x) => x !== r)
+                        : [...prev, r]
+                    );
                     setPage(1);
                   }}
                   className="w-4 h-4"
@@ -394,7 +408,11 @@ export default function GroceryFinalPage() {
                     type="checkbox"
                     checked={offerFilters.includes(o)}
                     onChange={() => {
-                      toggleArrayFilter(o, setOfferFilters, offerFilters);
+                      setOfferFilters((prev) =>
+                        prev.includes(o)
+                          ? prev.filter((x) => x !== o)
+                          : [...prev, o]
+                      );
                       setPage(1);
                     }}
                     className="w-4 h-4"
@@ -413,7 +431,11 @@ export default function GroceryFinalPage() {
                   type="checkbox"
                   checked={formFilters.includes(f)}
                   onChange={() => {
-                    toggleArrayFilter(f, setFormFilters, formFilters);
+                    setFormFilters((prev) =>
+                      prev.includes(f)
+                        ? prev.filter((x) => x !== f)
+                        : [...prev, f]
+                    );
                     setPage(1);
                   }}
                   className="w-4 h-4"
@@ -475,7 +497,7 @@ export default function GroceryFinalPage() {
           </div>
         </aside>
 
-        {/* MAIN: Product grid */}
+        {/* product grid */}
         <main className="md:col-span-4 bg-white p-5 rounded shadow">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {!loading && items.length === 0 && !err && (
@@ -491,20 +513,15 @@ export default function GroceryFinalPage() {
                   key={p.id}
                   className="bg-white p-4 rounded shadow hover:shadow-lg transition relative flex flex-col"
                 >
-                  {/* discount badge */}
                   {Number(p.discountPct) > 0 && (
                     <div className="absolute left-3 top-3 bg-red-600 text-white text-xs px-2 py-1 rounded">
                       {p.discountPct}% OFF
                     </div>
                   )}
 
-                  {/* assured badge */}
                   <div className="absolute right-3 top-3 flex items-center gap-1">
                     {p.assured && (
-                      <span
-                        className="flex items-center gap-1 bg-white px-2 py-0.5 rounded text-xs font-semibold shadow"
-                        title="Assured"
-                      >
+                      <span className="flex items-center gap-1 bg-white px-2 py-0.5 rounded text-xs font-semibold shadow">
                         <FaCertificate className="text-blue-600" /> Assured
                       </span>
                     )}
@@ -528,21 +545,18 @@ export default function GroceryFinalPage() {
                   </div>
 
                   <div className="mt-2 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-1">
-                        <div className="bg-green-600 text-white px-2 py-0.5 rounded text-xs font-semibold flex items-center gap-1">
-                          {Number(p.rating).toFixed(1)}
-                          <FaStar
-                            className="text-white"
-                            style={{ width: 10, height: 10 }}
-                          />
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          ({Number(p.reviews || 0).toLocaleString()})
-                        </div>
+                    <div className="flex items-center gap-1">
+                      <div className="bg-green-600 text-white px-2 py-0.5 rounded text-xs font-semibold flex items-center gap-1">
+                        {Number(p.rating).toFixed(1)}
+                        <FaStar
+                          className="text-white"
+                          style={{ width: 10, height: 10 }}
+                        />
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        ({Number(p.reviews || 0).toLocaleString()})
                       </div>
                     </div>
-
                     <div className="text-xs text-gray-500 flex items-center gap-2">
                       {p.freeDelivery && (
                         <span className="flex items-center gap-1">
@@ -622,7 +636,6 @@ export default function GroceryFinalPage() {
             })}
           </div>
 
-          {/* Pagination controls */}
           <div className="mt-6 flex items-center justify-center gap-3">
             <button
               onClick={() => setPage((s) => Math.max(1, s - 1))}
@@ -632,24 +645,21 @@ export default function GroceryFinalPage() {
               Prev
             </button>
             <div className="text-sm">
-              Page {page} of {totalPages}
+              Page {page} of {Math.max(1, Math.ceil(total / PAGE_SIZE))}
             </div>
             <button
-              onClick={() => setPage((s) => Math.min(totalPages, s + 1))}
+              onClick={() =>
+                setPage((s) =>
+                  Math.min(Math.max(1, Math.ceil(total / PAGE_SIZE)), s + 1)
+                )
+              }
               className="px-3 py-1 border rounded"
-              disabled={page === totalPages}
+              disabled={page >= Math.max(1, Math.ceil(total / PAGE_SIZE))}
             >
               Next
             </button>
           </div>
         </main>
-
-        {/* Optional right cart panel kept commented as before */}
-        {/*
-        <aside className="md:col-span-1 bg-white p-4 rounded shadow h-fit">
-          ...
-        </aside>
-        */}
       </div>
     </div>
   );

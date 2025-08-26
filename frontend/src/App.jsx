@@ -82,7 +82,20 @@ import CustomerBecomeVendorForm from './components/admin/CustomerBecomeVendorFor
 import CustomerBecomeVendorSuccess from './components/CustomerBecomeVendorSuccess';
 // import CheckoutPage from './components/home/CheckoutPage';
 
-// Main App Component
+// Products App Component
+import CategoryPage from "./storefront/pages/CategoryPage";
+import SubcategoryPage from "./storefront/pages/SubcategoryPage";
+import ProductDetails from "./storefront/pages/ProductDetails";
+import AdminVendorsPage from "./components/pages/admin/AdminVendorsPage";
+import AdminFranchiseesPage from "./components/pages/admin/AdminFranchiseesPage";
+import AdminVendorRequestsPage from "./components/pages/AdminVendorRequestsPage";
+import AdminFranchiseRequestsPage from "./components/pages/admin/AdminFranchiseRequestsPage";
+import AdminTerritoryRequestsPage from "./components/pages/AdminTerritoryRequestsPage";
+import AdminTerritoriesPage from "./components/pages/AdminTerritoriesPage";
+import AdminAgentsPage from './components/pages/admin/AdminAgentsPage';
+import AdminAgentRequestsPage from './components/pages/AdminAgentRequestsPage';
+import AdminCustomerVendorsPage from './components/pages/AdminCustomerVendorsPage';
+import AdminCustomerVendorRequestsPage from './components/pages/admin/AdminCustomerVendorRequestsPage';
 function App() {
   const dispatch = useDispatch();
   const location = useLocation(); // Get the current route
@@ -131,6 +144,13 @@ function App() {
       )}
       <ScrollToTopOnRouteChange />
       <Routes>
+        <Route path="/c/:categoryId" element={<CategoryPage />} />
+        <Route
+          path="/subcategory/:subcategoryId"
+          element={<SubcategoryPage />}
+        />
+        <Route path="/p/:id" element={<ProductDetails />} />
+
         <Route path="/" element={<HomePage />} />
         <Route path="/product/:id" element={<SingleProductPage />} />
         <Route
@@ -183,6 +203,35 @@ function App() {
         <Route path="/vendor-success" element={<VendorSuccess />} />
         <Route path="/agent-head-success" element={<AgentSuccess />} />
         <Route path="/franchisee-success" element={<FranchiseSuccess />} />
+        <Route path="/admin/vendors" element={<AdminVendorsPage />} />
+        <Route path="/admin/franchisees" element={<AdminFranchiseesPage />} />
+        <Route
+          path="/admin/requests/territories"
+          element={<AdminTerritoryRequestsPage />}
+        />
+        <Route path="/admin/territories" element={<AdminTerritoriesPage />} />
+        <Route
+          path="/admin/agent-requests"
+          element={<AdminAgentRequestsPage />}
+        />
+        <Route
+          path="/admin/customer-vendor-requests"
+          element={<AdminCustomerVendorRequestsPage />}
+        />
+        <Route
+          path="/admin/customer-vendors"
+          element={<AdminCustomerVendorsPage />}
+        />
+
+        <Route path="/admin/agents" element={<AdminAgentsPage />} />
+        <Route
+          path="/admin/requests/vendors"
+          element={<AdminVendorRequestsPage />}
+        />
+        <Route
+          path="/admin/requests/franchisees"
+          element={<AdminFranchiseRequestsPage />}
+        />
         <Route
           path="/customer-become-vendor-success"
           element={<CustomerBecomeVendorSuccess />}

@@ -111,6 +111,13 @@ const CustomerVendorSchema = new mongoose.Schema({
   // audit
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now },
+    application_status: {
+    type: String,
+    enum: ["draft", "submitted", "under_review", "approved", "rejected"],
+    default: "draft",
+  },
+  submitted_at: { type: Date, default: null },
+
 });
 
 CustomerVendorSchema.pre("save", function (next) {

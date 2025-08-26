@@ -44,6 +44,11 @@ router.post(
 // Step save (partial upsert)
 router.post("/step-by-key", territoryHeadController.saveStepByKey);
 router.patch("/step-by-key", territoryHeadController.saveStepByKey);
+// ===== Admin endpoints (place BEFORE '/admin/:id'!) =====
+router.get("/admin/requests", territoryHeadController.listPendingRequests);
+router.get("/admin/territories", territoryHeadController.listTerritories);
+router.get("/admin/:id", territoryHeadController.getTerritoryFull);
+router.post("/admin/:id/decision", territoryHeadController.decideTerritory);
 
 // Optional legacy
 router.patch("/:territoryHeadId/step", territoryHeadController.saveStep);

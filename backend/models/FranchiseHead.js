@@ -128,6 +128,13 @@ const FranchiseHeadSchema = new mongoose.Schema({
     enum: ["seller", "cbv", "agent", "territory_head", "franchise_head"],
     required: true,
   },
+  // FranchiseHead.js  (ADD inside schema)
+  application_status: {
+    type: String,
+    enum: ["draft", "submitted", "under_review", "approved", "rejected"],
+    default: "draft",
+  },
+  submitted_at: { type: Date, default: null },
 
   // linkage
   user_id: { type: ObjectId, ref: "User", default: null },

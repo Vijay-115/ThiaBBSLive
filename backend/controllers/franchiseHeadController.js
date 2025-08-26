@@ -2,6 +2,7 @@
 const path = require("path");
 const mongoose = require("mongoose");
 const Franchise = require("../models/FranchiseHead"); // reuse schema; tag role='franchisee_owner'
+const Notification = require("../models/Notification") // if you already created one for vendors
 
 /**
  * POST /upload  (no OCR)  -> { ok, fileUrl: /uploads/xxx.ext }
@@ -326,7 +327,183 @@ exports.registerFranchisee = async (req, res) => {
       });
   }
 };
+exports.submitFranchiseApplication = async (req, res) => {
+  try {
+    const { franchiseeId } = req.body || {};
+    if (!franchiseeId)
+      return res
+        .status(400)
+        .json({ ok: false, message: "franchiseeId required" });
 
+    const doc = await Franchise.findByIdAndUpdate(
+      franchiseeId,
+      { $set: { application_status: "submitted", submitted_at: new Date() } },
+      { new: true }
+    );
+    if (!doc)
+      return res
+        .status(404)
+        .json({ ok: false, message: "Franchisee not found" });
+
+    // optional notification (if you have Notification model)
+    try {
+      await Notification?.create?.({
+        type: "franchise_application",
+        vendorId: doc._id, // reuse field name if your Notification uses vendorId
+        title: "New Franchise Application",
+        message: `Franchisee ${doc.vendor_fname || ""} ${doc.vendor_lname || ""} submitted application`,
+      });
+    } catch (_) {}
+
+    return res.json({ ok: true, data: doc });
+  } catch (e) {
+    console.error("franchisee.submit error:", e);
+    return res
+      .status(500)
+      .json({ ok: false, message: "Submit failed", details: e.message });
+  }
+};
+
+// --------------- Admin: list pending ---------------
+// GET /api/franchisees/admin/requests
+exports.listPendingFranchiseRequests = async (_req, res) => {
+  try {
+    const items = await Franchise.find({
+      application_status: "submitted",
+    }).select(
+      "vendor_fname vendor_lname pan_number aadhar_number gst_number created_at submitted_at"
+    );
+    return res.json({ ok: true, data: items });
+  } catch (e) {
+    console.error("franchisee.listPending error:", e);
+    return res
+      .status(500)
+      .json({ ok: false, message: "Fetch failed", details: e.message });
+  }
+};
+
+// --------------- Admin: get full ---------------
+// GET /api/franchisees/admin/:franchiseeId
+exports.getFranchiseFull = async (req, res) => {
+  try {
+    const { franchiseeId } = req.params;
+    const doc = await Franchise.findById(franchiseeId);
+    if (!doc)
+      return res
+        .status(404)
+        .json({ ok: false, message: "Franchisee not found" });
+    return res.json({ ok: true, data: doc });
+  } catch (e) {
+    console.error("franchisee.getFull error:", e);
+    return res
+      .status(500)
+      .json({ ok: false, message: "Fetch failed", details: e.message });
+  }
+};
+
+// --------------- Admin: approve/reject ---------------
+// POST /api/franchisees/admin/:franchiseeId/decision  { decision: 'approve'|'reject', reason? }
+exports.decideFranchise = async (req, res) => {
+  try {
+    const { franchiseeId } = req.params;
+    const { decision, reason } = req.body || {};
+    const updates = { updated_at: new Date() };
+
+    if (decision === "approve") {
+      updates.application_status = "approved";
+      updates.is_active = true;
+      updates.is_decline = false;
+      updates.decline_reason = null;
+    } else if (decision === "reject") {
+      updates.application_status = "rejected";
+      updates.is_active = false;
+      updates.is_decline = true;
+      updates.decline_reason = reason || "Not specified";
+    } else {
+      return res.status(400).json({ ok: false, message: "Invalid decision" });
+    }
+
+    const updated = await Franchise.findByIdAndUpdate(
+      franchiseeId,
+      { $set: updates },
+      { new: true }
+    );
+    if (!updated)
+      return res
+        .status(404)
+        .json({ ok: false, message: "Franchisee not found" });
+
+    // optional notification
+    try {
+      await Notification?.create?.({
+        type: "franchise_application",
+        vendorId: updated._id,
+        title: "Franchise Reviewed",
+        message: `Franchisee ${updated.vendor_fname || ""} ${updated.vendor_lname || ""} ${decision}`,
+      });
+    } catch (_) {}
+
+    return res.json({ ok: true, data: updated });
+  } catch (e) {
+    console.error("franchisee.decide error:", e);
+    return res
+      .status(500)
+      .json({ ok: false, message: "Decision failed", details: e.message });
+  }
+};
+
+// --------------- Admin: list page (approved list) ---------------
+// GET /api/franchisees/admin/franchisees?status=approved&q=&page=1&limit=20&sort=-updatedAt
+exports.listFranchisees = async (req, res) => {
+  try {
+    const {
+      status = "approved",
+      q = "",
+      page = 1,
+      limit = 20,
+      sort = "-updatedAt",
+    } = req.query;
+
+    const filter = {};
+    if (status && status !== "all") filter.application_status = status;
+
+    if (q) {
+      const rx = new RegExp(q, "i");
+      filter.$or = [
+        { vendor_fname: rx },
+        { vendor_lname: rx },
+        { pan_number: rx },
+        { gst_number: rx },
+        { aadhar_number: rx },
+        { "register_business_address.city": rx },
+        { "register_business_address.state": rx },
+      ];
+    }
+
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const pageSize = Math.min(100, parseInt(limit, 10) || 20);
+
+    const total = await Franchise.countDocuments(filter);
+    const rows = await Franchise.find(filter)
+      .sort(sort)
+      .skip((pageNum - 1) * pageSize)
+      .limit(pageSize)
+      .select(
+        "vendor_fname vendor_lname pan_number aadhar_number gst_number register_business_address application_status is_active submitted_at updated_at"
+      );
+
+    return res.json({
+      ok: true,
+      data: rows,
+      meta: { page: pageNum, limit: pageSize, total },
+    });
+  } catch (e) {
+    console.error("franchisee.list error:", e);
+    return res
+      .status(500)
+      .json({ ok: false, message: "Fetch failed", details: e.message });
+  }
+};
 module.exports = {
   uploadDocument: exports.uploadDocument,
   saveStepByKey: exports.saveStepByKey,
@@ -337,4 +514,9 @@ module.exports = {
   updateOutlet: exports.updateOutlet,
   validateGeolocation: exports.validateGeolocation,
   registerFranchisee: exports.registerFranchisee,
+  submitFranchiseApplication: exports.submitFranchiseApplication,
+  listPendingFranchiseRequests: exports.listPendingFranchiseRequests,
+  getFranchiseFull: exports.getFranchiseFull,
+  decideFranchise: exports.decideFranchise,
+  listFranchisees: exports.listFranchisees,
 };

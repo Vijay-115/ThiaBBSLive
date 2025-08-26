@@ -100,10 +100,16 @@ const SectionCategory = () => {
                       className="w-[250px] h-[150px] object-contain"
                     />
                   </div>
-                  <h5 className="text-md md:text-lg font-semibold mb-1">{category.name}</h5>
-                  <p className="text-sm text-gray-700">{category.items} items</p>
+                  <h5 className="text-md md:text-lg font-semibold mb-1">
+                    {category.name}
+                  </h5>
+                  <p className="text-sm text-gray-700">
+                    {category.items} items
+                  </p>
                   {category.description && (
-                    <p className="text-xs text-gray-500 mt-2 hidden md:block">{category.description}</p>
+                    <p className="text-xs text-gray-500 mt-2 hidden md:block">
+                      {category.description}
+                    </p>
                   )}
                 </motion.div>
               </Link>

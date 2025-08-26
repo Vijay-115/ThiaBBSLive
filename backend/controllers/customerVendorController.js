@@ -309,6 +309,7 @@ exports.validateGeolocation = (req, res, next) => {
 };
 
 // POST /register – finalize
+// POST /register – finalize
 exports.registerCustomerBecomeVendor = async (req, res) => {
   try {
     const id =
@@ -317,30 +318,146 @@ exports.registerCustomerBecomeVendor = async (req, res) => {
       req.body.territoryHeadId ||
       req.body.franchiseeId ||
       req.body.vendorId;
-    if (!id)
-      return res
-        .status(400)
-        .json({ ok: false, message: "customerBecomeVendorId required" });
+
+    if (!id) {
+      return res.status(400).json({ ok: false, message: "customerBecomeVendorId required" });
+    }
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ ok: false, message: "Invalid ID" });
+    }
+
+    // Make sure status and timestamps are set
+    const now = new Date();
     const updated = await CustomerBecomeVendor.findByIdAndUpdate(
       id,
       {
-        $set: { status: "submitted", updated_at: new Date() },
-        $setOnInsert: { role: "customer_become_vendor" },
+        $set: {
+          application_status: "submitted",
+          updated_at: now,
+          submitted_at: now,
+          role: "customer_become_vendor",
+        },
+        $setOnInsert: {
+          created_at: now,
+        },
       },
       { new: true, upsert: true, runValidators: false }
     );
-    res
-      .status(201)
-      .json({
-        ok: true,
-        message: "Customer Become Vendor registered",
-        customer: updated,
-      });
+
+    return res.status(201).json({
+      ok: true,
+      message: "Customer Become Vendor registered",
+      customer: updated,
+    });
   } catch (error) {
     console.error("customerBecomeVendor.register error:", error);
-    res
+    return res
       .status(500)
       .json({ ok: false, message: "Error registering", error: error.message });
+  }
+};
+
+// GET: pending requests for Admin
+// GET: pending requests for Admin
+exports.listRequests = async (_req, res) => {
+  try {
+    const docs = await CustomerBecomeVendor.find({
+      role: "customer_become_vendor",
+      application_status: "submitted",
+    })
+      .sort({ created_at: -1, updated_at: -1 })
+      .lean();
+    return res.json({ ok: true, data: docs });
+  } catch (e) {
+    return res
+      .status(500)
+      .json({ ok: false, message: "Failed to list requests", details: e.message });
+  }
+};
+
+
+// GET: single request
+exports.getRequestById = async (req, res) => {
+  try {
+    const doc = await CustomerBecomeVendor.findById(req.params.id).lean();
+    if (!doc) return res.status(404).json({ ok: false, message: "Not found" });
+    res.json({ ok: true, data: doc });
+  } catch (e) {
+    res.status(500).json({ ok: false, message: "Failed to fetch", details: e.message });
+  }
+};
+
+// POST: approve
+exports.approve = async (req, res) => {
+  try {
+    const { notes } = req.body || {};
+    const updated = await CustomerBecomeVendor.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: {
+          application_status: "approved",
+          is_active: true,
+          is_decline: false,
+          decline_reason: null,
+          reviewNotes: notes || "",
+          reviewedBy: req.user?._id || null,
+          reviewedAt: new Date(),
+          updated_at: new Date(),
+        },
+      },
+      { new: true }
+    );
+    if (!updated) return res.status(404).json({ ok: false, message: "Not found" });
+    res.json({ ok: true, data: updated });
+  } catch (e) {
+    res.status(500).json({ ok: false, message: "Approve failed", details: e.message });
+  }
+};
+
+// POST: reject
+exports.reject = async (req, res) => {
+  try {
+    const { reason } = req.body || {};
+    const updated = await CustomerBecomeVendor.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: {
+          application_status: "rejected",
+          is_active: false,
+          is_decline: true,
+          decline_reason: reason || "Rejected by admin",
+          reviewedBy: req.user?._id || null,
+          reviewedAt: new Date(),
+          updated_at: new Date(),
+        },
+      },
+      { new: true }
+    );
+    if (!updated) return res.status(404).json({ ok: false, message: "Not found" });
+    res.json({ ok: true, data: updated });
+  } catch (e) {
+    res.status(500).json({ ok: false, message: "Reject failed", details: e.message });
+  }
+};
+
+// GET: approved list
+exports.listApproved = async (_req, res) => {
+  try {
+    const docs = await CustomerBecomeVendor.find({
+      role: "customer_become_vendor",
+      application_status: "approved",
+    })
+      .sort({ updated_at: -1 })
+      .lean();
+    return res.json({ ok: true, data: docs });
+  } catch (e) {
+    return res
+      .status(500)
+      .json({
+        ok: false,
+        message: "Failed to list approved",
+        details: e.message,
+      });
   }
 };
 
@@ -354,4 +471,9 @@ module.exports = {
   updateOutlet: exports.updateOutlet,
   validateGeolocation: exports.validateGeolocation,
   registerCustomerBecomeVendor: exports.registerCustomerBecomeVendor,
+  listRequests: exports.listRequests,
+  getRequestById: exports.getRequestById,
+  approve: exports.approve,
+  reject: exports.reject,
+  listApproved: exports.listApproved,
 };

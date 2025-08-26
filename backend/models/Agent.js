@@ -153,7 +153,12 @@ const AgentSchema = new mongoose.Schema({
     state: { type: String, default: "" },
     postalCode: { type: String, default: "" },
   },
-
+  application_status: {
+    type: String,
+    enum: ["draft", "submitted", "under_review", "approved", "rejected"],
+    default: "draft",
+  },
+  submitted_at: { type: Date, default: null },
   outlet_nameboard_image: { type: String, default: null }, // filename only
 });
 

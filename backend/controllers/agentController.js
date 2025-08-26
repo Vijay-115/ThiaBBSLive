@@ -311,7 +311,7 @@ exports.registerAgentHead = async (req, res) => {
     const updated = await AgentHead.findByIdAndUpdate(
       id,
       {
-        $set: { status: "submitted", updated_at: new Date() },
+        $set: { application_status: "submitted", updated_at: new Date() },
         $setOnInsert: { role: "agent_head_owner" },
       },
       { new: true, upsert: true, runValidators: false }
@@ -330,7 +330,112 @@ exports.registerAgentHead = async (req, res) => {
       });
   }
 };
+exports.listRequests = async (_req, res) => {
+  try {
+    const docs = await Agent.find({ application_status: "submitted" })
+      .sort({ created_at: -1 })
+      .lean();
+    res.json({ ok: true, data: docs });
+  } catch (e) {
+    res
+      .status(500)
+      .json({
+        ok: false,
+        message: "Failed to list requests",
+        details: e.message,
+      });
+  }
+};
 
+// GET /api/admin/agent/requests/:id
+exports.getRequestById = async (req, res) => {
+  try {
+    const doc = await Agent.findById(req.params.id).lean();
+    if (!doc) return res.status(404).json({ ok: false, message: "Not found" });
+    res.json({ ok: true, data: doc });
+  } catch (e) {
+    res
+      .status(500)
+      .json({ ok: false, message: "Failed to fetch", details: e.message });
+  }
+};
+
+// POST /api/admin/agent/approve/:id
+exports.approve = async (req, res) => {
+  try {
+    const { notes } = req.body || {};
+    const updated = await Agent.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: {
+          application_status: "approved",
+          is_active: true,
+          is_decline: false,
+          decline_reason: null,
+          reviewNotes: notes || "",
+          reviewedBy: req.user?._id || null,
+          reviewedAt: new Date(),
+          updated_at: new Date(),
+        },
+      },
+      { new: true }
+    );
+    if (!updated)
+      return res.status(404).json({ ok: false, message: "Not found" });
+    res.json({ ok: true, data: updated });
+  } catch (e) {
+    res
+      .status(500)
+      .json({ ok: false, message: "Approve failed", details: e.message });
+  }
+};
+
+// POST /api/admin/agent/reject/:id
+exports.reject = async (req, res) => {
+  try {
+    const { reason } = req.body || {};
+    const updated = await Agent.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: {
+          application_status: "rejected",
+          is_active: false,
+          is_decline: true,
+          decline_reason: reason || "Rejected by admin",
+          reviewedBy: req.user?._id || null,
+          reviewedAt: new Date(),
+          updated_at: new Date(),
+        },
+      },
+      { new: true }
+    );
+    if (!updated)
+      return res.status(404).json({ ok: false, message: "Not found" });
+    res.json({ ok: true, data: updated });
+  } catch (e) {
+    res
+      .status(500)
+      .json({ ok: false, message: "Reject failed", details: e.message });
+  }
+};
+
+// GET /api/admin/agents
+exports.listApproved = async (_req, res) => {
+  try {
+    const docs = await Agent.find({ application_status: "approved" })
+      .sort({ updated_at: -1 })
+      .lean();
+    res.json({ ok: true, data: docs });
+  } catch (e) {
+    res
+      .status(500)
+      .json({
+        ok: false,
+        message: "Failed to list approved",
+        details: e.message,
+      });
+  }
+};
 module.exports = {
   uploadDocument: exports.uploadDocument,
   saveStepByKey: exports.saveStepByKey,
@@ -341,4 +446,11 @@ module.exports = {
   updateOutlet: exports.updateOutlet,
   validateGeolocation: exports.validateGeolocation,
   registerAgentHead: exports.registerAgentHead,
+  listApproved: exports.listApproved,
+  listRequests: exports.listRequests, 
+  getRequestById: exports.getRequestById,
+  approve: exports.approve,
+  reject: exports.reject,
+  listPendingRequests: exports.listPendingRequests,
+  getTerritoryFull: exports.getTerritoryFull,
 };

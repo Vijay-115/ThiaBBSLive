@@ -1,7 +1,8 @@
 // controllers/vendorController.js
 const mongoose = require("mongoose");
 const Vendor = require("../models/Vendor");
-const path = require("path");
+// controllers/vendorController.js (add to the bottom)
+const Notification = require("../models/Notification");
 
 /**
  * Generic file upload handler (no OCR).
@@ -46,6 +47,7 @@ exports.saveStepByKey = async (req, res) => {
     if (b.vendor_fname) set.vendor_fname = String(b.vendor_fname).trim();
     if (b.vendor_lname) set.vendor_lname = String(b.vendor_lname).trim();
     if (b.dob) set.dob = String(b.dob).trim();
+    if (b.email) set.email = String(b.email).trim(); // ✅ FIXED
 
     // PAN
     if (b.pan_number)
@@ -331,6 +333,225 @@ exports.registerVendor = async (req, res) => {
   }
 };
 
+// controllers/vendorController.js (add this)
+exports.submitApplication = async (req, res) => {
+  try {
+    const { vendorId } = req.body || {};
+    if (!vendorId) {
+      return res.status(400).json({ ok: false, message: "vendorId required" });
+    }
+
+    const updated = await Vendor.findByIdAndUpdate(
+      vendorId,
+      { $set: { application_status: "submitted", submitted_at: new Date() } },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ ok: false, message: "Vendor not found" });
+    }
+
+    return res.json({ ok: true, data: updated });
+  } catch (e) {
+    console.error("submitApplication error:", e);
+    return res
+      .status(500)
+      .json({ ok: false, message: "Submit failed", details: e.message });
+  }
+};
+
+// GET /api/vendors/admin/requests?status=pending
+exports.listPendingVendorRequests = async (_req, res) => {
+  try {
+    const docs = await Vendor.find({ application_status: "submitted" }).select(
+      "vendor_fname vendor_lname pan_number aadhar_number gst_number created_at submitted_at"
+    );
+    return res.json({ ok: true, data: docs });
+  } catch (e) {
+    console.error("listPendingVendorRequests error:", e);
+    return res
+      .status(500)
+      .json({ ok: false, message: "Fetch failed", details: e.message });
+  }
+};
+
+// GET /api/vendors/admin/:vendorId
+exports.getVendorFull = async (req, res) => {
+  try {
+    const { vendorId } = req.params;
+    const doc = await Vendor.findById(vendorId);
+    if (!doc)
+      return res.status(404).json({ ok: false, message: "Vendor not found" });
+    return res.json({ ok: true, data: doc });
+  } catch (e) {
+    console.error("getVendorFull error:", e);
+    return res
+      .status(500)
+      .json({ ok: false, message: "Fetch failed", details: e.message });
+  }
+};
+
+// POST /api/vendors/admin/:vendorId/decision
+// body: { decision: 'approve' | 'reject', reason?: string }
+exports.decideVendor = async (req, res) => {
+  try {
+    const { vendorId } = req.params;
+    const { decision, reason } = req.body || {};
+    const updates = { updated_at: new Date() };
+
+    if (decision === "approve") {
+      updates.application_status = "approved";
+      updates.is_active = true;
+      updates.is_decline = false;
+      updates.decline_reason = null;
+    } else if (decision === "reject") {
+      updates.application_status = "rejected";
+      updates.is_active = false;
+      updates.is_decline = true;
+      updates.decline_reason = reason || "Not specified";
+    } else {
+      return res.status(400).json({ ok: false, message: "Invalid decision" });
+    }
+
+    const updated = await Vendor.findByIdAndUpdate(
+      vendorId,
+      { $set: updates },
+      { new: true }
+    );
+    if (!updated)
+      return res.status(404).json({ ok: false, message: "Vendor not found" });
+
+    await Notification.create({
+      type: "vendor_application",
+      vendorId: updated._id,
+      title: "Vendor Reviewed",
+      message: `Vendor ${updated.vendor_fname || ""} ${updated.vendor_lname || ""} ${decision}`,
+    });
+
+    return res.json({ ok: true, data: updated });
+  } catch (e) {
+    console.error("decideVendor error:", e);
+    return res
+      .status(500)
+      .json({ ok: false, message: "Decision failed", details: e.message });
+  }
+};
+
+// GET /api/vendors/admin/notifications
+exports.getNotifications = async (_req, res) => {
+  try {
+    const items = await Notification.find({ is_read: false })
+      .sort({ created_at: -1 })
+      .limit(20);
+    return res.json({ ok: true, data: items });
+  } catch (e) {
+    console.error("getNotifications error:", e);
+    return res
+      .status(500)
+      .json({ ok: false, message: "Fetch failed", details: e.message });
+  }
+};
+
+// POST /api/vendors/admin/notifications/:id/read
+exports.markNotificationRead = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const n = await Notification.findByIdAndUpdate(
+      id,
+      { $set: { is_read: true } },
+      { new: true }
+    );
+    if (!n) return res.status(404).json({ ok: false, message: "Not found" });
+    return res.json({ ok: true, data: n });
+  } catch (e) {
+    console.error("markNotificationRead error:", e);
+    return res
+      .status(500)
+      .json({ ok: false, message: "Update failed", details: e.message });
+  }
+};
+// GET /api/vendors/admin/vendors?status=approved&q=&page=1&limit=20&sort=-updatedAt
+// GET /api/vendors/admin/vendors
+exports.listVendors = async (req, res) => {
+  try {
+    const {
+      status = "approved",
+      q = "",
+      page = 1,
+      limit = 20,
+      sort = "-updatedAt",
+    } = req.query;
+
+    const filter = {};
+
+    // status filter
+    if (status && status !== "all") {
+      if (status === "approved") {
+        filter.$or = [
+          { application_status: "approved" },
+          {
+            $and: [
+              {
+                $or: [
+                  { application_status: { $exists: false } },
+                  { application_status: null },
+                ],
+              },
+              { is_active: true },
+              {
+                $or: [
+                  { is_decline: { $exists: false } },
+                  { is_decline: false },
+                ],
+              },
+            ],
+          },
+        ];
+      } else {
+        filter.application_status = status;
+      }
+    }
+
+    // search filter
+    if (q) {
+      const rx = new RegExp(q, "i");
+      filter.$or = [
+        ...(filter.$or || []),
+        { vendor_fname: rx },
+        { vendor_lname: rx },
+        { pan_number: rx },
+        { gst_number: rx },
+        { aadhar_number: rx },
+        { "register_business_address.city": rx },
+        { "register_business_address.state": rx },
+      ];
+    }
+
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const pageSize = Math.min(100, parseInt(limit, 10) || 20);
+
+    const total = await Vendor.countDocuments(filter);
+    const rows = await Vendor.find(filter)
+      .sort(sort)
+      .skip((pageNum - 1) * pageSize)
+      .limit(pageSize)
+      .select(
+        "vendor_fname vendor_lname pan_number aadhar_number gst_number register_business_address application_status is_active is_decline submitted_at updatedAt"
+      );
+
+    return res.json({
+      ok: true,
+      data: rows,
+      meta: { page: pageNum, limit: pageSize, total },
+    });
+  } catch (e) {
+    console.error("listVendors error:", e);
+    return res
+      .status(500)
+      .json({ ok: false, message: "Fetch failed", details: e.message });
+  }
+};
+
 module.exports = {
   uploadDocument: exports.uploadDocument,
   saveStepByKey: exports.saveStepByKey,
@@ -341,4 +562,11 @@ module.exports = {
   updateOutlet: exports.updateOutlet,
   validateGeolocation: exports.validateGeolocation,
   registerVendor: exports.registerVendor,
+  submitApplication: exports.submitApplication, // <— add this line
+  listPendingVendorRequests: exports.listPendingVendorRequests,
+  getVendorFull: exports.getVendorFull,
+  decideVendor: exports.decideVendor,
+  markNotificationRead: exports.markNotificationRead,
+  getNotifications: exports.getNotifications,
+  listVendors: exports.listVendors,
 };

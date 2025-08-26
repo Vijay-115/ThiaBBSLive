@@ -61,6 +61,17 @@ router.put(
   upload.single("document"),
   vendorController.updateBankByParam
 );
+// routes/vendorRoutes.js (add new lines)
+router.post('/submit', vendorController.submitApplication);
+
+// Admin endpoints
+router.get('/admin/requests', vendorController.listPendingVendorRequests);
+router.get("/admin/vendors", vendorController.listVendors);
+
+router.get('/admin/:vendorId', vendorController.getVendorFull);
+router.post('/admin/:vendorId/decision', vendorController.decideVendor);
+router.get('/admin/notifications', vendorController.getNotifications);
+router.post('/admin/notifications/:id/read', vendorController.markNotificationRead);
 
 // Outlet image uses its own constraints (JPG/PNG; 5 MB)
 const outletStorage = multer.diskStorage({

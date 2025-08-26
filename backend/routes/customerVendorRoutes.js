@@ -44,6 +44,13 @@ router.post(
 // Step save (partial upsert)
 router.post("/step-by-key", customerController.saveStepByKey);
 router.patch("/step-by-key", customerController.saveStepByKey);
+// Admin endpoints (under the same router/mount)
+router.get("/admin/customer-vendor/requests", customerController.listRequests);
+router.get("/admin/customer-vendor/requests/:id", customerController.getRequestById);
+router.post("/admin/customer-vendor/approve/:id", customerController.approve);
+router.post("/admin/customer-vendor/reject/:id", customerController.reject);
+router.get("/admin/customer-vendor/approved", customerController.listApproved);
+
 
 // Optional legacy
 router.patch("/:customerBecomeVendorId/step", customerController.saveStep);

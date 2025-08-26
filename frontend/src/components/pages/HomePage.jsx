@@ -13,6 +13,7 @@ import Services from "../home/Services";
 import CallToActionSection from "../home/CallToActionSection";
 import { useLocation } from 'react-router-dom';
 import AppDownloadCTA from '../layout/AppDownloadCTA';
+import CategoryMegaMenu from "../../storefront/components/CategoryMegaMenu";
 
 function HomePage() {
   const location = useLocation();
@@ -24,6 +25,7 @@ function HomePage() {
     <>
 
       {/* Page Content */}
+      <CategoryMegaMenu />
       <HeroSection />
       <div className="homepage bbscontainer">
         <SectionCategory />

@@ -88,6 +88,8 @@ export default function CustomerBecomeVendorForm() {
         }/api/customer-become-vendors/step-by-key`,
         { customerBecomeVendorId, pan_pic: fileUrl }
       );
+      console.log("CBV submit response:", r.status, r.data);
+
       const id = r?.data?.data?._id;
       if (id && !customerBecomeVendorId) {
         setCustomerBecomeVendorId(id);
@@ -100,6 +102,19 @@ export default function CustomerBecomeVendorForm() {
       setLoadingPan(false);
     }
   };
+const submitCustomerVendorApplication = async () => {
+  const cid =
+    customerBecomeVendorId || localStorage.getItem("customerBecomeVendorId");
+  if (!cid) {
+    alert("Missing customerBecomeVendorId");
+    return;
+  }
+  const r = await axios.post(
+    `${import.meta.env.VITE_API_URL}/api/customer-become-vendors/register`,
+    { customerBecomeVendorId: cid }
+  );
+  if (!r?.data?.ok) throw new Error(r?.data?.message || "Submit failed");
+};
 
   const saveStep1AndNext = async () => {
     try {
@@ -374,7 +389,20 @@ export default function CustomerBecomeVendorForm() {
 
     if (!r?.data?.ok) throw new Error(r?.data?.message || "Save failed");
     alert("Outlet details saved");
-    navigate("/customer-become-vendor-success");
+    console.log(
+      "CBV submit id:",
+      customerBecomeVendorId || localStorage.getItem("customerBecomeVendorId")
+    );
+
+    try {
+  await submitCustomerVendorApplication();    // sets status="submitted"
+} catch (e) {
+    console.error(e);
+  alert(e?.response?.data?.message || e.message || "Submit failed");
+   return; // stop if submit failed
+ }
+localStorage.removeItem("customerBecomeVendorId");
+navigate("/customer-become-vendor-success");
   };
 
   useEffect(() => {

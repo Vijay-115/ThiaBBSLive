@@ -332,6 +332,21 @@ export default function TerritoryHeadForm() {
     }
   };
 
+  // === NEW: final submit helper ===
+  const submitTerritoryApplication = async () => {
+    const tid = territoryHeadId || localStorage.getItem("territoryHeadId");
+    if (!tid) {
+      alert("Missing territoryHeadId");
+      return;
+    }
+    const r = await axios.post(
+      `${import.meta.env.VITE_API_URL}/api/territory-heads/register`,
+      { territoryHeadId: tid }
+    );
+    if (!r?.data?.ok) throw new Error(r?.data?.message || "Submit failed");
+  };
+  // ================================
+
   const saveOutletAndFinish = async () => {
     const tid = territoryHeadId || localStorage.getItem("territoryHeadId");
     if (!tid) {
@@ -363,6 +378,10 @@ export default function TerritoryHeadForm() {
 
     if (!r?.data?.ok) throw new Error(r?.data?.message || "Save failed");
     alert("Outlet details saved");
+
+    // === NEW: call final submit so admin sees the request ===
+    await submitTerritoryApplication();
+
     navigate("/territory-head-success");
   };
 

@@ -33,6 +33,8 @@ export default function VendorForm() {
     firstName: "",
     lastName: "",
     dob: "",
+    email: "", // ✅ added
+
     panNumber: "",
     aadharNumber: "",
     gender: "",
@@ -69,9 +71,13 @@ export default function VendorForm() {
   const uploadDoc = async (file) => {
     const fd = new FormData();
     fd.append("document", file);
-    const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/api/vendors/upload`, fd, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const { data } = await axios.post(
+      `${import.meta.env.VITE_API_URL}/api/vendors/upload`,
+      fd,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
     if (!data?.ok || !data?.fileUrl) throw new Error("Upload failed");
     return data.fileUrl;
   };
@@ -84,10 +90,13 @@ export default function VendorForm() {
     try {
       const fileUrl = await uploadDoc(file);
       // Save just the file reference; fields are manual
-      const r = await axios.post(`${import.meta.env.VITE_API_URL}/api/vendors/step-by-key`, {
-        vendorId,
-        pan_pic: fileUrl,
-      });
+      const r = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/vendors/step-by-key`,
+        {
+          vendorId,
+          pan_pic: fileUrl,
+        }
+      );
       const id = r?.data?.data?._id;
       if (id && !vendorId) {
         setVendorId(id);
@@ -109,8 +118,12 @@ export default function VendorForm() {
         vendor_fname: formData.firstName || "",
         vendor_lname: formData.lastName || "",
         dob: formData.dob || "",
+        email: formData.email || "", // ✅ added
       };
-      const resp = await axios.post(`${import.meta.env.VITE_API_URL}/api/vendors/step-by-key`, payload);
+      const resp = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/vendors/step-by-key`,
+        payload
+      );
       if (!resp?.data?.ok) throw new Error("Save failed");
       const id = resp?.data?.data?._id;
       if (id) {
@@ -346,6 +359,23 @@ export default function VendorForm() {
     }
   };
 
+  // ************* NEW: Final submit helper (added) *************
+  const submitApplication = async () => {
+    const vid = vendorId || localStorage.getItem("vendorId");
+    if (!vid) {
+      alert("Missing vendorId");
+      return;
+    }
+    const r = await axios.post(
+      `${import.meta.env.VITE_API_URL}/api/vendors/submit`,
+      { vendorId: vid }
+    );
+    if (!r?.data?.ok) {
+      throw new Error(r?.data?.message || "Submit failed");
+    }
+  };
+  // ************************************************************
+
   const saveOutletAndNext = async () => {
     const vid = vendorId || localStorage.getItem("vendorId");
     if (!vid) {
@@ -379,6 +409,11 @@ export default function VendorForm() {
 
     if (!r?.data?.ok) throw new Error(r?.data?.message || "Save failed");
     alert("Outlet details saved");
+
+    // ************* NEW: call final submit before redirect (added) *************
+    await submitApplication();
+    // **************************************************************************
+
     navigate("/vendor-success");
   };
 
@@ -394,9 +429,13 @@ export default function VendorForm() {
     fd.append("outlet_coords[lng]", outlet.lng);
 
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/vendors/register`, fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/vendors/register`,
+        fd,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
       if (!response?.data?.ok && !response?.data?.vendor)
         throw new Error(response?.data?.message || "Registration failed");
 
@@ -465,6 +504,16 @@ export default function VendorForm() {
                 value={formData.dob}
                 onChange={(e) =>
                   setFormData((p) => ({ ...p, dob: e.target.value }))
+                }
+              />
+            </Col>
+            <Col md={6} className="mb-3">
+              <Form.Label>Email ID</Form.Label> {/* ✅ new field */}
+              <Form.Control
+                type="email"
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData((p) => ({ ...p, email: e.target.value }))
                 }
               />
             </Col>
