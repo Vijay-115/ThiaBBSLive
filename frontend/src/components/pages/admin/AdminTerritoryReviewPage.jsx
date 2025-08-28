@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 export default function AdminTerritoryReviewPage({
-  apiBase,
+  
   territoryId,
   onClose,
 }) {
@@ -20,8 +20,8 @@ export default function AdminTerritoryReviewPage({
     !f
       ? null
       : f.startsWith("/uploads")
-      ? `${apiBase}${f}`
-      : `${apiBase}/uploads/${f}`;
+      ? `${import.meta.env.VITE_API_URL}${f}`
+      : `${import.meta.env.VITE_API_URL}/uploads/${f}`;
 
   useEffect(() => {
     const run = async () => {
@@ -29,7 +29,9 @@ export default function AdminTerritoryReviewPage({
       setLoading(true);
       try {
         const r = await axios.get(
-          `${apiBase}/api/territory-heads/admin/${territoryId}`
+          `${
+            import.meta.env.VITE_API_URL
+          }/api/territory-heads/admin/${territoryId}`
         );
         if (r?.data?.ok) setT(r.data.data);
       } catch (e) {
@@ -42,7 +44,7 @@ export default function AdminTerritoryReviewPage({
       }
     };
     run();
-  }, [apiBase, territoryId]);
+  }, [import.meta.env.VITE_API_URL, territoryId]);
 
   const decide = async (decision) => {
     if (!territoryId) return;
@@ -55,7 +57,9 @@ export default function AdminTerritoryReviewPage({
     setDecisionLoading(true);
     try {
       const r = await axios.post(
-        `${apiBase}/api/territory-heads/admin/${territoryId}/decision`,
+        `${
+          import.meta.env.VITE_API_URL
+        }/api/territory-heads/admin/${territoryId}/decision`,
         body
       );
       if (!r?.data?.ok) throw new Error(r?.data?.message || "Failed");

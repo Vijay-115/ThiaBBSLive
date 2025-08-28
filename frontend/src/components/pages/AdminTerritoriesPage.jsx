@@ -3,7 +3,6 @@ import axios from "axios";
 import AdminTerritoryReviewPage from "../../components/pages/admin/AdminTerritoryReviewPage"; // adjust path
 
 export default function AdminTerritoriesPage() {
-  const apiBase = import.meta?.env?.VITE_API_URL || "http://localhost:5000";
 
   const [status, setStatus] = useState("approved");
   const [q, setQ] = useState("");
@@ -19,7 +18,7 @@ export default function AdminTerritoriesPage() {
     setLoading(true);
     try {
       const r = await axios.get(
-        `${apiBase}/api/territory-heads/admin/territories`,
+        `${import.meta.env.VITE_API_URL}/api/territory-heads/admin/territories`,
         {
           params: { status, q, page, limit },
         }
@@ -179,7 +178,7 @@ export default function AdminTerritoriesPage() {
 
       {reviewOpenId && (
         <AdminTerritoryReviewPage
-          apiBase={apiBase}
+          apiBase={import.meta.env.VITE_API_URL}
           territoryId={reviewOpenId}
           onClose={() => setReviewOpenId(null)}
         />

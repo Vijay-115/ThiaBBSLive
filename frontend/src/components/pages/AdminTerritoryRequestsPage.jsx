@@ -3,7 +3,6 @@ import axios from "axios";
 import AdminTerritoryReviewPage from "../../components/pages/admin/AdminTerritoryReviewPage"; // adjust path
 
 export default function AdminTerritoryRequestsPage() {
-  const apiBase = import.meta?.env?.VITE_API_URL || "http://localhost:5000";
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [reviewId, setReviewId] = useState(null);
@@ -12,7 +11,7 @@ export default function AdminTerritoryRequestsPage() {
     setLoading(true);
     try {
       const r = await axios.get(
-        `${apiBase}/api/territory-heads/admin/requests`
+        `${import.meta.env.VITE_API_URL}/api/territory-heads/admin/requests`
       );
       if (r?.data?.ok && Array.isArray(r.data.data)) setRows(r.data.data);
     } catch (e) {
@@ -90,7 +89,7 @@ export default function AdminTerritoryRequestsPage() {
 
       {reviewId && (
         <AdminTerritoryReviewPage
-          apiBase={apiBase}
+          apiBase={import.meta.env.VITE_API_URL}
           territoryId={reviewId}
           onClose={(refresh) => {
             setReviewId(null);
