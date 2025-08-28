@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 
 export default function AdminVendorsPage() {
-  const apiBase = import.meta?.env?.VITE_API_URL || "";
 
   const [status, setStatus] = useState("approved");
   const [q, setQ] = useState("");
@@ -20,9 +19,12 @@ export default function AdminVendorsPage() {
   const fetchList = async () => {
     setLoading(true);
     try {
-      const r = await axios.get(`${apiBase}/api/vendors/admin/vendors`, {
-        params: { status, q, page, limit },
-      });
+      const r = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/vendors/admin/vendors`,
+        {
+          params: { status, q, page, limit },
+        }
+      );
       if (r?.data?.ok) {
         setData(r.data.data || []);
         setMeta(r.data.meta || { total: 0 });
@@ -49,7 +51,9 @@ export default function AdminVendorsPage() {
     setReviewOpen(true);
     setReviewLoading(true);
     try {
-      const r = await axios.get(`${apiBase}/api/vendors/admin/${id}`);
+      const r = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/vendors/admin/${id}`
+      );
       if (r?.data?.ok) setSelectedVendor(r.data.data);
     } catch (e) {
       console.error("get vendor full error:", e?.response?.data || e.message);

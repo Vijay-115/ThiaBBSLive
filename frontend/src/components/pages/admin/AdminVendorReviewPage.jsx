@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-export default function AdminVendorReviewPage({ apiBase, vendorId }) {
+export default function AdminVendorReviewPage({  vendorId }) {
   const [v, setV] = useState(null);
   const [loading, setLoading] = useState(true);
   const [decisionLoading, setDecisionLoading] = useState(false);
@@ -10,7 +10,9 @@ export default function AdminVendorReviewPage({ apiBase, vendorId }) {
   useEffect(() => {
     const run = async () => {
       try {
-        const r = await axios.get(`${apiBase}/api/vendors/admin/${vendorId}`);
+        const r = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/vendors/admin/${vendorId}`
+        );
         if (r?.data?.ok) setV(r.data.data);
       } catch (e) {
         console.error(e);
@@ -19,7 +21,7 @@ export default function AdminVendorReviewPage({ apiBase, vendorId }) {
       }
     };
     run();
-  }, [apiBase, vendorId]);
+  }, [import.meta.env.VITE_API_URL, vendorId]);
 
   const decide = async (decision) => {
     const reason =
@@ -27,7 +29,9 @@ export default function AdminVendorReviewPage({ apiBase, vendorId }) {
     setDecisionLoading(true);
     try {
       const r = await axios.post(
-        `${apiBase}/api/vendors/admin/${vendorId}/decision`,
+        `${
+          import.meta.env.VITE_API_URL
+        }/api/vendors/admin/${vendorId}/decision`,
         { decision, reason }
       );
       if (!r?.data?.ok) throw new Error(r?.data?.message || "Failed");
@@ -45,8 +49,8 @@ export default function AdminVendorReviewPage({ apiBase, vendorId }) {
   const fileUrl = (f) =>
     f
       ? f.startsWith("/uploads")
-        ? `${apiBase}${f}`
-        : `${apiBase}/uploads/${f}`
+        ? `${import.meta.env.VITE_API_URL}${f}`
+        : `${import.meta.env.VITE_API_URL}/uploads/${f}`
       : null;
 
   return (

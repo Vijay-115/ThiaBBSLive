@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 
 export default function AdminCustomerVendorRequestsPage() {
-  const apiBase = import.meta?.env?.VITE_API_URL || "";
 
   // UI controls
   const [q, setQ] = useState("");
@@ -29,7 +28,9 @@ export default function AdminCustomerVendorRequestsPage() {
     setLoading(true);
     try {
       const r = await axios.get(
-        `${apiBase}/api/customer-become-vendors/admin/customer-vendor/requests`
+        `${
+          import.meta.env.VITE_API_URL
+        }/api/customer-become-vendors/admin/customer-vendor/requests`
       );
       const data = r?.data?.data || [];
       setRows(Array.isArray(data) ? data : []);
@@ -91,7 +92,9 @@ export default function AdminCustomerVendorRequestsPage() {
     setRejectReason("");
     try {
       const r = await axios.get(
-        `${apiBase}/api/customer-become-vendors/admin/customer-vendor/${id}`
+        `${
+          import.meta.env.VITE_API_URL
+        }/api/customer-become-vendors/admin/customer-vendor/${id}`
       );
       if (r?.data?.ok) setSelectedDoc(r.data.data);
       else setSelectedDoc(null);
@@ -120,7 +123,9 @@ export default function AdminCustomerVendorRequestsPage() {
     setActionBusy(true);
     try {
       await axios.post(
-        `${apiBase}/api/customer-become-vendors/admin/customer-vendor/approve/${selectedId}`,
+        `${
+          import.meta.env.VITE_API_URL
+        }/api/customer-become-vendors/admin/customer-vendor/approve/${selectedId}`,
         { notes: approveNotes || "" }
       );
       closeReview();
@@ -142,7 +147,9 @@ export default function AdminCustomerVendorRequestsPage() {
     setActionBusy(true);
     try {
       await axios.post(
-        `${apiBase}/api/customer-become-vendors/admin/customer-vendor/reject/${selectedId}`,
+        `${
+          import.meta.env.VITE_API_URL
+        }/api/customer-become-vendors/admin/customer-vendor/reject/${selectedId}`,
         { reason: rejectReason }
       );
       closeReview();

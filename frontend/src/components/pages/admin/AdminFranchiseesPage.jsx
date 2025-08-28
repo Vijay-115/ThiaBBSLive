@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 
 export default function AdminFranchiseesPage() {
-  const apiBase = import.meta?.env?.VITE_API_URL || "http://localhost:5000";
 
   const [status, setStatus] = useState("approved");
   const [q, setQ] = useState("");
@@ -21,7 +20,7 @@ export default function AdminFranchiseesPage() {
     setLoading(true);
     try {
       const r = await axios.get(
-        `${apiBase}/api/franchisees/admin/franchisees`,
+        `${import.meta.env.VITE_API_URL}/api/franchisees/admin/franchisees`,
         {
           params: { status, q, page, limit },
         }
@@ -52,7 +51,9 @@ export default function AdminFranchiseesPage() {
     setReviewOpen(true);
     setReviewLoading(true);
     try {
-      const r = await axios.get(`${apiBase}/api/franchisees/admin/${id}`);
+      const r = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/franchisees/admin/${id}`
+      );
       if (r?.data?.ok) setSelected(r.data.data);
     } catch (e) {
       console.error(

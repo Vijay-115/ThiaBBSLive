@@ -3,7 +3,6 @@ import axios from "axios";
 import AdminVendorReviewPage from "../../components/pages/admin/AdminVendorReviewPage"; // adjust path if different
 
 export default function AdminVendorRequestsPage() {
-  const apiBase = import.meta?.env?.VITE_API_URL || "http://localhost:5000";
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -12,7 +11,9 @@ export default function AdminVendorRequestsPage() {
   const fetchList = async () => {
     setLoading(true);
     try {
-      const r = await axios.get(`${apiBase}/api/vendors/admin/requests`);
+      const r = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/vendors/admin/requests`
+      );
       if (r?.data?.ok && Array.isArray(r.data.data)) setRows(r.data.data);
     } catch (e) {
       console.error("vendor requests error:", e?.response?.data || e.message);
@@ -87,7 +88,7 @@ export default function AdminVendorRequestsPage() {
 
       {reviewId && (
         <AdminVendorReviewPage
-          apiBase={apiBase}
+          apiBase={import.meta.env.VITE_API_URL}
           vendorId={reviewId}
           onClose={() => {
             setReviewId(null);

@@ -3,7 +3,6 @@ import axios from "axios";
 import AdminFranchiseReviewPage from "../../../components/pages/AdminFranchiseReviewPage"; // adjust path
 
 export default function AdminFranchiseRequestsPage() {
-  const apiBase = import.meta?.env?.VITE_API_URL || "http://localhost:5000";
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -12,7 +11,9 @@ export default function AdminFranchiseRequestsPage() {
   const fetchList = async () => {
     setLoading(true);
     try {
-      const r = await axios.get(`${apiBase}/api/franchisees/admin/requests`);
+      const r = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/franchisees/admin/requests`
+      );
       if (r?.data?.ok && Array.isArray(r.data.data)) setRows(r.data.data);
     } catch (e) {
       console.error(
@@ -90,7 +91,7 @@ export default function AdminFranchiseRequestsPage() {
 
       {reviewId && (
         <AdminFranchiseReviewPage
-          apiBase={apiBase}
+          apiBase={import.meta.env.VITE_API_URL}
           franchiseeId={reviewId}
           onClose={() => {
             setReviewId(null);

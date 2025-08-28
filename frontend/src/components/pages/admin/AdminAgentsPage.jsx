@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 
 export default function AdminAgentsPage() {
-  const apiBase = import.meta?.env?.VITE_API_URL || "";
 
   // UI controls (mirrors AdminVendorsPage)
   const [status, setStatus] = useState("approved"); // approved | submitted | under_review | rejected | draft | all
@@ -25,7 +24,7 @@ export default function AdminAgentsPage() {
     setLoading(true);
     try {
       // Your existing endpoint returns approved agents; we filter client-side for UI parity
-      const url = `${apiBase}/api/admin/agents`;
+      const url = `${import.meta.env.VITE_API_URL}/api/admin/agents`;
       const { data } = await axios.get(url);
       const list = Array.isArray(data?.data) ? data.data : [];
       setRows(list);
@@ -99,7 +98,9 @@ export default function AdminAgentsPage() {
 
     // Try to fetch full detail; if not available, fall back to the row
     try {
-      const r = await axios.get(`${apiBase}/api/admin/agents/${id}`);
+      const r = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/admin/agents/${id}`
+      );
       if (r?.data?.data) {
         setSelectedDoc(r.data.data);
       } else {

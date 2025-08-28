@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 
 export default function AdminCustomerVendorsPage() {
-  const apiBase = import.meta?.env?.VITE_API_URL || "";
 
   const [status, setStatus] = useState("approved"); // approved | submitted | rejected
   const [q, setQ] = useState("");
@@ -19,12 +18,18 @@ export default function AdminCustomerVendorsPage() {
 
   const listEndpointForStatus = (s) => {
     if (s === "submitted") {
-      return `${apiBase}/api/customer-become-vendors/admin/customer-vendor/requests`;
+      return `${
+        import.meta.env.VITE_API_URL
+      }/api/customer-become-vendors/admin/customer-vendor/requests`;
     }
     if (s === "rejected") {
-      return `${apiBase}/api/customer-become-vendors/admin/customer-vendor/rejected`;
+      return `${
+        import.meta.env.VITE_API_URL
+      }/api/customer-become-vendors/admin/customer-vendor/rejected`;
     }
-    return `${apiBase}/api/customer-become-vendors/admin/customer-vendor/approved`;
+    return `${
+      import.meta.env.VITE_API_URL
+    }/api/customer-become-vendors/admin/customer-vendor/approved`;
   };
 
   const fetchList = async () => {
@@ -87,7 +92,9 @@ export default function AdminCustomerVendorsPage() {
     setReviewLoading(true);
     try {
       const r = await axios.get(
-        `${apiBase}/api/customer-become-vendors/admin/customer-vendor/${id}`
+        `${
+          import.meta.env.VITE_API_URL
+        }/api/customer-become-vendors/admin/customer-vendor/${id}`
       );
       if (r?.data?.ok) setSelectedDoc(r.data.data);
     } catch (e) {

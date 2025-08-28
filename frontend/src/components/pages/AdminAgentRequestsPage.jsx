@@ -3,7 +3,6 @@ import axios from "axios";
 import AdminAgentReviewModal from "../../components/pages/admin/AdminAgentReviewModal";
 
 export default function AdminAgentRequestsPage() {
-  const apiBase = import.meta?.env?.VITE_API_URL || "";
 
   // UI controls
   const [q, setQ] = useState("");
@@ -20,7 +19,9 @@ export default function AdminAgentRequestsPage() {
   const fetchList = async () => {
     setLoading(true);
     try {
-      const url = `${apiBase}/api/agent-heads/agent/requests`;
+      const url = `${
+        import.meta.env.VITE_API_URL
+      }/api/agent-heads/agent/requests`;
       const { data } = await axios.get(url);
       const list = Array.isArray(data?.data) ? data.data : [];
       setRows(list);

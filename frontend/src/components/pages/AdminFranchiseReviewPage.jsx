@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 export default function AdminFranchiseReviewPage({
-  apiBase,
   franchiseeId,
   onClose,
 }) {
@@ -15,7 +14,9 @@ export default function AdminFranchiseReviewPage({
       setLoading(true);
       try {
         const r = await axios.get(
-          `${apiBase}/api/franchisees/admin/${franchiseeId}`
+          `${
+            import.meta.env.VITE_API_URL
+          }/api/franchisees/admin/${franchiseeId}`
         );
         if (r?.data?.ok) setF(r.data.data);
       } catch (e) {
@@ -28,7 +29,7 @@ export default function AdminFranchiseReviewPage({
       }
     };
     if (franchiseeId) run();
-  }, [apiBase, franchiseeId]);
+  }, [import.meta.env.VITE_API_URL, franchiseeId]);
 
   const decide = async (decision) => {
     if (!franchiseeId) return;
@@ -41,7 +42,9 @@ export default function AdminFranchiseReviewPage({
     setDecisionLoading(true);
     try {
       const r = await axios.post(
-        `${apiBase}/api/franchisees/admin/${franchiseeId}/decision`,
+        `${
+          import.meta.env.VITE_API_URL
+        }/api/franchisees/admin/${franchiseeId}/decision`,
         body
       );
       if (!r?.data?.ok) throw new Error(r?.data?.message || "Failed");
@@ -63,8 +66,8 @@ export default function AdminFranchiseReviewPage({
   const fileUrl = (fpath) => {
     if (!fpath) return null;
     return fpath.startsWith("/uploads")
-      ? `${apiBase}${fpath}`
-      : `${apiBase}/uploads/${fpath}`;
+      ? `${import.meta.env.VITE_API_URL}${fpath}`
+      : `${import.meta.env.VITE_API_URL}/uploads/${fpath}`;
     // adjust if your controller returns absolute URLs already
   };
 
