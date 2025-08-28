@@ -305,52 +305,8 @@ const Sidebar = ({ isSidebarHidden, toggleSidebar }) => {
                   <span>CustomerBecomeVendor's Request</span>
                 </NavLink>
               </li>
-              <li
-                className={
-                  location.pathname ===
-                  "/admin/users-request?role=territory_head"
-                    ? "bg-blue-600 rounded-lg"
-                    : ""
-                }
-              >
-                <NavLink
-                  to="/admin/users-request?role=territory_head"
-                  className=""
-                  style={
-                    currentRole === "territory_head"
-                      ? { backgroundColor: "#0da89c", color: "#ffffff" }
-                      : { backgroundColor: "transparent", color: "#000000" }
-                  }
-                >
-                  <i className="bx bxs-layer bx-sm" />
-                  <span>Territory Head's Request</span>
-                </NavLink>
-              </li>
-              <li
-                className={
-                  location.pathname ===
-                  "/admin/users-request?role=franchise_head"
-                    ? "bg-blue-600 rounded-lg"
-                    : ""
-                }
-              >
-                <NavLink
-                  to="/admin/users-request?role=franchise_head"
-                  className=""
-                  style={
-                    currentRole === "franchise_head"
-                      ? { backgroundColor: "#0da89c", color: "#ffffff" }
-                      : { backgroundColor: "transparent", color: "#000000" }
-                  }
-                >
-                  <i className="bx bxs-layer bx-sm" />
-                  <span>Franchise Head's Request</span>
-                </NavLink>
-              </li>
             </ul>
           </li>
-        </ul>
-        <ul className="side-menu bottom">
           <li
             onClick={async () => {
               await logout(dispatch);
@@ -362,6 +318,7 @@ const Sidebar = ({ isSidebarHidden, toggleSidebar }) => {
             </NavLink>
           </li>
         </ul>
+        <ul className="side-menu bottom"></ul>
       </section>
     </>
   );
