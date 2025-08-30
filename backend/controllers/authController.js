@@ -498,12 +498,10 @@ exports.updateProfile = async (req, res) => {
       "userdetails"
     );
 
-    res
-      .status(200)
-      .json({
-        message: "Profile updated successfully",
-        userInfo: updatedUserInfo,
-      });
+    res.status(200).json({
+      message: "Profile updated successfully",
+      userInfo: updatedUserInfo,
+    });
   } catch (error) {
     console.error("Error updating profile:", error);
     res.status(500).json({ message: "Failed to update profile" });
@@ -573,5 +571,74 @@ exports.authRefershToken = async (req, res) => {
     res.status(200).json({ message: "Token refreshed" });
   } catch (err) {
     return res.status(401).json({ message: "Invalid refresh token" });
+  }
+};
+
+exports.verifySetPasswordToken = async (req, res) => {
+  try {
+    const { token } = req.params;
+    if (!token)
+      return res
+        .status(400)
+        .json({ success: false, message: "Token required" });
+
+    const user = await User.findOne({ passwordResetToken: token });
+    if (!user)
+      return res.status(400).json({ success: false, message: "Invalid token" });
+
+    if (
+      !user.passwordResetExpires ||
+      user.passwordResetExpires.getTime() < Date.now()
+    ) {
+      return res.status(400).json({ success: false, message: "Token expired" });
+    }
+
+    return res.json({ success: true, email: user.email });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ success: false, message: "Failed to verify token" });
+  }
+};
+
+
+// Set password with token
+exports.setPassword = async (req, res) => {
+  try {
+    const { token, password } = req.body;
+    if (!token || !password) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Token and password are required" });
+    }
+    if (
+      String(password).length < 8 ||
+      !/[0-9]/.test(password) ||
+      !/[A-Za-z]/.test(password)
+    ) {
+      return res.status(400).json({ success: false, message: "Weak password" });
+    }
+
+    const user = await User.findOne({ passwordResetToken: token });
+    if (!user)
+      return res.status(400).json({ success: false, message: "Invalid token" });
+    if (
+      !user.passwordResetExpires ||
+      user.passwordResetExpires.getTime() < Date.now()
+    ) {
+      return res.status(400).json({ success: false, message: "Token expired" });
+    }
+
+    user.password = await User.hashPassword(password);
+    user.mustChangePassword = false;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save();
+
+    return res.json({ success: true, message: "Password set successfully" });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ success: false, message: "Failed to set password" });
   }
 };

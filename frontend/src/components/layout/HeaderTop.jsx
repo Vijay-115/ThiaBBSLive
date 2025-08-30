@@ -7,7 +7,7 @@ import { fetchCartItems } from "../../slice/cartSlice";
 import CartPopup from "./CartPopup";
 import { FaHeart, FaCartArrowDown } from "react-icons/fa6";
 import { RiUserShared2Fill } from "react-icons/ri";
-
+import DeliverTo from "../../components/DeliverTo";
 function HeaderTop({ toggleMenu }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -21,7 +21,10 @@ function HeaderTop({ toggleMenu }) {
 
   const [cartPopup, setCartPopup] = useState(false);
   const [showHealthcareFrame, setShowHealthcareFrame] = useState(false);
-
+  const handleAssigned = (data) => {
+    // optional UI actions after assignment
+    // e.g., refresh products
+  };
   useEffect(() => {
     if (isAuthenticated) dispatch(loadUser());
   }, [dispatch, isAuthenticated]);
@@ -140,31 +143,30 @@ function HeaderTop({ toggleMenu }) {
               <div className="flex items-center cursor-pointer">
                 <RiUserShared2Fill className="text-red-600 w-6 h-6" />
               </div>
-                 <div className="absolute right-15 top-full mb-2 w-48 bg-white rounded-md shadow-lg overflow-hidden z-10">
-                            {!isAuthenticated ? (
-                              <>
-                              <div className="d-flex flex-column">
-                                <span className="bb-btn-title font-Poppins transition-all duration-[0.3s] ease-in-out text-[12px] leading-[1] text-secondary mb-[4px] tracking-[0.6px] capitalize font-medium whitespace-nowrap">
-                                  Account
-                                </span>
-                                <span className="bb-btn-stitle font-Poppins transition-all duration-[0.3s] ease-in-out text-[14px] leading-[16px] font-semibold text-secondary  tracking-[0.03rem] whitespace-nowrap">
-                                  Login
-                                </span>
-                                </div>
-                              </>
-                            ) : (
-                              <>
-                                <span className="bb-btn-title font-Poppins transition-all duration-[0.3s] ease-in-out text-[12px] leading-[1] text-secondary mb-[4px] tracking-[0.6px] capitalize font-medium whitespace-nowrap">
-                                  Welcome!
-                                </span>
-                                <span className="bb-btn-stitle font-Poppins transition-all duration-[0.3s] ease-in-out text-[14px] leading-[16px] font-semibold text-secondary  tracking-[0.03rem] whitespace-nowrap">
-                                  {user?.name}
-                                </span>
-                              </>
-                            )}
-                          </div>
-             <ul className="absolute right-5 left-50 bottom-[-22px] top-30 mt-2 w-44 bg-white rounded-md shadow-md hidden group-hover:block  text-sm">
-
+              <div className="absolute right-15 top-full mb-2 w-48 bg-white rounded-md shadow-lg overflow-hidden z-10">
+                {!isAuthenticated ? (
+                  <>
+                    <div className="d-flex flex-column">
+                      <span className="bb-btn-title font-Poppins transition-all duration-[0.3s] ease-in-out text-[12px] leading-[1] text-secondary mb-[4px] tracking-[0.6px] capitalize font-medium whitespace-nowrap">
+                        Account
+                      </span>
+                      <span className="bb-btn-stitle font-Poppins transition-all duration-[0.3s] ease-in-out text-[14px] leading-[16px] font-semibold text-secondary  tracking-[0.03rem] whitespace-nowrap">
+                        Login
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <span className="bb-btn-title font-Poppins transition-all duration-[0.3s] ease-in-out text-[12px] leading-[1] text-secondary mb-[4px] tracking-[0.6px] capitalize font-medium whitespace-nowrap">
+                      Welcome!
+                    </span>
+                    <span className="bb-btn-stitle font-Poppins transition-all duration-[0.3s] ease-in-out text-[14px] leading-[16px] font-semibold text-secondary  tracking-[0.03rem] whitespace-nowrap">
+                      {user?.name}
+                    </span>
+                  </>
+                )}
+              </div>
+              <ul className="absolute right-5 left-50 bottom-[-22px] top-30 mt-2 w-44 bg-white rounded-md shadow-md hidden group-hover:block  text-sm">
                 {!isAuthenticated ? (
                   <>
                     <li>
@@ -256,6 +258,7 @@ function HeaderTop({ toggleMenu }) {
 
       {/* Cart Popup */}
       <CartPopup cartPopup={cartPopup} setCartPopup={setCartPopup} />
+      <DeliverTo onAssigned={(data) => console.log("Vendor set:", data)} />
     </>
   );
 }

@@ -96,6 +96,10 @@ import AdminAgentsPage from './components/pages/admin/AdminAgentsPage';
 import AdminAgentRequestsPage from './components/pages/AdminAgentRequestsPage';
 import AdminCustomerVendorsPage from './components/pages/AdminCustomerVendorsPage';
 import AdminCustomerVendorRequestsPage from './components/pages/admin/AdminCustomerVendorRequestsPage';
+
+// 30/09/25 - AdminVendorCredentials
+import AdminVendorCredentials from "./components/admin/AdminVendorCredentials";
+import VendorSetPassword from "./components/pages/VendorSetPassword";
 function App() {
   const dispatch = useDispatch();
   const location = useLocation(); // Get the current route
@@ -150,7 +154,6 @@ function App() {
           element={<SubcategoryPage />}
         />
         <Route path="/p/:id" element={<ProductDetails />} />
-
         <Route path="/" element={<HomePage />} />
         <Route path="/product/:id" element={<SingleProductPage />} />
         <Route
@@ -222,7 +225,6 @@ function App() {
           path="/admin/customer-vendors"
           element={<AdminCustomerVendorsPage />}
         />
-
         <Route path="/admin/agents" element={<AdminAgentsPage />} />
         <Route
           path="/admin/requests/vendors"
@@ -236,12 +238,21 @@ function App() {
           path="/customer-become-vendor-success"
           element={<CustomerBecomeVendorSuccess />}
         />
-
         <Route
           path="territory-head-success"
           element={<TerritoryHeadSuccess />}
         />
-
+{   // 30/09/25 - AdminVendorCredentials
+}       
+ <Route
+          path="/admin/vendor-credentials"
+          element={<AdminVendorCredentials />}
+        />
+  
+        <Route
+          path="/vendor/set-password/:token"
+          element={<VendorSetPassword />}
+        />
         {/* Home Page card navigation */}
         <Route path="/all-products" element={<AllProducts />} />
         <Route path="/fruits" element={<FruitsDetails />} />

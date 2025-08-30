@@ -5,6 +5,7 @@ const productController = require("../controllers/productController");
 const { uploadAny } = require("../middleware/upload");
 const { auth, authUser } = require("../middleware/authMiddleware");
 const multer = require("multer");
+const requireAssignedVendor = require("../middleware/requireAssignedVendor");
 
 const upload = multer({ dest: "uploads/tmp" });
 
@@ -17,8 +18,10 @@ router.get("/catalog/subcategories", productController.listSubcategoriesPublic);
 router.get("/catalog/groups", productController.listGroupsBySubcategory); // <— add this
 router.get("/catalog/category-by-slug", productController.getCategoryBySlug);
 
-router.get("/public", productController.listProducts); // product list with filters
-router.get("/facets", productController.getFacets); // brand/price facets
+router.get("/public", requireAssignedVendor, productController.listProducts); // product list with filters
+router.get("/facets",requireAssignedVendor, productController.getFacets); // brand/price facets
+// router.get("/public", productController.listProducts); // product list with filters
+// router.get("/facets", productController.getFacets); // brand/price facets
 router.post(
   "/catalog/import/categories",
   authUser,
@@ -75,7 +78,8 @@ router.get(
 router.get("/seller/:sellerId", productController.getProductsBySellerId);
 
 // Product detail MUST be last so it doesn't shadow other routes
-router.get("/:id", productController.getProductById);
+router.get("/:id", requireAssignedVendor,productController.getProductById);
+// router.get("/:id", productController.getProductById);
 
 // Update (single)
 router.put("/:id", auth, uploadAny, productController.updateProduct);

@@ -9,13 +9,18 @@ const RequiredAddressSchema = new mongoose.Schema({
     postalCode: { type: String, required: true },
 }, { _id: false });
 
+// Optional (all defaults, no "required")
 const OptionalAddressSchema = new mongoose.Schema({
-    street: { type: String },
-    city: { type: String },
-    state: { type: String },
-    country: { type: String },
-    postalCode: { type: String },
+  floorNo:   { type: String, default: "" },
+  buildingNo:{ type: String, default: "" },
+  street:    { type: String, default: "" },
+  locality:  { type: String, default: "" },
+  city:      { type: String, default: "" },
+  district:  { type: String, default: "" },
+  state:     { type: String, default: "" },
+  postalCode:{ type: String, default: "" },
 }, { _id: false });
+
 
 const VendorSchema = new mongoose.Schema({
   vendor_fname: { type: String },
@@ -37,7 +42,7 @@ const VendorSchema = new mongoose.Schema({
   brand_name: { type: String, default: null },
   contact_person: { type: String, default: null },
   email: { type: String, required: true },
-  mobile: { type: String, required: true },
+  mobile: { type: String, required: false },
   alt_mobile: { type: String, default: null },
   register_business_address: { type: RequiredAddressSchema, required: true },
   operational_address: { type: OptionalAddressSchema, required: false },
@@ -48,13 +53,12 @@ const VendorSchema = new mongoose.Schema({
   aadhar_pic_front: { type: String, default: null },
   aadhar_pic_back: { type: String, default: null },
 
-  self_declaration: { type: String, required: true },
+  self_declaration: { type: String, required: false },
   criminal_history: { type: String, required: false },
   referral_details: { type: String, required: false },
   lang_proficiency: { type: String, required: false },
   pan_number: { type: String, required: true },
   pan_pic: { type: String, required: false },
-  gst_number: { type: String, default: null },
   gst_pic: { type: String, false: null },
   fssai_license: { type: String, default: null },
   fssai_pic: { type: String, default: null },
@@ -90,14 +94,14 @@ const VendorSchema = new mongoose.Schema({
     default: "",
   },
   product_category_other: { type: String, default: null },
-  address_proof: { type: String, required: true },
-  termsConditions: { type: Boolean, required: true },
-  privacyPolicy: { type: Boolean, required: true },
-  sellerPolicy: { type: Boolean, required: true },
+  address_proof: { type: String, required: false },
+  termsConditions: { type: Boolean, required: false },
+  privacyPolicy: { type: Boolean, required: false },
+  sellerPolicy: { type: Boolean, required: false },
   role: {
     type: String,
     enum: ["seller", "cbv", "agent", "territory_head", "franchise_head"],
-    required: true,
+    required: false,
   },
   user_id: { type: ObjectId, ref: "User", default: null },
   is_active: { type: Boolean, default: false },

@@ -156,6 +156,17 @@ const Sidebar = ({ isSidebarHidden, toggleSidebar }) => {
           <li
             className={location.pathname === "/admin/vendors" ? "active" : ""}
           >
+            <li
+              className={location.pathname === "/admin/vendors" ? "active" : ""}
+            >
+              <NavLink to="/admin/vendor-credentials">
+                <i className="bx bxs-group bx-sm" />
+                <span className="text">Vendor Credentials</span>
+              </NavLink>
+            </li>
+            <li
+              className={location.pathname === "/admin/vendors" ? "active" : ""}
+            ></li>
             <NavLink to="/admin/franchisees">
               <i className="bx bxs-group bx-sm" />
               <span className="text">Franchisees</span>
@@ -195,6 +206,7 @@ const Sidebar = ({ isSidebarHidden, toggleSidebar }) => {
               <span className="text">Other User's</span>
             </NavLink>
           </li>
+
           {/* <li className={location.pathname === "/admin/users-request" ? "active" : ""}>
                         <NavLink to="/admin/users-request">
                             <i className="bx bxs-group bx-sm" />

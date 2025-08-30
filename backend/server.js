@@ -28,6 +28,9 @@ const franchiseeRoutes = require("./routes/franchiseHeadRoutes");
 const territoryHeadRoutes = require("./routes/territoryHeadRoutes");
 const agentHeadRoutes = require("./routes/agentRoutes");
 const customerBecomeVendorRoutes = require("./routes/customerVendorRoutes");
+const geoRoutes = require("./routes/geoRoutes");
+const adminPincodeVendorsRoutes = require("./routes/adminPincodeVendorsRoutes");
+const adminVendorRoutes = require("./routes/adminVendorRoutes");
 
 const app = express();
 
@@ -50,7 +53,12 @@ app.use(
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Pincode",
+      "X-Guest-Key",
+    ],
   })
 );
 
@@ -119,6 +127,9 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/users", userRoutes);
 app.get("/api/health", (req, res) => res.json({ ok: true }));
+app.use("/api/geo", geoRoutes);
+app.use("/api/admin/pincode-vendors", adminPincodeVendorsRoutes);
+app.use("/api/admin", adminVendorRoutes);
 
 // ✅ Global Error Handler
 app.use((err, req, res, next) => {

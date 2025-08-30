@@ -2,8 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 
 export default function AdminVendorsPage() {
-
-  const [status, setStatus] = useState("approved");
+  const [status, setStatus] = useState("all"); // start with all so submitted rows also show
   const [q, setQ] = useState("");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
@@ -21,30 +20,35 @@ export default function AdminVendorsPage() {
     try {
       const r = await axios.get(
         `${import.meta.env.VITE_API_URL}/api/vendors/admin/vendors`,
-        {
-          params: { status, q, page, limit },
-        }
+        { params: { status, q, page, limit } }
       );
-      if (r?.data?.ok) {
-        setData(r.data.data || []);
-        setMeta(r.data.meta || { total: 0 });
+      if (r?.data?.success || r?.data?.ok) {
+        const rows = r.data.vendors || r.data.data || [];
+        setData(rows);
+        setMeta(r.data.meta || { total: rows.length, page, limit });
+      } else {
+        setData([]);
+        setMeta({ total: 0 });
       }
     } catch (e) {
       console.error("list vendors error:", e?.response?.data || e.message);
+      setData([]);
+      setMeta({ total: 0 });
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchList();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchList(); /* eslint-disable-next-line */
   }, [status, q, page, limit]);
 
   const totalPages = useMemo(
     () => Math.max(1, Math.ceil((meta?.total || 0) / limit)),
     [meta, limit]
   );
+
+  const safe = (v) => (v === undefined || v === null ? "" : String(v));
 
   const openReview = async (id) => {
     setSelectedVendorId(id);
@@ -54,7 +58,7 @@ export default function AdminVendorsPage() {
       const r = await axios.get(
         `${import.meta.env.VITE_API_URL}/api/vendors/admin/${id}`
       );
-      if (r?.data?.ok) setSelectedVendor(r.data.data);
+      if (r?.data?.success || r?.data?.ok) setSelectedVendor(r.data.data);
     } catch (e) {
       console.error("get vendor full error:", e?.response?.data || e.message);
     } finally {
@@ -67,8 +71,6 @@ export default function AdminVendorsPage() {
     setSelectedVendorId(null);
     setSelectedVendor(null);
   };
-
-  const safe = (v) => (v === undefined || v === null ? "" : String(v));
 
   return (
     <div style={{ padding: 16 }}>
@@ -98,12 +100,12 @@ export default function AdminVendorsPage() {
             setStatus(e.target.value);
           }}
         >
+          <option value="all">All</option>
           <option value="approved">Approved</option>
           <option value="submitted">Submitted</option>
           <option value="under_review">Under Review</option>
           <option value="rejected">Rejected</option>
           <option value="draft">Draft</option>
-          <option value="all">All</option>
         </select>
         <select
           value={limit}
@@ -167,7 +169,11 @@ export default function AdminVendorsPage() {
                   </td>
                   <td style={{ padding: 10 }}>{safe(v.application_status)}</td>
                   <td style={{ padding: 10 }}>
-                    {v.updatedAt ? new Date(v.updatedAt).toLocaleString() : ""}
+                    {v.updated_at
+                      ? new Date(v.updated_at).toLocaleString()
+                      : v.updatedAt
+                      ? new Date(v.updatedAt).toLocaleString()
+                      : ""}
                   </td>
                   <td style={{ padding: 10 }}>
                     <button onClick={() => openReview(v._id)}>View</button>

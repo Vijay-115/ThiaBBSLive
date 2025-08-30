@@ -470,87 +470,66 @@ exports.markNotificationRead = async (req, res) => {
       .json({ ok: false, message: "Update failed", details: e.message });
   }
 };
-// GET /api/vendors/admin/vendors?status=approved&q=&page=1&limit=20&sort=-updatedAt
-// GET /api/vendors/admin/vendors
+
 exports.listVendors = async (req, res) => {
   try {
-    const {
-      status = "approved",
-      q = "",
-      page = 1,
-      limit = 20,
-      sort = "-updatedAt",
-    } = req.query;
+    const { status = "approved", q = "", page = 1, limit = 20 } = req.query;
+    const match = {};
 
-    const filter = {};
-
-    // status filter
     if (status && status !== "all") {
-      if (status === "approved") {
-        filter.$or = [
-          { application_status: "approved" },
-          {
-            $and: [
-              {
-                $or: [
-                  { application_status: { $exists: false } },
-                  { application_status: null },
-                ],
-              },
-              { is_active: true },
-              {
-                $or: [
-                  { is_decline: { $exists: false } },
-                  { is_decline: false },
-                ],
-              },
-            ],
-          },
-        ];
-      } else {
-        filter.application_status = status;
-      }
+      match.application_status = status;
     }
 
-    // search filter
-    if (q) {
-      const rx = new RegExp(q, "i");
-      filter.$or = [
-        ...(filter.$or || []),
-        { vendor_fname: rx },
-        { vendor_lname: rx },
-        { pan_number: rx },
-        { gst_number: rx },
-        { aadhar_number: rx },
-        { "register_business_address.city": rx },
-        { "register_business_address.state": rx },
+    if (q && q.trim()) {
+      const regex = new RegExp(q.trim(), "i");
+      match.$or = [
+        { vendor_fname: regex },
+        { vendor_lname: regex },
+        { brand_name: regex },
+        { pan_number: regex },
+        { gst_number: regex },
+        { "register_business_address.city": regex },
+        { "register_business_address.state": regex },
       ];
     }
 
-    const pageNum = Math.max(1, parseInt(page, 10) || 1);
-    const pageSize = Math.min(100, parseInt(limit, 10) || 20);
+    const skip = (Number(page) - 1) * Number(limit);
 
-    const total = await Vendor.countDocuments(filter);
-    const rows = await Vendor.find(filter)
-      .sort(sort)
-      .skip((pageNum - 1) * pageSize)
-      .limit(pageSize)
-      .select(
-        "vendor_fname vendor_lname pan_number aadhar_number gst_number register_business_address application_status is_active is_decline submitted_at updatedAt"
-      );
+    // IMPORTANT: do NOT select both the parent object and its children.
+    // Select only the dotted children you need; never the parent as a whole.
+    const vendors = await Vendor.find(match)
+      .select([
+        "vendor_fname",
+        "vendor_lname",
+        "brand_name",
+        "email",
+        "user_id",
+        "application_status",
+        "updated_at",
+        "pan_number",
+        "gst_number",
+        "register_business_address.city",
+        "register_business_address.state",
+        "register_business_address.postalCode",
+      ].join(" "))
+      .sort({ updated_at: -1 })
+      .skip(skip)
+      .limit(Number(limit))
+      .lean();
+
+    const total = await Vendor.countDocuments(match);
 
     return res.json({
-      ok: true,
-      data: rows,
-      meta: { page: pageNum, limit: pageSize, total },
+      success: true,
+      vendors,
+      meta: { total, page: Number(page), limit: Number(limit) },
     });
-  } catch (e) {
-    console.error("listVendors error:", e);
-    return res
-      .status(500)
-      .json({ ok: false, message: "Fetch failed", details: e.message });
+  } catch (err) {
+    console.error("listVendors error", err);
+    return res.status(500).json({ success: false, message: err.message });
   }
 };
+
 
 module.exports = {
   uploadDocument: exports.uploadDocument,
