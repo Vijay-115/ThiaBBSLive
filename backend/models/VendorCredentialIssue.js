@@ -11,19 +11,19 @@ const VendorCredentialIssueSchema = new Schema(
     userId: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+      required: false,
       index: true,
     },
     vendorId: {
       type: Schema.Types.ObjectId,
       ref: "Vendor",
-      required: true,
+      required: false,
       index: true,
     },
     email: { type: String, required: true, index: true },
 
     // bcrypt hash of the temporary password we emailed
-    tempPasswordHash: { type: String, required: true },
+    tempPasswordHash: { type: String, required: false },
 
     // force vendor to change password on first login
     mustChangePassword: { type: Boolean, default: true },

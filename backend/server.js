@@ -129,7 +129,7 @@ app.use("/api/users", userRoutes);
 app.get("/api/health", (req, res) => res.json({ ok: true }));
 app.use("/api/geo", geoRoutes);
 app.use("/api/admin/pincode-vendors", adminPincodeVendorsRoutes);
-app.use("/api/admin", adminVendorRoutes);
+app.use("/api/admin/vendors", adminVendorRoutes);
 
 // ✅ Global Error Handler
 app.use((err, req, res, next) => {

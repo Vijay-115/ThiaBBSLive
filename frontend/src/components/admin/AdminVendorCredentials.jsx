@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axiosInstance from "../../services/axiosInstance";
+import instance from "../../services/axiosInstance";
 export default function AdminVendorCredentials() {
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -9,7 +9,7 @@ export default function AdminVendorCredentials() {
     setLoading(true);
     setMsg("");
     try {
-      const { data } = await axiosInstance.get(
+      const { data } = await instance.get(
         `${import.meta.env.VITE_API_URL}/api/admin/vendors`,
         {
           params: { status: "approved" },
@@ -35,10 +35,8 @@ export default function AdminVendorCredentials() {
     const ok = window.confirm("Send set-password link to this vendor?");
     if (!ok) return;
     try {
-      const { data } = await axiosInstance.post(
-        `${
-          import.meta.env.VITE_API_URL
-        }/api/admin/vendors/${id}/create-credentials`
+      const { data } = await instance.post(
+        `/api/admin/vendors/${id}/create-credentials`
       );
       if (data?.success) {
         setMsg("Link sent successfully");
@@ -49,14 +47,13 @@ export default function AdminVendorCredentials() {
     }
   }
 
-function copyLink(token) {
-  const link = `${
-    import.meta.env.VITE_VENDOR_PORTAL_URL
-  }/vendor/set-password/${token}`;
-  navigator.clipboard.writeText(link);
-  alert("Link copied to clipboard:\n" + link);
-}
-
+  function copyLink(token) {
+    const link = `${
+      import.meta.env.VITE_VENDOR_PORTAL_URL
+    }/vendor/set-password/${token}`;
+    navigator.clipboard.writeText(link);
+    alert("Link copied to clipboard:\n" + link);
+  }
 
   return (
     <div style={{ padding: 16 }}>
