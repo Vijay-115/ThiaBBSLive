@@ -5,7 +5,7 @@ import axios from "axios";
 // Helpers
 const inr = (n) => new Intl.NumberFormat("en-IN").format(n);
 
-// API endpoints
+// API endpoints Need to Update
 const API_LIST = `${import.meta.env.VITE_API_URL}/api/products/public`;
 const API_FACETS = `${import.meta.env.VITE_API_URL}/api/products/facets`;
 
