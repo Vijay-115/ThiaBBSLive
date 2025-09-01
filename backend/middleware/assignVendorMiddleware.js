@@ -22,8 +22,8 @@ function getOrSetCustomerKey(req, res) {
   return cid;
 }
 
+// Pick a vendor for the pincode (first approved). You can swap with round-robin later.
 async function pickVendorForPincode(pincode) {
-  // simple pick; replace with round-robin later if you add more vendors
   return await Vendor.findOne({
     application_status: "approved",
     "register_business_address.postalCode": String(pincode),
@@ -46,7 +46,7 @@ module.exports = async function assignVendorMiddleware(req, res, next) {
     const dateKey = todayKey();
     const customerKey = getOrSetCustomerKey(req, res);
 
-    // existing assignment for today?
+    // find today's assignment
     let assignment = await CustomerVendorAssignment.findOne({
       customerKey,
       pincode,
@@ -76,14 +76,16 @@ module.exports = async function assignVendorMiddleware(req, res, next) {
       );
     }
 
-    // ✅ set the correct ids for downstream filters
-    req.assignedVendorId = String(assignment.vendor_id); // the Vendor _id
+    // ✅ IMPORTANT: set the real vendor _id from the assignment
+    req.assignedVendorId = String(assignment.vendor_id);
+
+    // ✅ and set the vendor's user_id (this is what your products use as seller_id)
     const v = await Vendor.findById(assignment.vendor_id)
       .select({ user_id: 1 })
       .lean();
     const vendorUserId = v?.user_id ? String(v.user_id) : null;
 
-    req.assignedVendorUserId = vendorUserId; // 👈 what productController uses
+    req.assignedVendorUserId = vendorUserId; // controller reads this
     req.assignedSellerUserId = vendorUserId; // kept for compatibility
 
     return next();

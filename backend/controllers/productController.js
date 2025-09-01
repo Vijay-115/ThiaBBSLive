@@ -221,15 +221,14 @@ exports.createProduct = async (req, res) => {
 // READ: Public list — optionally filters by assigned vendor for the day
 exports.getAllProducts = async (req, res) => {
   try {
-    // Coming from assignVendorMiddleware
-    const assignedVendorUserId =
-      req.assignedVendorUserId || req.query.sellerId || null;
-    const assignedVendorId = req.assignedVendorId || req.query.vendorId || null;
+    // from assignVendorMiddleware
+    const assignedVendorUserId = req.assignedVendorUserId || null;
+    const assignedVendorId = req.assignedVendorId || null;
 
     const query = {};
     const or = [];
 
-    // Your catalog uses seller_id = vendor.user_id (see your JSON)
+    // Your catalog uses seller_id = vendor.user_id
     if (assignedVendorUserId) {
       or.push({ seller_id: assignedVendorUserId });
       try {
@@ -238,14 +237,14 @@ exports.getAllProducts = async (req, res) => {
         });
       } catch {}
     }
-    // If you later store vendor_id on products, this supports that too
+
+    // Support vendor_id on products too (future-proof)
     if (assignedVendorId) {
       try {
-        or.push({
-          vendor_id: new mongoose.Types.ObjectId(String(assignedVendorId)),
-        });
+        or.push({ vendor_id: new mongoose.Types.ObjectId(assignedVendorId) });
       } catch {}
     }
+
     if (or.length) query.$or = or;
 
     const products = await Product.find(query).populate(
