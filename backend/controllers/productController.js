@@ -1,5 +1,3 @@
-
-
 const Product = require("../models/Product");
 const Variant = require("../models/Variant");
 const Category = require("../models/Category");
@@ -219,44 +217,83 @@ exports.createProduct = async (req, res) => {
 
 // READ: Get all products
 // READ: Public list — optionally filters by assigned vendor for the day
+// exports.getAllProducts = async (req, res) => {
+//   try {
+//     // from assignVendorMiddleware
+//     const assignedVendorUserId = req.assignedVendorUserId || null;
+//     const assignedVendorId = req.assignedVendorId || null;
+
+//     const query = {};
+//     const or = [];
+
+//     // Your catalog uses seller_id = vendor.user_id
+//     if (assignedVendorUserId) {
+//       or.push({ seller_id: assignedVendorUserId });
+//       try {
+//         or.push({
+//           seller_id: new mongoose.Types.ObjectId(assignedVendorUserId),
+//         });
+//       } catch {}
+//     }
+
+//     // Support vendor_id on products too (future-proof)
+//     if (assignedVendorId) {
+//       try {
+//         or.push({ vendor_id: new mongoose.Types.ObjectId(assignedVendorId) });
+//       } catch {}
+//     }
+
+//     if (or.length) query.$or = or;
+
+//     const products = await Product.find(query).populate(
+//       "category_id subcategory_id variants seller_id"
+//     );
+
+//     res.status(200).json({ products, filteredByVendor: !!or.length });
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// };
 exports.getAllProducts = async (req, res) => {
   try {
-    // from assignVendorMiddleware
-    const assignedVendorUserId = req.assignedVendorUserId || null;
-    const assignedVendorId = req.assignedVendorId || null;
+    const { q: text = "" } = req.query || {};
 
     const query = {};
-    const or = [];
+    const orVendor = [];
 
-    // Your catalog uses seller_id = vendor.user_id
-    if (assignedVendorUserId) {
-      or.push({ seller_id: assignedVendorUserId });
+    // Inject vendor filter from middleware
+    if (req.assignedVendorUserId) {
+      const s = String(req.assignedVendorUserId);
+      orVendor.push({ seller_id: s });
       try {
-        or.push({
-          seller_id: new mongoose.Types.ObjectId(assignedVendorUserId),
+        orVendor.push({ seller_id: new mongoose.Types.ObjectId(s) });
+      } catch {}
+    }
+    if (req.assignedVendorId) {
+      try {
+        orVendor.push({
+          vendor_id: new mongoose.Types.ObjectId(String(req.assignedVendorId)),
         });
       } catch {}
     }
+    if (orVendor.length) query.$or = orVendor;
 
-    // Support vendor_id on products too (future-proof)
-    if (assignedVendorId) {
-      try {
-        or.push({ vendor_id: new mongoose.Types.ObjectId(assignedVendorId) });
-      } catch {}
+    // Optional text search (very light; adjust if you have an index)
+    if (text && String(text).trim()) {
+      query.$text = { $search: String(text).trim() };
     }
 
-    if (or.length) query.$or = or;
+    const products = await Product.find(query).lean();
 
-    const products = await Product.find(query).populate(
-      "category_id subcategory_id variants seller_id"
-    );
-
-    res.status(200).json({ products, filteredByVendor: !!or.length });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    return res.status(200).json({
+      products,
+      filteredByVendor: !!orVendor.length,
+    });
+  } catch (e) {
+    console.error("getAllProducts error", e);
+    return res.status(200).json({ products: [], filteredByVendor: false }); // never 400 here
   }
 };
-
 exports.getAllProductTags = async (req, res) => {
   try {
     const products = await Product.find({}, "tags"); // Get only the tags field
@@ -1572,8 +1609,6 @@ exports.importProductsCSV = async (req, res) => {
   }
 };
 
-// ====== END of new CSV handlers ======
-
 // PUBLIC product list with filters (categoryId, subcategoryId, q, product, group, brand, organic, price, sort, page, limit)
 // ENFORCED: lock results to today's assigned seller (req.assignedVendorId) via seller_id
 // exports.listProducts = async (req, res) => {
@@ -1681,26 +1716,63 @@ exports.importProductsCSV = async (req, res) => {
 // };
 exports.listProducts = async (req, res) => {
   try {
-    const q = {};
+    const { subcategoryId, groupId, limit = 24, page = 1 } = req.query;
 
-  if (req.assignedVendorId || req.assignedSellerUserId) {
-    const or = [];
-    if (req.assignedVendorId) or.push({ vendor_id: req.assignedVendorId });
-    if (req.assignedSellerUserId)
-      or.push({ seller_id: req.assignedSellerUserId });
-    if (or.length) q.$or = or;
-  }
+    // Ensure the assigned vendor is present
+    if (!req.assignedVendorId) {
+      return res.status(400).json({ message: "Assigned vendor missing" });
+    }
 
+    const query = {
+      seller_id: new mongoose.Types.ObjectId(String(req.assignedVendorId)), // Filter by pincode vendor
+    };
 
-    // add your existing filters/pagination here if needed
-    const products = await Product.find(q).lean();
+    // Validate and filter by subcategoryId if provided
+    if (subcategoryId) {
+      if (!mongoose.Types.ObjectId.isValid(subcategoryId)) {
+        return res.status(400).json({ message: "Invalid subcategoryId" });
+      }
+      query.subcategory_id = new mongoose.Types.ObjectId(subcategoryId);
+    }
 
-    return res.json({ success: true, products, filteredByVendor: !!q.$or });
-  } catch (e) {
-    console.error("listProducts error", e);
-    return res
-      .status(500)
-      .json({ success: false, message: "failed to list products" });
+    // Validate and filter by groupId if provided
+    if (groupId) {
+      if (!mongoose.Types.ObjectId.isValid(groupId)) {
+        return res.status(400).json({ message: "Invalid groupId" });
+      }
+      const group = await ProductGroup.findById(groupId).lean();
+      if (group && group.product_ids?.length) {
+        query._id = { $in: group.product_ids };
+      }
+    }
+
+    // Pagination
+    const skip = (Number(page) - 1) * Number(limit);
+
+    // Fetch products
+    const [products, total] = await Promise.all([
+      Product.find(query)
+        .populate("category_id subcategory_id")
+        .sort({ createdAt: -1 }) // Sort by newest first
+        .skip(skip)
+        .limit(Number(limit))
+        .lean(),
+      Product.countDocuments(query),
+    ]);
+
+    res.status(200).json({
+      success: true,
+      products,
+      pagination: {
+        page: Number(page),
+        limit: Number(limit),
+        total,
+        pages: Math.ceil(total / Number(limit)),
+      },
+    });
+  } catch (err) {
+    console.error("listProducts error:", err);
+    res.status(500).json({ message: "Failed to list products" });
   }
 };
 // PUBLIC facets for current seller only
@@ -1862,5 +1934,129 @@ exports.getCategoryBySlug = async (req, res) => {
     res.json({ item: c });
   } catch (e) {
     res.status(500).json({ message: e.message });
+  }
+};
+exports.searchProducts = async (req, res) => {
+  try {
+    const {
+      q: text = "",
+      categoryId,
+      subcategoryId,
+      brand,
+      minPrice,
+      maxPrice,
+      page = 1,
+      limit = 24,
+      sort = "relevance", // "price_asc" | "price_desc" | "new" | "relevance"
+    } = req.query || {};
+
+    const query = {};
+    const and = [];
+
+    // Vendor filter from daily assignment (ONE CUSTOMER → ONE VENDOR)
+    const orVendor = [];
+    if (req.assignedVendorUserId) {
+      const s = String(req.assignedVendorUserId);
+      orVendor.push({ seller_id: s });
+      try {
+        orVendor.push({ seller_id: new mongoose.Types.ObjectId(s) });
+      } catch {}
+    }
+    if (req.assignedVendorId) {
+      try {
+        orVendor.push({
+          vendor_id: new mongoose.Types.ObjectId(String(req.assignedVendorId)),
+        });
+      } catch {}
+    }
+    if (orVendor.length) and.push({ $or: orVendor });
+
+    // Category filters (optional)
+    if (categoryId && mongoose.isValidObjectId(categoryId)) {
+      and.push({ category_id: new mongoose.Types.ObjectId(categoryId) });
+    }
+    if (subcategoryId && mongoose.isValidObjectId(subcategoryId)) {
+      and.push({ subcategory_id: new mongoose.Types.ObjectId(subcategoryId) });
+    }
+
+    // Brand (if you store it on the product)
+    if (brand && String(brand).trim()) {
+      and.push({ brand: String(brand).trim() });
+    }
+
+    // Price range (never 400; just ignore bad values)
+    const min = Number(minPrice);
+    const max = Number(maxPrice);
+    const priceCond = {};
+    if (Number.isFinite(min)) priceCond.$gte = min;
+    if (Number.isFinite(max)) priceCond.$lte = max;
+    if (Object.keys(priceCond).length) {
+      // support either "price" or nested "priceInfo.sale"
+      and.push({
+        $or: [{ price: priceCond }, { "priceInfo.sale": priceCond }],
+      });
+    }
+
+    // Text search
+    if (text && String(text).trim()) {
+      // Use $text if you have index; else fallback to regex on "name"/"title"
+      and.push({
+        $or: [
+          { name: new RegExp(String(text).trim(), "i") },
+          { title: new RegExp(String(text).trim(), "i") },
+        ],
+      });
+    }
+
+    if (and.length) query.$and = and;
+
+    // Pagination
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 24));
+    const skip = (pageNum - 1) * limitNum;
+
+    // Sorting
+    let sortSpec = undefined;
+    switch (sort) {
+      case "price_asc":
+        sortSpec = { "priceInfo.sale": 1, price: 1, _id: 1 };
+        break;
+      case "price_desc":
+        sortSpec = { "priceInfo.sale": -1, price: -1, _id: -1 };
+        break;
+      case "new":
+        sortSpec = { createdAt: -1, _id: -1 };
+        break;
+      default:
+        // "relevance" or unknown → keep Mongo natural order or your preferred default
+        sortSpec = { _id: -1 };
+    }
+
+    const [items, total] = await Promise.all([
+      Product.find(query).sort(sortSpec).skip(skip).limit(limitNum).lean(),
+      Product.countDocuments(query),
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      filteredByVendor: !!orVendor.length,
+      products: items,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total,
+        pages: Math.max(1, Math.ceil(total / limitNum)),
+      },
+    });
+  } catch (e) {
+    console.error("searchProducts error", e);
+    // NEVER 400 here; return a safe, empty payload
+    return res.status(200).json({
+      success: false,
+      filteredByVendor: !!(req.assignedVendorUserId || req.assignedVendorId),
+      products: [],
+      pagination: { page: 1, limit: 24, total: 0, pages: 1 },
+      message: "Unable to load products",
+    });
   }
 };

@@ -1,13 +1,13 @@
 // ProductListingFull.jsx
 import React, { useEffect, useMemo, useState } from "react";
-import axios from "axios";
+import instance from "../../services/axiosInstance"; // adjust path as needed
 
 // Helpers
 const inr = (n) => new Intl.NumberFormat("en-IN").format(n);
 
 // API endpoints Need to Update
-const API_LIST = `${import.meta.env.VITE_API_URL}/api/products/public`;
-const API_FACETS = `${import.meta.env.VITE_API_URL}/api/products/facets`;
+const API_LIST = `${import.meta.env.VITE_API_URL}/api/products`;
+const API_FACETS = `${import.meta.env.VITE_API_URL}/api/products`;
 
 export default function ProductListingFull() {
   const [search, setSearch] = useState("");
@@ -73,7 +73,7 @@ export default function ProductListingFull() {
     let alive = true;
     (async () => {
       try {
-        const { data } = await axios.get(API_FACETS);
+        const { data } = await instance.get(API_FACETS);
         if (!alive) return;
         const brands = (data.brands || []).map((b) => b.name).filter(Boolean);
         const rams = (data.ram || [])
@@ -125,11 +125,13 @@ export default function ProductListingFull() {
 
     (async () => {
       try {
-        const { data } = await axios.get(API_LIST, {
+        const { data } = await instance.get(API_LIST, {
           params,
           signal: controller.signal,
         });
-        setProducts(Array.isArray(data.items) ? data.items : []);
+        console.log(data, "API Data LIST");
+
+        setProducts(Array.isArray(data.products) ? data.products : []);
         setTotal(Number.isFinite(data.total) ? data.total : 0);
       } catch (e) {
         setErr(

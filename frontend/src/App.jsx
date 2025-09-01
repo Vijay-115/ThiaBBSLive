@@ -100,7 +100,6 @@ import AdminCustomerVendorRequestsPage from './components/pages/admin/AdminCusto
 // 30/09/25 - AdminVendorCredentials
 import AdminVendorCredentials from "./components/admin/AdminVendorCredentials";
 import VendorSetPassword from "./components/pages/VendorSetPassword";
-import ProductsPage from './components/pages/ProductsPage';
 function App() {
   const dispatch = useDispatch();
   const location = useLocation(); // Get the current route
@@ -286,7 +285,7 @@ function App() {
           />
           <Route path="orders" element={<SellerOrders />} />
 
-          <Route path="products" element={<ProductsPage />} />
+          {/* <Route path="products" element={<ProductsPage />} /> */}
         </Route>
         {/* Made by medun */}
         {/* GLOBAL CMS CORE MODULES (Shared Across All 3) */}

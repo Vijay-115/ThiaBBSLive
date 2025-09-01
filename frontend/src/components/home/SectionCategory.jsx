@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { Link } from "react-router-dom";
-import ProductsPage from "../pages/ProductsPage";
 
 const SectionCategory = () => {
   const categories = [
@@ -79,7 +78,6 @@ const SectionCategory = () => {
   return (
     <section className="category-carousel pb-6 md:pb-12 max-w-[85%] md:max-w-full mx-auto">
 
-     <ProductsPage/>
       <h2 className="font-quicksand text-center text-lg md:text-xl lg:text-2xl font-bold md:mb-4">
         Explore Categories
       </h2>

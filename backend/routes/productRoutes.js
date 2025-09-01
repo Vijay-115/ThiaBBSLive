@@ -6,6 +6,7 @@ const { uploadAny } = require("../middleware/upload");
 const { auth, authUser } = require("../middleware/authMiddleware");
 const multer = require("multer");
 const requireAssignedVendor = require("../middleware/requireAssignedVendor");
+const assignVendorMiddleware = require("../middleware/assignVendorMiddleware");
 
 const upload = multer({ dest: "uploads/tmp" });
 
@@ -13,13 +14,15 @@ const upload = multer({ dest: "uploads/tmp" });
  * PUBLIC catalog for storefront
  * These must come FIRST and /:id must stay LAST.
  */
+router.get("/search", productController.searchProducts); // All Products page
+
 router.get("/catalog/categories", productController.listCategoriesPublic);
 router.get("/catalog/subcategories", productController.listSubcategoriesPublic);
 router.get("/catalog/groups", productController.listGroupsBySubcategory); // <— add this
 router.get("/catalog/category-by-slug", productController.getCategoryBySlug);
 
-router.get("/public", requireAssignedVendor, productController.listProducts); // product list with filters
-router.get("/facets",requireAssignedVendor, productController.getFacets); // brand/price facets
+router.get("/public", assignVendorMiddleware, productController.listProducts); // product list with filters
+router.get("/facets", requireAssignedVendor, productController.getFacets); // brand/price facets
 // router.get("/public", productController.listProducts); // product list with filters
 // router.get("/facets", productController.getFacets); // brand/price facets
 router.post(
@@ -78,7 +81,7 @@ router.get(
 router.get("/seller/:sellerId", productController.getProductsBySellerId);
 
 // Product detail MUST be last so it doesn't shadow other routes
-router.get("/:id", requireAssignedVendor,productController.getProductById);
+router.get("/:id", requireAssignedVendor, productController.getProductById);
 // router.get("/:id", productController.getProductById);
 
 // Update (single)

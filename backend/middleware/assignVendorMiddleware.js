@@ -1,12 +1,17 @@
+
 const CustomerVendorAssignment = require("../models/CustomerVendorAssignment");
 const Vendor = require("../models/Vendor");
+const PincodeDayCounter = require("../models/PincodeDayCounter");
 
-function todayKey() {
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
+// Build YYYY-MM-DD in IST, regardless of server timezone
+function todayKeyIST() {
+  const fmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  return fmt.format(new Date()); // e.g. 2025-09-01
 }
 
 function getOrSetCustomerKey(req, res) {
@@ -22,15 +27,31 @@ function getOrSetCustomerKey(req, res) {
   return cid;
 }
 
-// Pick a vendor for the pincode (first approved). You can swap with round-robin later.
-async function pickVendorForPincode(pincode) {
-  return await Vendor.findOne({
+async function listApprovedVendorsForPincode(pincode) {
+  return Vendor.find({
     application_status: "approved",
     "register_business_address.postalCode": String(pincode),
   })
-    .select({ _id: 1, user_id: 1, display_name: 1 })
-    .sort({ created_at: 1 })
+    .select({ _id: 1, user_id: 1, display_name: 1, created_at: 1 })
+    .sort({ created_at: 1, _id: 1 }) // stable order
     .lean();
+}
+
+// Atomic round-robin pick for the day
+async function pickVendorRoundRobin(pincode, dateKey) {
+  const vendors = await listApprovedVendorsForPincode(pincode);
+  if (!vendors.length) return null;
+  if (vendors.length === 1) return vendors[0];
+
+  // Atomic counter per (pincode, dateKey)
+  const ctr = await PincodeDayCounter.findOneAndUpdate(
+    { pincode: String(pincode), dateKey },
+    { $inc: { nextIndex: 1 } },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  ).lean();
+
+  const idx = Math.abs(ctr.nextIndex - 1) % vendors.length; // subtract 1 because we incremented
+  return vendors[idx];
 }
 
 module.exports = async function assignVendorMiddleware(req, res, next) {
@@ -43,10 +64,10 @@ module.exports = async function assignVendorMiddleware(req, res, next) {
     ).trim();
     if (!pincode) return next();
 
-    const dateKey = todayKey();
+    const dateKey = todayKeyIST();
     const customerKey = getOrSetCustomerKey(req, res);
 
-    // find today's assignment
+    // Reuse today’s assignment if it exists
     let assignment = await CustomerVendorAssignment.findOne({
       customerKey,
       pincode,
@@ -54,7 +75,7 @@ module.exports = async function assignVendorMiddleware(req, res, next) {
     }).lean();
 
     if (!assignment) {
-      const vendor = await pickVendorForPincode(pincode);
+      const vendor = await pickVendorRoundRobin(pincode, dateKey);
       if (!vendor) {
         req.assignedVendorId = null;
         req.assignedVendorUserId = null;
@@ -69,6 +90,7 @@ module.exports = async function assignVendorMiddleware(req, res, next) {
             pincode,
             dateKey,
             vendor_id: vendor._id,
+            // expire a little after midnight IST
             expiresAt: new Date(Date.now() + 25 * 60 * 60 * 1000),
           },
         },
@@ -76,21 +98,18 @@ module.exports = async function assignVendorMiddleware(req, res, next) {
       );
     }
 
-    // ✅ IMPORTANT: set the real vendor _id from the assignment
+    // Expose IDs for downstream controllers
     req.assignedVendorId = String(assignment.vendor_id);
 
-    // ✅ and set the vendor's user_id (this is what your products use as seller_id)
     const v = await Vendor.findById(assignment.vendor_id)
       .select({ user_id: 1 })
       .lean();
-    const vendorUserId = v?.user_id ? String(v.user_id) : null;
-
-    req.assignedVendorUserId = vendorUserId; // controller reads this
-    req.assignedSellerUserId = vendorUserId; // kept for compatibility
+    req.assignedVendorUserId = v?.user_id ? String(v.user_id) : null;
+    req.assignedSellerUserId = req.assignedVendorUserId;
 
     return next();
   } catch (err) {
     console.error("assignVendorMiddleware error", err);
-    return next();
+    return next(); // fail-open
   }
 };
