@@ -100,6 +100,7 @@ import AdminCustomerVendorRequestsPage from './components/pages/admin/AdminCusto
 // 30/09/25 - AdminVendorCredentials
 import AdminVendorCredentials from "./components/admin/AdminVendorCredentials";
 import VendorSetPassword from "./components/pages/VendorSetPassword";
+import ProductsPage from './components/pages/ProductsPage';
 function App() {
   const dispatch = useDispatch();
   const location = useLocation(); // Get the current route
@@ -242,13 +243,14 @@ function App() {
           path="territory-head-success"
           element={<TerritoryHeadSuccess />}
         />
-{   // 30/09/25 - AdminVendorCredentials
-}       
- <Route
+        {
+          // 30/09/25 - AdminVendorCredentials
+        }
+        <Route
           path="/admin/vendor-credentials"
           element={<AdminVendorCredentials />}
         />
-  
+
         <Route
           path="/vendor/set-password/:token"
           element={<VendorSetPassword />}
@@ -283,6 +285,8 @@ function App() {
             element={<SellerSubCategories />}
           />
           <Route path="orders" element={<SellerOrders />} />
+
+          <Route path="products" element={<ProductsPage />} />
         </Route>
         {/* Made by medun */}
         {/* GLOBAL CMS CORE MODULES (Shared Across All 3) */}

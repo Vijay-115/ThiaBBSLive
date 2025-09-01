@@ -5,16 +5,18 @@ import App from './App.jsx'
 import { Provider } from "react-redux";
 import store from './store/store.js';
 import { AuthProvider } from "../context/AuthContext"; // ✅ import
+import { VendorAssignmentProvider } from "../context/VendorAssignmentContext";
 
 
-createRoot(document.getElementById('root')).render(
+createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <AuthProvider>,
-
+    <AuthProvider>
+      ,
       <Provider store={store}>
-        <App />
+        <VendorAssignmentProvider>
+          <App />
+        </VendorAssignmentProvider>
       </Provider>
     </AuthProvider>
-
   </React.StrictMode>
-)
+);
