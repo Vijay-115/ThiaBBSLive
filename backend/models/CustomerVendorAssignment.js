@@ -7,7 +7,7 @@ const customerVendorAssignmentSchema = new mongoose.Schema(
     vendor_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Vendor",
-      required: true,
+      required: false,
       index: true,
     },
     // YYYY-MM-DD (store/server local date)

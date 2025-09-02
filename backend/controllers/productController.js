@@ -215,45 +215,7 @@ exports.createProduct = async (req, res) => {
   }
 };
 
-// READ: Get all products
-// READ: Public list — optionally filters by assigned vendor for the day
-// exports.getAllProducts = async (req, res) => {
-//   try {
-//     // from assignVendorMiddleware
-//     const assignedVendorUserId = req.assignedVendorUserId || null;
-//     const assignedVendorId = req.assignedVendorId || null;
 
-//     const query = {};
-//     const or = [];
-
-//     // Your catalog uses seller_id = vendor.user_id
-//     if (assignedVendorUserId) {
-//       or.push({ seller_id: assignedVendorUserId });
-//       try {
-//         or.push({
-//           seller_id: new mongoose.Types.ObjectId(assignedVendorUserId),
-//         });
-//       } catch {}
-//     }
-
-//     // Support vendor_id on products too (future-proof)
-//     if (assignedVendorId) {
-//       try {
-//         or.push({ vendor_id: new mongoose.Types.ObjectId(assignedVendorId) });
-//       } catch {}
-//     }
-
-//     if (or.length) query.$or = or;
-
-//     const products = await Product.find(query).populate(
-//       "category_id subcategory_id variants seller_id"
-//     );
-
-//     res.status(200).json({ products, filteredByVendor: !!or.length });
-//   } catch (err) {
-//     res.status(500).json({ message: err.message });
-//   }
-// };
 exports.getAllProducts = async (req, res) => {
   try {
     const { q: text = "" } = req.query || {};
@@ -312,18 +274,33 @@ exports.getAllProductTags = async (req, res) => {
 // READ: Get a single product by product_id (ADMIN/INTERNAL)
 exports.getProductById = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id).populate(
+    const { id } = req.params;
+    const { pincode } = req.query;
+
+    const product = await Product.findById(id).populate(
       "category_id subcategory_id variants seller_id"
     );
+
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
-    // For public detail views, use getProduct below (it enforces seller).
+
+    // ✅ Only check pincode if provided
+    if (pincode) {
+      const vendor = await Vendor.findById(product.seller_id);
+      if (!vendor || vendor.pincode !== pincode) {
+        return res
+          .status(400)
+          .json({ message: "Product not available in this pincode" });
+      }
+    }
+
     res.status(200).json(product);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+
 
 // READ: Get a single product by seller_id
 exports.getProductsBySellerId = async (req, res) => {

@@ -6,8 +6,8 @@ import instance from "../../services/axiosInstance"; // adjust path as needed
 const inr = (n) => new Intl.NumberFormat("en-IN").format(n);
 
 // API endpoints Need to Update
-const API_LIST = `${import.meta.env.VITE_API_URL}/api/products`;
-const API_FACETS = `${import.meta.env.VITE_API_URL}/api/products`;
+const API_LIST = `${import.meta.env.VITE_API_URL}/api/products/public`;
+const API_FACETS = `${import.meta.env.VITE_API_URL}/api/products/facets`;
 
 export default function ProductListingFull() {
   const [search, setSearch] = useState("");

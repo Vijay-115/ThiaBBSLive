@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useSearchParams, Link } from "react-router-dom";
-import { API } from "../../api/publicApi";
+import instance from "../../services/axiosInstance";
 
 export default function SubcategoryPage() {
   const { subcategoryId } = useParams();
@@ -18,6 +18,11 @@ export default function SubcategoryPage() {
   const product = params.get("product") || "";
   const label = params.get("label") || "";
 
+  // Correct localStorage key
+  const [pincode, setPincode] = useState(
+    localStorage.getItem("deliveryPincode") || ""
+  );
+
   useEffect(() => {
     load();
   }, [
@@ -30,28 +35,45 @@ export default function SubcategoryPage() {
     groupId,
     group,
     product,
+    pincode,
   ]);
 
   function load() {
-    API.get("/api/products/public", {
-      params: {
-        subcategoryId,
-        groupId: groupId || undefined,
-        product: groupId ? undefined : product || undefined,
-        group: groupId || product ? undefined : group || undefined,
-        q: groupId || product || group ? undefined : q || undefined,
-        brand: brand || undefined,
-        organic: organic !== "" ? organic : undefined,
-        minPrice: minPrice || undefined,
-        maxPrice: maxPrice || undefined,
-        limit: 24,
-      },
-    }).then(({ data }) => setItems(data.items || []));
+    if (!pincode) {
+      console.warn("Pincode not set. Cannot fetch products.");
+      setItems([]);
+      return;
+    }
+
+    instance
+      .get("/api/products/public", {
+        params: {
+          subcategoryId,
+          groupId: groupId || undefined,
+          product: groupId ? undefined : product || undefined,
+          group: groupId || product ? undefined : group || undefined,
+          q: groupId || product || group ? undefined : q || undefined,
+          brand: brand || undefined,
+          organic: organic !== "" ? organic : undefined,
+          minPrice: minPrice || undefined,
+          maxPrice: maxPrice || undefined,
+          pincode,
+          limit: 24,
+          t: Date.now(), // bypass cache
+        },
+      })
+      .then(({ data }) => {
+        setItems(data.products || []); // <-- important: read data.products
+      })
+      .catch((err) => {
+        console.error("Error fetching products:", err);
+        setItems([]);
+      });
   }
 
   return (
     <div className="mx-auto max-w-6xl p-4">
-      {label ? <h2 className="mb-2 text-lg font-semibold">{label}</h2> : null}
+      {label && <h2 className="mb-2 text-lg font-semibold">{label}</h2>}
 
       <div className="mb-4 flex flex-wrap items-end gap-3">
         <input
@@ -100,6 +122,7 @@ export default function SubcategoryPage() {
               ...(organic ? { organic } : {}),
               ...(minPrice ? { minPrice } : {}),
               ...(maxPrice ? { maxPrice } : {}),
+              ...(pincode ? { pincode } : {}),
             });
             load();
           }}

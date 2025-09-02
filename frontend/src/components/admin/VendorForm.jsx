@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import API from "../../utils/api";
 import { Form, Button, Spinner, Row, Col } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Select from "react-select";
 import axios from "axios";
+
 // Options
 const constitutionOptions = [
   { value: "proprietorship", label: "Proprietorship" },
@@ -17,6 +18,7 @@ const constitutionOptions = [
 
 export default function VendorForm() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [step, setStep] = useState(1);
   const [vendorId, setVendorId] = useState(
@@ -33,8 +35,7 @@ export default function VendorForm() {
     firstName: "",
     lastName: "",
     dob: "",
-    email: "", // ✅ added
-
+    email: "",
     panNumber: "",
     aadharNumber: "",
     gender: "",
@@ -54,6 +55,69 @@ export default function VendorForm() {
     gst_district: "",
   });
 
+  // ---------- helpers ----------
+  const resetApplication = () => {
+    localStorage.removeItem("vendorId");
+    setVendorId("");
+    setStep(1);
+    setFormData({
+      firstName: "",
+      lastName: "",
+      dob: "",
+      email: "",
+      panNumber: "",
+      aadharNumber: "",
+      gender: "",
+      register_street: "",
+      register_city: "",
+      register_state: "",
+      register_country: "India",
+      register_postalCode: "",
+      gstNumber: "",
+      gstLegalName: "",
+      gstConstitution: "",
+      gst_floorNo: "",
+      gst_buildingNo: "",
+      gst_street: "",
+      gst_locality: "",
+      gst_district: "",
+    });
+    setBankData({
+      account_holder_name: "",
+      account_no: "",
+      ifcs_code: "",
+      bank_name: "",
+      branch_name: "",
+      bank_address: "",
+    });
+    setOutlet({
+      outlet_name: "",
+      manager_name: "",
+      manager_mobile: "",
+      outlet_phone: "",
+      street: "",
+      city: "",
+      district: "",
+      state: "",
+      country: "India",
+      postalCode: "",
+      lat: "",
+      lng: "",
+    });
+  };
+
+  // Optional explicit start: get a fresh draft id from server
+  const startNewOnServer = async () => {
+    const r = await axios.post(
+      `${import.meta.env.VITE_API_URL}/api/vendors/start`
+    );
+    const id = r?.data?.data?._id;
+    if (id) {
+      localStorage.setItem("vendorId", id);
+      setVendorId(id);
+    }
+  };
+
   const handleSelectChange = (selectedOption, field) => {
     setFormData((prev) => ({
       ...prev,
@@ -67,16 +131,13 @@ export default function VendorForm() {
       .replace(/(\d{4})(?=\d)/g, "$1 ")
       .trim();
 
-  // Helper: upload a document (no OCR) and return fileUrl
   const uploadDoc = async (file) => {
     const fd = new FormData();
     fd.append("document", file);
     const { data } = await axios.post(
       `${import.meta.env.VITE_API_URL}/api/vendors/upload`,
       fd,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
+      { headers: { "Content-Type": "multipart/form-data" } }
     );
     if (!data?.ok || !data?.fileUrl) throw new Error("Upload failed");
     return data.fileUrl;
@@ -89,16 +150,12 @@ export default function VendorForm() {
     setLoadingPan(true);
     try {
       const fileUrl = await uploadDoc(file);
-      // Save just the file reference; fields are manual
       const r = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/vendors/step-by-key`,
-        {
-          vendorId,
-          pan_pic: fileUrl,
-        }
+        { vendorId, pan_pic: fileUrl }
       );
       const id = r?.data?.data?._id;
-      if (id && !vendorId) {
+      if (id) {
         setVendorId(id);
         localStorage.setItem("vendorId", id);
       }
@@ -118,7 +175,7 @@ export default function VendorForm() {
         vendor_fname: formData.firstName || "",
         vendor_lname: formData.lastName || "",
         dob: formData.dob || "",
-        email: formData.email || "", // ✅ added
+        email: formData.email || "",
       };
       const resp = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/vendors/step-by-key`,
@@ -146,13 +203,10 @@ export default function VendorForm() {
       const fileUrl = await uploadDoc(file);
       const r = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/vendors/step-by-key`,
-        {
-          vendorId,
-          aadhar_pic_front: fileUrl,
-        }
+        { vendorId, aadhar_pic_front: fileUrl }
       );
       const id = r?.data?.data?._id;
-      if (id && !vendorId) {
+      if (id) {
         setVendorId(id);
         localStorage.setItem("vendorId", id);
       }
@@ -172,13 +226,10 @@ export default function VendorForm() {
       const fileUrl = await uploadDoc(file);
       const r = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/vendors/step-by-key`,
-        {
-          vendorId,
-          aadhar_pic_back: fileUrl,
-        }
+        { vendorId, aadhar_pic_back: fileUrl }
       );
       const id = r?.data?.data?._id;
-      if (id && !vendorId) {
+      if (id) {
         setVendorId(id);
         localStorage.setItem("vendorId", id);
       }
@@ -212,7 +263,7 @@ export default function VendorForm() {
         }
       );
       const id = r?.data?.data?._id;
-      if (id && !vendorId) {
+      if (id) {
         setVendorId(id);
         localStorage.setItem("vendorId", id);
       }
@@ -224,12 +275,9 @@ export default function VendorForm() {
     }
   };
 
-  // -------------------- GST (Step 3 — manual; file optional) --------------------
+  // -------------------- GST (Step 3) --------------------
   const [gstFile, setGstFile] = useState(null);
-  const onGstFileSelect = (e) => {
-    const file = e.target.files?.[0] || null;
-    setGstFile(file);
-  };
+  const onGstFileSelect = (e) => setGstFile(e.target.files?.[0] || null);
 
   const saveGstAndNext = async () => {
     try {
@@ -253,9 +301,7 @@ export default function VendorForm() {
       const r = await axios.put(
         `${import.meta.env.VITE_API_URL}/api/vendors/gst`,
         fd,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
+        { headers: { "Content-Type": "multipart/form-data" } }
       );
       if (!r?.data?.ok) throw new Error(r?.data?.message || "Save failed");
       setStep(4);
@@ -278,10 +324,7 @@ export default function VendorForm() {
     bank_address: "",
   });
 
-  const onBankFileChange = (e) => {
-    const file = e.target.files?.[0] || null;
-    setBankFile(file);
-  };
+  const onBankFileChange = (e) => setBankFile(e.target.files?.[0] || null);
 
   const saveBankDetails = async () => {
     const vid = vendorId || localStorage.getItem("vendorId");
@@ -302,9 +345,7 @@ export default function VendorForm() {
       const response = await axios.put(
         `${import.meta.env.VITE_API_URL}/api/vendors/${vid}/bank`,
         fd,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
+        { headers: { "Content-Type": "multipart/form-data" } }
       );
       if (!response?.data?.ok)
         throw new Error(response?.data?.message || "Save failed");
@@ -333,11 +374,8 @@ export default function VendorForm() {
   });
   const [outletImage, setOutletImage] = useState(null);
 
-  const handleOutletImageChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      setOutletImage(e.target.files[0]);
-    }
-  };
+  const handleOutletImageChange = (e) =>
+    setOutletImage(e.target.files?.[0] || null);
 
   const fetchLocation = () => {
     if (navigator.geolocation) {
@@ -359,7 +397,6 @@ export default function VendorForm() {
     }
   };
 
-  // ************* NEW: Final submit helper (added) *************
   const submitApplication = async () => {
     const vid = vendorId || localStorage.getItem("vendorId");
     if (!vid) {
@@ -374,7 +411,6 @@ export default function VendorForm() {
       throw new Error(r?.data?.message || "Submit failed");
     }
   };
-  // ************************************************************
 
   const saveOutletAndNext = async () => {
     const vid = vendorId || localStorage.getItem("vendorId");
@@ -402,50 +438,29 @@ export default function VendorForm() {
     const r = await axios.put(
       `${import.meta.env.VITE_API_URL}/api/vendors/outlet`,
       fd,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
+      { headers: { "Content-Type": "multipart/form-data" } }
     );
 
     if (!r?.data?.ok) throw new Error(r?.data?.message || "Save failed");
     alert("Outlet details saved");
 
-    // ************* NEW: call final submit before redirect (added) *************
     await submitApplication();
-    // **************************************************************************
+    // IMPORTANT: clear current vendorId so next registration cannot overwrite this one
+    localStorage.removeItem("vendorId");
+    setVendorId("");
 
     navigate("/vendor-success");
   };
 
-  const registerVendor = async () => {
-    const fd = new FormData();
-    fd.append("vendorId", vendorId);
-    fd.append("pan_number", formData.panNumber);
-    fd.append("aadhar_number", formData.aadharNumber);
-    fd.append("gst_number", formData.gstNumber);
-    fd.append("account_no", bankData.account_no);
-    fd.append("outlet_name", outlet.outlet_name);
-    fd.append("outlet_coords[lat]", outlet.lat);
-    fd.append("outlet_coords[lng]", outlet.lng);
-
-    try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/vendors/register`,
-        fd,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
-      if (!response?.data?.ok && !response?.data?.vendor)
-        throw new Error(response?.data?.message || "Registration failed");
-
-      alert("Registration successful!");
-      window.location.href = "/vendor-success";
-    } catch (error) {
-      console.error("Error registering vendor:", error);
-      alert("Failed to register vendor.");
+  // when page loads with ?new=1, clear any previous vendorId so a new doc is created
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("new") === "1") {
+      resetApplication();
+      // If you prefer to assign an id immediately, uncomment:
+      // startNewOnServer();
     }
-  };
+  }, [location.search]);
 
   useEffect(() => {
     const id = localStorage.getItem("vendorId");
@@ -454,11 +469,28 @@ export default function VendorForm() {
 
   return (
     <div>
-      <h4 className="mb-3">Vendor Registration</h4>
+      <div className="d-flex justify-content-between align-items-center mb-2">
+        <h4 className="mb-0">Vendor Registration</h4>
+        <Button
+          size="sm"
+          variant="outline-secondary"
+          onClick={resetApplication}
+        >
+          Start new application
+        </Button>
+      </div>
       <div className="mb-3">
         <strong>Step {step} of 5</strong>
+        {vendorId ? (
+          <small className="ms-2 text-muted">
+            Current application: {vendorId}
+          </small>
+        ) : (
+          <small className="ms-2 text-muted">(new application)</small>
+        )}
       </div>
 
+      {/* Step 1 */}
       {step === 1 && (
         <div>
           <h5 className="mb-3">Step 1: PAN Card Details</h5>
@@ -508,7 +540,7 @@ export default function VendorForm() {
               />
             </Col>
             <Col md={6} className="mb-3">
-              <Form.Label>Email ID</Form.Label> {/* ✅ new field */}
+              <Form.Label>Email ID</Form.Label>
               <Form.Control
                 type="email"
                 value={formData.email}
@@ -539,6 +571,7 @@ export default function VendorForm() {
         </div>
       )}
 
+      {/* Step 2 */}
       {step === 2 && (
         <div>
           <h5 className="mb-3">Step 2: Aadhaar Details</h5>
@@ -667,6 +700,7 @@ export default function VendorForm() {
         </div>
       )}
 
+      {/* Step 3 */}
       {step === 3 && (
         <div>
           <h5 className="mb-3">Step 3: GST Details</h5>
@@ -770,10 +804,10 @@ export default function VendorForm() {
         </div>
       )}
 
+      {/* Step 4 */}
       {step === 4 && (
         <div>
           <h5 className="mb-3">Step 4: Bank Details</h5>
-
           <Form.Group className="mb-3">
             <Form.Label>
               Upload Cancelled Cheque or Bank Letter (PDF/JPG/PNG)
@@ -863,6 +897,7 @@ export default function VendorForm() {
         </div>
       )}
 
+      {/* Step 5 */}
       {step === 5 && (
         <div>
           <h5 className="mb-3">Step 5: Outlet Details</h5>

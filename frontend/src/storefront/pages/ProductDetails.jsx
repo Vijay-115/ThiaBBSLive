@@ -1,7 +1,6 @@
-// src/pages/ProductDetails.jsx
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
+import instance from "../../services/axiosInstance";
 import {
   Star,
   Heart,
@@ -13,104 +12,87 @@ import {
   ChevronDown,
   ChevronRight,
 } from "lucide-react";
-
-/*
-Merged from:
-- Your current ProductDetails.jsx fetch/fields (API + model-compatible).  (ref) :contentReference[oaicite:4]{index=4}
-- Your PricingPage.jsx layout, ratings, offers, swatches, etc.            (ref) :contentReference[oaicite:5]{index=5}
-This component works even if Tailwind is not present. Tailwind classes
-are included for styling, but all data wiring works without it.
-*/
-
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "",
-});
-
 export default function ProductDetails() {
   const { id } = useParams();
   const [p, setP] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  // UI state
   const [img, setImg] = useState("");
-  const [quantity, setQuantity] = useState(1);
-  const [showOffers, setShowOffers] = useState(false);
-  const [deliveryLocation, setDeliveryLocation] =
-    useState("Puducherry, 605001");
+    const [quantity, setQuantity] = useState(1);
+
+    const [selected, setSelected] = useState(false); // wishlist toggle
+      const [showOffers, setShowOffers] = useState(false);
   const [selectedColor, setSelectedColor] = useState("");
-  const [selected, setSelected] = useState(false); // wishlist toggle
   const [selectedSize, setSelectedSize] = useState("");
 
+  const [deliveryLocation, setDeliveryLocation] =
+    useState("Puducherry, 605008");
   useEffect(() => {
     (async () => {
       try {
-        const { data } = await api.get(`/api/products/${id}`);
+        setLoading(true);
+        setP(null);
+
+        const { data } = await instance.get(`/api/products/public/${id}`);
         setP(data);
+
         const primary =
           data?.product_img ||
           data?.gallery_imgs?.[0] ||
           "/img/placeholder.png";
         setImg(primary);
-        // set initial color/size if present
-        const c0 = data?.ui?.colorOptions?.[0]?.name;
-        const s0 = data?.ui?.sizes?.[0];
-        if (c0) setSelectedColor(c0);
-        if (s0) setSelectedSize(s0);
       } catch (e) {
         console.error("load product failed", e?.response?.data || e.message);
+        setP(null);
       } finally {
         setLoading(false);
       }
     })();
   }, [id]);
 
-  const price = p?.priceInfo?.sale ?? p?.price ?? 0;
-  const mrp = p?.priceInfo?.mrp ?? p?.price ?? 0;
-  const discountText =
-    p?.priceInfo?.discountText ||
-    (mrp > price ? `${Math.round(100 - (price / mrp) * 100)}% off` : "");
+   const price = p?.priceInfo?.sale ?? p?.price ?? 0;
+   const mrp = p?.priceInfo?.mrp ?? p?.price ?? 0;
+   const discountText =
+     p?.priceInfo?.discountText ||
+     (mrp > price ? `${Math.round(100 - (price / mrp) * 100)}% off` : "");
 
-  const gallery = useMemo(() => {
-    const g = Array.isArray(p?.gallery_imgs) ? p.gallery_imgs : [];
-    const imgs = [p?.product_img, ...g].filter(Boolean);
-    return imgs.length ? imgs : ["/img/placeholder.png"];
-  }, [p]);
+   const gallery = useMemo(() => {
+     const g = Array.isArray(p?.gallery_imgs) ? p.gallery_imgs : [];
+     const imgs = [p?.product_img, ...g].filter(Boolean);
+     return imgs.length ? imgs : ["/img/placeholder.png"];
+   }, [p]);
 
-  const dims = p?.dimensions || {};
-  const specs = Array.isArray(p?.specs) ? p.specs : [];
-  const tags = Array.isArray(p?.tags) ? p.tags : [];
-  const variants = Array.isArray(p?.variants) ? p.variants : [];
+   const dims = p?.dimensions || {};
+   const specs = Array.isArray(p?.specs) ? p.specs : [];
+   const tags = Array.isArray(p?.tags) ? p.tags : [];
+   const variants = Array.isArray(p?.variants) ? p.variants : [];
 
-  // UI-driven optional fields (PricingPage design)
-  const ui = p?.ui || {};
-  const seller = ui.seller || {
-    name: "",
-    rating: p?.rating_avg || 0,
-    reviewsCount: p?.rating_count || 0,
-  };
-  const offers = Array.isArray(ui.offers) ? ui.offers : [];
-  const highlights = Array.isArray(ui.highlights) ? ui.highlights : [];
-  const colorOptions = Array.isArray(ui.colorOptions) ? ui.colorOptions : [];
-  const sizes = Array.isArray(ui.sizes) ? ui.sizes : [];
-  const reviews = Array.isArray(ui.reviews) ? ui.reviews : [];
-  const ratingSummary = ui.ratingSummary || {
-    counts: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
-    total: p?.rating_count || 0,
-    avg: p?.rating_avg || 0,
-  };
+   // UI-driven optional fields (PricingPage design)
+   const ui = p?.ui || {};
+   const seller = ui.seller || {
+     name: "",
+     rating: p?.rating_avg || 0,
+     reviewsCount: p?.rating_count || 0,
+   };
+   const offers = Array.isArray(ui.offers) ? ui.offers : [];
+   const highlights = Array.isArray(ui.highlights) ? ui.highlights : [];
+   const colorOptions = Array.isArray(ui.colorOptions) ? ui.colorOptions : [];
+   const sizes = Array.isArray(ui.sizes) ? ui.sizes : [];
+   const reviews = Array.isArray(ui.reviews) ? ui.reviews : [];
+   const ratingSummary = ui.ratingSummary || {
+     counts: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
+     total: p?.rating_count || 0,
+     avg: p?.rating_avg || 0,
+   };
 
-  if (loading) return <div className="container py-4">Loading…</div>;
-  if (!p) return <div className="container py-4">Not found.</div>;
-
+   if (loading) return <div className="container py-4">Loading…</div>;
+   if (!p) return <div className="container py-4">Not found.</div>;
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* breadcrumb (simple) */}
-      <nav className="text-sm text-gray-500 px-9 pt-5">
-        Home / {p?.category_id?.name || "Category"} /{" "}
-        {p?.subcategory_id?.name || "Sub-category"} /{" "}
-        <span className="text-gray-800">{p?.name}</span>
-      </nav>
-
+    <div className="container py-4">
+      <h1 className="mb-3">{p?.name}</h1>
+      <img src={img} alt={p?.name} style={{ maxWidth: 320 }} />
+      <pre style={{ background: "#f7f7f7", padding: 12 }}>
+        Seller: {String(p?.seller_id || "")}
+      </pre>
       <div className="container mx-auto px-4 py-6 grid lg:grid-cols-2 gap-6">
         {/* Left: images + thumbnails + highlights */}
         <div className="space-y-4">

@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import API from "../utils/api"; // axios instance with baseURL = `${import.meta.env.VITE_API_URL}`
-
+import instance from "../../services/axiosInstance";
 export default function ShopByCategoryMega() {
   const [open, setOpen] = useState(false);
   const [categories, setCategories] = useState([]);
@@ -22,39 +21,47 @@ export default function ShopByCategoryMega() {
   }, []);
 
   // Load top-level categories once when opening
-  const loadCategories = async () => {
-    if (categories.length) return;
-    const { data } = await API.get("/products/categories"); // you already have this endpoint
-    setCategories(data.items || data || []);
-  };
+const loadCategories = async () => {
+  if (categories.length) return;
+  const pincode = localStorage.getItem("deliveryPincode") || ""; // dynamic
+  const { data } = await instance.get("/products/categories", {
+    params: { pincode },
+  });
+  setCategories(data.items || data || []);
+};
 
   // When a category is hovered → load its sub-categories
-  const onCatHover = async (cat) => {
-    setActiveCat(cat);
-    setActiveSub(null);
-    setPreview([]);
-    try {
-      const { data } = await API.get(
-        `/products/categories/${cat._id}/subcategories`
-      );
-      setSubcats(data.items || []);
-    } catch {
-      setSubcats([]);
-    }
-  };
+const onCatHover = async (cat) => {
+  setActiveCat(cat);
+  setActiveSub(null);
+  setPreview([]);
+  try {
+    const pincode = localStorage.getItem("deliveryPincode") || "";
+    const { data } = await instance.get(
+      `/products/categories/${cat._id}/subcategories`,
+      { params: { pincode } }
+    );
+    setSubcats(data.items || []);
+  } catch {
+    setSubcats([]);
+  }
+};
+
 
   // When a sub-category is hovered → load preview products
-  const onSubHover = async (sub) => {
-    setActiveSub(sub);
-    try {
-      const { data } = await API.get(
-        `/products/subcategories/${sub._id}/preview-products?limit=6`
-      );
-      setPreview(data.items || []);
-    } catch {
-      setPreview([]);
-    }
-  };
+const onSubHover = async (sub) => {
+  setActiveSub(sub);
+  try {
+    const pincode = localStorage.getItem("deliveryPincode") || "";
+    const { data } = await instance.get(
+      `/products/subcategories/${sub._id}/preview-products?limit=6`,
+      { params: { limit: 6, pincode } }
+    );
+    setPreview(data.items || []);
+  } catch {
+    setPreview([]);
+  }
+};
 
   const priceOf = (p) => {
     const sale = Number(p?.priceInfo?.sale);

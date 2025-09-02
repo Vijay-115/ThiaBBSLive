@@ -43,25 +43,21 @@ exports.saveStepByKey = async (req, res) => {
 
     const set = { updated_at: new Date() };
 
-    // Identity
     if (b.vendor_fname) set.vendor_fname = String(b.vendor_fname).trim();
     if (b.vendor_lname) set.vendor_lname = String(b.vendor_lname).trim();
     if (b.dob) set.dob = String(b.dob).trim();
-    if (b.email) set.email = String(b.email).trim(); // ✅ FIXED
+    if (b.email) set.email = String(b.email).trim();
 
-    // PAN
     if (b.pan_number)
       set.pan_number = String(b.pan_number).trim().toUpperCase();
     if (b.pan_pic) set.pan_pic = String(b.pan_pic).trim();
 
-    // Aadhaar
     if (b.aadhar_number) set.aadhar_number = String(b.aadhar_number).trim();
     if (b.aadhar_pic_front)
       set.aadhar_pic_front = String(b.aadhar_pic_front).trim();
     if (b.aadhar_pic_back)
       set.aadhar_pic_back = String(b.aadhar_pic_back).trim();
 
-    // Registered/Business address
     if (
       b.register_business_address &&
       typeof b.register_business_address === "object"
@@ -80,9 +76,9 @@ exports.saveStepByKey = async (req, res) => {
       { $set: set },
       {
         new: true,
-        upsert: true, // create if not exists
+        upsert: true,
         setDefaultsOnInsert: true,
-        runValidators: false, // skip required validators for partial steps
+        runValidators: false,
       }
     );
 
@@ -498,20 +494,22 @@ exports.listVendors = async (req, res) => {
     // IMPORTANT: do NOT select both the parent object and its children.
     // Select only the dotted children you need; never the parent as a whole.
     const vendors = await Vendor.find(match)
-      .select([
-        "vendor_fname",
-        "vendor_lname",
-        "brand_name",
-        "email",
-        "user_id",
-        "application_status",
-        "updated_at",
-        "pan_number",
-        "gst_number",
-        "register_business_address.city",
-        "register_business_address.state",
-        "register_business_address.postalCode",
-      ].join(" "))
+      .select(
+        [
+          "vendor_fname",
+          "vendor_lname",
+          "brand_name",
+          "email",
+          "user_id",
+          "application_status",
+          "updated_at",
+          "pan_number",
+          "gst_number",
+          "register_business_address.city",
+          "register_business_address.state",
+          "register_business_address.postalCode",
+        ].join(" ")
+      )
       .sort({ updated_at: -1 })
       .skip(skip)
       .limit(Number(limit))
@@ -529,8 +527,21 @@ exports.listVendors = async (req, res) => {
     return res.status(500).json({ success: false, message: err.message });
   }
 };
-
-
+exports.startApplication = async (_req, res) => {
+  try {
+    const doc = await Vendor.create({
+      application_status: "draft",
+      created_at: new Date(),
+      updated_at: new Date(),
+    });
+    return res.json({ ok: true, data: doc });
+  } catch (e) {
+    console.error("startApplication error:", e);
+    return res
+      .status(500)
+      .json({ ok: false, message: "Start failed", details: e.message });
+  }
+};
 module.exports = {
   uploadDocument: exports.uploadDocument,
   saveStepByKey: exports.saveStepByKey,
@@ -548,4 +559,5 @@ module.exports = {
   markNotificationRead: exports.markNotificationRead,
   getNotifications: exports.getNotifications,
   listVendors: exports.listVendors,
+  startApplication:exports.startApplication, // <— add this line
 };
