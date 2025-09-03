@@ -13,21 +13,28 @@ instance.interceptors.request.use((config) => {
   }
   return config;
 });
+// axiosInstance.js (interceptor)
 instance.interceptors.request.use((config) => {
-  // Attach pincode header if known
-  const pin = localStorage.getItem("deliveryPincode");
-  if (pin) config.headers["X-Pincode"] = pin;
+  const pin =
+    localStorage.getItem("deliveryPincode") ||
+    localStorage.getItem("bbs_pincode") ||
+    localStorage.getItem("pincode") ||
+    "";
 
-  // Attach stable guest key for anonymous users
-  ensureGuestKey();
-  const gk = getGuestKey();
-  if (gk) config.headers["X-Guest-Key"] = gk;
+  if (pin) {
+    config.headers["X-Pincode"] = pin;
+    config.params = { ...(config.params || {}), pincode: config.params?.pincode ?? pin };
+  }
 
-  // Auth header (if you already set elsewhere, keep it there)
-  // const token = localStorage.getItem("token");
-  // if (token) config.headers.Authorization = `Bearer ${token}`;
+  let gk = localStorage.getItem("guestKey");
+  if (!gk) {
+    gk = (crypto?.randomUUID?.() || Math.random().toString(36).slice(2)) + Date.now().toString(36);
+    localStorage.setItem("guestKey", gk);
+  }
+  config.headers["X-Guest-Key"] = gk;
 
   return config;
 });
+
 
 export default instance;
